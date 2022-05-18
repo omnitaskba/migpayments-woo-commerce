@@ -124,7 +124,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 			$this->id                 	= 'migpaymentspayments';
 			$this->mainplugin_url 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
-			$this->method_title       	= __( 'Crypto Payment', MIGPAYMENTSWC );
+			$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
 			$this->method_description  	= "";
  			$this->supports 			= array( 'products',
 							               'subscriptions',
