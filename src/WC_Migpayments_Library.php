@@ -18,11 +18,12 @@ class WC_Migpayments_Library {
     }
  
 
-    public function getPaymentData($total, $currencyCode, $orderNumber, $token)
+    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token)
     {
         $url = $this->baseUrl . 'rest/get-payment-data';
         error_log($url);
         $data = [
+            'shop_currency' => $fiatCurrencyCode,
             'selected_currency' => $currencyCode,
             'token' => $token,
             'amount' => $total,
@@ -36,11 +37,40 @@ class WC_Migpayments_Library {
         return $this->processResults($response);
     }
 
+    public function getCryptoPrices($total, $currencyCodes, $fiatCurrencyCode, $token)
+    {
+        $url = $this->baseUrl . 'get-crypto-prices';
+ 
+        $data = [
+            'currencies' => implode(',', $currencyCodes),
+            'shop_currency' => $fiatCurrencyCode,
+            'token' => $token,
+            'amount' => $total
+        ];
+
+        $response = $this->http->post($url, ['body' => $data]);
+        return $this->processResults($response);
+    }
+
     private function processResults($response){
+
+        if(!is_array($response)){
+            return [
+                'success' => 'false',
+                'status' => 500
+            ];
+        }
+
+        $data  = is_array($response) &&  isset($response['body']) ? json_decode($response['body'], true) : [];
+
+        if(isset($data['data'])){
+            $data = $data['data'];
+        }
         return [
-            'success' => $response['response']['code'] == 200 ? true :false,
+            'success' => $response['response']['code'] >= 200  && $response['response']['code'] < 300 ? true :false,
             'status' => $response['response']['code'] ,
-            'body' => json_decode($response['body'], true)
+            'data' => $data
         ];
     }
 }
+ 
