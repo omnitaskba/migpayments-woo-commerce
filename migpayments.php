@@ -1,16 +1,11 @@
 <?php
 /*
 Plugin Name: 		MigPayments WooCommerce
-Plugin URI: 		https://migpayments.io/bitcoin-payments-woocommerce.html
+Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.3.8
-Author: 			MigPayments.tech
+Version: 			1.0.1
+Author: 			Omnitask
 Author URI: 		https://migpayments.tech
-WC requires at least: 	2.1.0
-WC tested up to: 		4.9.2
-License: 			GPLv2
-License URI: 		http://www.gnu.org/licenses/gpl-2.0.html
-GitHub Plugin URI: 	https://github.com/cryptoapi/Bitcoin-Payments-Woocommerce
 */
 
 
