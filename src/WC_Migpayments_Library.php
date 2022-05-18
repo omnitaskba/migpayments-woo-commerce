@@ -26,8 +26,10 @@ class WC_Migpayments_Library {
             'selected_currency' => $currencyCode,
             'token' => $token,
             'amount' => $total,
-            'payment_confirmed' => '/callback/payment-confirmed',
-            'order_number' => $orderNumber
+            'payment_confirmed' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
+            'notification_url' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
+            'order_number' => $orderNumber,
+            'plugin' => 'wordpress'
         ];
 
         $response = $this->http->post($url, ['body' => $data]);

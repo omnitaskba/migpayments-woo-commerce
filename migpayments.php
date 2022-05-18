@@ -77,7 +77,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	if (!class_exists('WC_Payment_Gateway') || class_exists('WC_Gateway_MigPayments')) return;
 
 	add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
-	  
+	add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
+
       
 	/*
 	 *	Payment Gateway WC Class
@@ -132,10 +133,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 							               'subscription_reactivation',
 							               'multiple_subscriptions'
 							          );
-		    $this->apiToken = 'caa1559e-8414-11ec-bba1-d2be32b6ea23'; //$this->get_option('api_token');
-
+		   
 			$enabled = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('enabled')==='') || $this->get_option('enabled') == 'yes' || $this->get_option('enabled') == '1' || $this->get_option('enabled') === true) ? true : false;
-
+ 
 			if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS') && defined('MIGPAYMENTS_ADMIN') && is_object($migpayments))
 			{
 				$this->payments 			= $migpayments->payments(); 		// Activated Payments
@@ -174,32 +174,49 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			$this->migpayments_settings();
 
 			// Logo on Checkout Page
-			// if ($this->logo) $this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/images/crypto".$this->logo.".png", __FILE__));
+			$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__));
 
 			// Hooks
-			add_action( 'woocommerce_thankyou_migpaymentspayments', array( $this, 'cryptocoin_payment' ) );
 
-			 
-			 
+			//generate payment data
+			add_action( 'woocommerce_thankyou_migpaymentspayments', array( $this, 'getPaymentData' ) );
+			//update payment options(woocmmerce settings - payments)
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+
+			//payment confirmed webhook
+			add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
+
+		 
+			
  
 			return true;
 	    }
 
+ 
+		public function paymentConfirmedWebhook(){
+		 
+			$order = wc_get_order( $_GET['id'] );
+			$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
 
+			$order->payment_complete();
+		 
+			update_option('webhook_debug', $_GET);
 
+			wp_send_json('success');
+		}
 
-	    /*
-	     * 23.2
-	    */
+		
 	    private function migpayments_settings()
 	    {
 
            
             // Define user set variables
             $this->enabled          = $this->get_option( 'enabled' );
+            $this->apiToken          = $this->get_option( 'api_token' );
             $this->title            = $this->get_option( 'title' );
             $this->description      = $this->get_option( 'description' );
-            $this->logo             = $this->get_option( 'logo' );
+           
             $this->emultiplier      = trim(str_replace(array("%", ","), array("", "."), $this->get_option( 'emultiplier' )));
             $this->ostatus          = $this->get_option( 'ostatus' );
             $this->ostatus2         = $this->get_option( 'ostatus2' );
@@ -212,24 +229,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
             $this->qrcodesize       = trim(str_replace("px", "", $this->get_option( 'qrcodesize' )));
             $this->langmenu         = $this->get_option( 'langmenu' );
             $this->redirect         = $this->get_option( 'redirect' );
+ 
 
-            $this->sbc_notrial      = $this->get_option( 'sbc_notrial' );
-            $this->sbc_notrialtxt   = $this->get_option( 'sbc_notrialtxt' );
-            $this->sbc_usedtrialtxt = $this->get_option( 'sbc_usedtrialtxt' );
-
-
-            // Re-check
-            if (!$this->title)                                      $this->settings["title"]            = $this->title 		   = __('Crypto Payment', MIGPAYMENTSWC);
-            if (!$this->description)                                $this->settings["description"] 		= $this->description   = __('Secure, anonymous payment with virtual currency', MIGPAYMENTSWC);
-            if (!isset($this->statuses[$this->ostatus]))            $this->settings["ostatus"] 			= $this->ostatus  	   = 'processing';
-            if (!isset($this->statuses[$this->ostatus2]))           $this->settings["ostatus2"] 		= $this->ostatus2 	   = 'processing';
-            if (!isset($this->cryptoprices[$this->cryptoprice]))    $this->settings["cryptoprice"] 		= $this->cryptoprice   = '0';
-            if (!isset($this->languages[$this->deflang]))           $this->settings["deflang"] 			= $this->deflang 	   = 'en';
-            if (stripos($this->redirect, "http") !== 0)             $this->settings["redirect"] 		= $this->redirect      = '';
            
-
-
-            if (!is_numeric($this->logo) || !in_array($this->logo, array(0,1,2,3,4,5,6,7,8,9,10)))      $this->settings["logo"] = $this->logo = 6;
             if (!$this->emultiplier || !is_numeric($this->emultiplier) || $this->emultiplier < 0.01)    $this->emultiplier 	= 1;
             if (!is_numeric($this->iconwidth) || $this->iconwidth < 30 || $this->iconwidth > 250)       $this->iconwidth 	= 60;
             if (!is_numeric($this->qrcodesize) || $this->qrcodesize < 0 || $this->qrcodesize > 500)     $this->qrcodesize 	= 200;
@@ -276,12 +278,43 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
                     'default'     	=> null,
                     'description' 	=> __( '', MIGPAYMENTSWC )
                 ),
-                 
+			
             );
 
 	    	return true;
 	    }
+		
+		public function payment_fields() {
+ 
+			 
+			if ( $this->description ) {
+				echo wpautop( wp_kses_post( $this->description ) );
+			}
+		 
+			// I will echo() the form, but you can close PHP tags and print it directly in HTML
+			echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-cc-form" class="wc-credit-card-form wc-payment-form" style="background:transparent;">';
+		 
+			// Add this action hook if you want your custom payment gateway to support it
+			do_action( 'woocommerce_crypto_payment_form_start', $this->id );
+		 
+			// I recommend to use inique IDs, because other gateways could already use #ccNo, #expdate, #cvc
+			echo '<div class="form-row form-row-first">
+					<label>Choose Crypto Currency<span class="required">*</span></label>
+					<select id="crypto_currency" name="crypto_currency">
 
+						<option value="ETH">ETH</option>
+						<option value="BTC">BTC</option>
+						<option value="USDT">USDT</option>
+					</select>
+				</div>
+			 
+				<div class="clear"></div>';
+		 
+			do_action( 'woocommerce_crypto_payment_form_end', $this->id );
+		 
+			echo '<div class="clear"></div></fieldset>';
+		 
+		}
 
 
     /*
@@ -289,9 +322,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
      */
     public function process_payment( $orderId )
     {
-        global $woocommerce;
-        static $emultiplier = 0;
-
+       
         // New Order
         $order = new WC_Order( $orderId );
 
@@ -302,56 +333,16 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
         // Mark as pending (we're awaiting the payment)
         $order->update_status('pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
 
-
+	 
         // Payment Page
         $payment_link = $this->get_return_url($order);
-
-//  error_log($payment_link);
-        // // Get original price in fiat
-        // $live = $totalFiat = 0;
-        // $arr = migpayments_wc_currency_type();
-        // if ($arr["2way"])
-        // {
-        //     if (!$emultiplier)
-        //     {
-        //         $gateways = $woocommerce->payment_gateways->payment_gateways();
-        //         if (isset($gateways['migpaymentspayments'])) $emultiplier = trim(str_replace(array("%", ","), array("", "."), $gateways['migpaymentspayments']->get_option('emultiplier')));
-        //         if (!$emultiplier || !is_numeric($emultiplier) || $emultiplier < 0.01) $emultiplier = 1;
-        //     }
-
-        //     $btc = migpayments_bitcoin_live_price ($arr["admin"]); // 1BTC bitcoin price  in USD/EUR/AUD/RUB/GBP/etc.
-
-        //     if ($arr["user"] == "BTC") $live = $btc;
-        //     elseif (in_array($arr["user"], json_decode(MIGPAYMENTSWC_2WAY, true))) $live = $btc * migpayments_altcoin_btc_price ($arr["user"]); // atcoins 1LTC/1DASH/1BCH/1BSV/1DOGE  in USD/EUR/AUD/RUB/GBP/etc.
-
-        //     if ($live > 0)
-        //     {
-        //         $totalFiat = round(floatval($orderTotal) * floatval($live) / 1.01 / floatval($emultiplier), 2);
-        //         if ($totalFiat > 10)     $totalFiat = number_format($totalFiat);
-        //         elseif ($totalFiat > 1)  $totalFiat = round($totalFiat, 1);
-        //         $totalFiat .= " " . $arr["admin"];
-        //     }
-        // }
-        // elseif ($arr["admin"] == $arr["user"] && array_key_exists($arr["admin"], $this->coin_names)) // cryptocurrency selected; show price in USD
-        // {
-        //     $btc = migpayments_bitcoin_live_price ("USD"); // USD
-        //     if ($arr["user"] == "BTC") $live = $btc;
-        //     else $live = $btc * migpayments_altcoin_btc_price ($arr["user"]); // atcoins 1LTC/1DASH/1BCH/1BSV/1DOGE  in USD
-
-        //     $totalFiat = round(floatval($orderTotal) * floatval($live), 2);
-
-        //     if ($totalFiat > 10)     $totalFiat = number_format($totalFiat);
-        //     elseif ($totalFiat > 1)  $totalFiat = round($totalFiat, 1);
-        //     $totalFiat .= " USD";
-        // }
-
-
-
+  
         $total = ($orderTotal >= 1000 ? number_format($orderTotal) : $orderTotal);
         $orderpage = $order->get_checkout_order_received_url()."&prvw=1";
 
         if (!get_post_meta( $orderId, '_migpayments_worder_orderid', true ))
         {
+            update_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', 	    $_POST['crypto_currency'] );
             update_post_meta( $orderId, '_migpayments_worder_orderid', 	    $orderId );
             update_post_meta( $orderId, '_migpayments_worder_userid', 	    $userID );
             update_post_meta( $orderId, '_migpayments_worder_createtime',   gmdate("c") );
@@ -359,21 +350,10 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
             update_post_meta( $orderId, '_migpayments_worder_orderpage',     $orderpage );
             update_post_meta( $orderId, '_migpayments_worder_created',      gmdate("d M Y, H:i") );
 
-            // update_post_meta( $orderId, '_migpayments_worder_currencies', $arr );
-            update_post_meta( $orderId, '_migpayments_worder_amountcrypto', $total );
-            update_post_meta( $orderId, '_migpayments_worder_amountfiat',  "0.0024" );
+          
         }
-
-
-        // $total_html = $total;
-        // if ($totalFiat) $total_html .= " / <b> ".$totalFiat."</b>";
-        // else $total_html = "<b>" . $total_html . "</b>";
-
-        // $userprofile = (!$userID) ? __('Guest', MIGPAYMENTSWC) : "<a href='".admin_url("user-edit.php?user_id=".$userID)."'>user".$userID."</a>";
-        $txt = ($total == 0) ? "No Payment Needed! <a href='%s'>Order Page</a>" : "Awaiting Cryptocurrency <a href='%s'>Payment</a>";
-        // $order->add_order_note(sprintf(__("Order Created by %s<br>Order Total: %s<br>".$txt." ...", MIGPAYMENTSWC), $userprofile, $total_html, $orderpage) . '<br>');
-        $order->add_order_note(sprintf(__("Order Created by %s<br>Order Total: %s<br>".$txt." ...", MIGPAYMENTSWC), __('Guest', MIGPAYMENTSWC), '<h1>totaleee</h1>', $orderpage) . '<br>');
-
+ 
+        
         // Remove cart
         WC()->cart->empty_cart();
 
@@ -384,14 +364,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
         );
     }
 
-
-
-
-
-    /*
-     * 23.6 WC Order Checkout Page
-     */
-    public function cryptocoin_payment( $orderId )
+ 
+    public function getPaymentData( $orderId )
 	{
 		global $migpayments;
 
@@ -403,26 +377,68 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		$userID         = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->user_id        : $order->get_user_id();
 		$order_currency = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
 		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
+		$cryptoCurrencyCode = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
 	 
-		$migpaymentsLibrary = WC_Migpayments_Library::create();
-		$response  = $migpaymentsLibrary->getPaymentData($orderTotal, 'ETH', $orderId, $this->apiToken );
-		$responseHtml = 'Failed to get crypto payment data.';
-		
-		if($response['success']){
-			$data = $response['body'];
-			$responseHtml = 'Crypto address:'. $data['cryptoAddress'] .'<br>';
-			$responseHtml .= 'Amount:'. $data['calculatedAmount'] .'<br>';
+		if ($order === false)
+		{
+			echo '<br><h2>' . __( 'Information', MIGPAYMENTSWC ) . '</h2>' . PHP_EOL;
+			echo "<div class='woocommerce-error'>". sprintf(__( 'The MigPayments payment plugin was called to process a payment but could not retrieve the order details for orderID %s. Cannot continue!', MIGPAYMENTSWC ), $orderId)."</div>";
 		}
+		elseif ($order_status == "cancelled" || $post_status == "wc-cancelled")
+		{
+			echo '<br><h2>' . __( 'Information', MIGPAYMENTSWC ) . '</h2>' . PHP_EOL;
+			echo "<div class='woocommerce-error'>". __( "This order's status is 'Cancelled' - it cannot be paid for. Please contact us if you need assistance.", MIGPAYMENTSWC )."</div>";
+		}
+		else
+		{
+			
+			$migpaymentsLibrary = WC_Migpayments_Library::create();
+			$response  = $migpaymentsLibrary->getPaymentData($orderTotal, $cryptoCurrencyCode, $orderId, $this->apiToken );
+			$responseHtml = '<div class="woocommerce-error">Failed to get crypto payment data.</div>';
+			
+			if($response['success']){
+				$data = $response['body'];
 
-		echo $responseHtml;
-	    return (bool)$response['success'];
+				update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $orderTotal );
+				update_post_meta( $orderId, '_migpayments_worder_fiat_amount',  $data['calculatedAmount']);
+
+
+				$responseHtml = 'Crypto address:'. $data['cryptoAddress'] .'<br>';
+				$responseHtml = ' [kaya_qrcode content="My encoded content"] ';
+				
+				$responseHtml .= 'Amount:'. $data['calculatedAmount'] .'<br>';
+			}
+
+			echo $responseHtml;
+		}
+		
+	    return  true;
 	}
+
+	
 
 	}
 	// end class WC_Gateway_MigPayments
 
  }	
 
+  function migpayments_wc_admin_order_stats( $order )
+	{
+	    global $migpayments;
  
+	    $order_id     = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
+	    
+
+		$cryptoCurrencyCode      = get_post_meta( $order_id, '_migpayments_worder_crypto_currency_code', true );
+		$cryptoAmount      = get_post_meta( $order_id, '_migpayments_worder_crypto_amount', true );
+	    
+	  	 
+		$html = '<h3>Crypto Payment Info</h3>';
+
+		$html .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
+		$html .= 'Crypto Amount: '. $cryptoAmount. '<br>';
+		echo $html;
+	   return;
+	}
  
 }
