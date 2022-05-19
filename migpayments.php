@@ -86,7 +86,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		class WC_Gateway_MigPayments extends WC_Payment_Gateway
 		{
 		
-			private $cryptoCurrencies         = array('BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT');
+			private $fiatCurrencies         = ['EUR', 'USD'];
+			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
+			private $fiatCurrency = null;
 			private $mainplugin_url     = '';
 			private $url                = '';
 			private $url3               = '';
@@ -129,7 +131,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$this->cointxt 	= '<b>'.__( 'Please install MigPayments Gateway WP Plugin', MIGPAYMENTSWC ).' &#187;</b>';
 
 				}
-	
+				$this->fiatCurrency = get_woocommerce_currency();
 	
 				// Load the settings.
 				$this->init_form_fields();
@@ -149,11 +151,18 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 				//payment confirmed webhook
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
-
+			 
 				return true;
 			}
-
-	
+			 
+			function migpayments_wc_validate($data, $errors = NULL   ){
+				if ( !isset( $data['crypto_curency'] ) ) {
+					wp_send_json_error( [ 'messages' => ['Crypto payment is not avaialble for '. $this->fiatCurrency .' shop currency.'], 'status' => 'notok' ] );
+					
+				 } 
+				//  wp_send_json_success(['success']);
+				 
+			}
 			public function paymentConfirmedWebhook(){
 			
 				$order = wc_get_order( $_GET['id'] );
@@ -180,7 +189,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				return true;
 			}
 
-
+			 
 			//default WC method
 			public function init_form_fields()
 			{
@@ -241,7 +250,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 				if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error)
 					echo $this->cryptoPricesHtmlResponse->data;
-				// I recommend to use inique IDs, because other gateways could already use #ccNo, #expdate, #cvc
+			 
+			
+
+				if(!in_array($this->fiatCurrency, $this->fiatCurrencies)){
+					echo '<div class="wc-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
+					return;
+				}
 				echo '<div class="form-row form-row-first">
 						<label>Choose Crypto Currency<span class="required">*</span></label>
 						<select id="crypto_currency" name="crypto_currency">
@@ -260,6 +275,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			
 			}
 
+ 
 
 			//default WC method
 			public function process_payment( $orderId )

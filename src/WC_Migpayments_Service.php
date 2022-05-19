@@ -26,17 +26,21 @@ class WC_Migpayments_Service
         try{
 			$response  = $migpaymentsLibrary->getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token);
 		 
-			if(!$response['success'])
+			if(!$response['success']){
                 $error = 'Failed to get payment data.';
-
-            if(isset($response['data']))
+                error_log($error);
+            }
+            if(isset($response['data']));
                 $data = $response['data'];
+             
 
         }catch(Exception $e){
          
-            $error = 'Failed to get payment data.';
+            $error = 'Failed to get payment datae.';
         }
-
+        if($error){
+            error_log($error);
+        }
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
 
@@ -49,15 +53,22 @@ class WC_Migpayments_Service
         try{
 			$response  = $migpaymentsLibrary->getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token);
 			 
-			if(!$response['success'])
+			if(!$response['success']){
                 $error = 'Failed to get crypto prices.';
-
-            if(isset($response['data']))
+                 
+            }
+             
+            if(isset($response['data']));
                 $data = $response['data'];
+             
 
         }catch(Exception $e){
          
             $error = 'Failed  to get crypto prices.';
+        }
+        
+        if($error){
+            error_log($error);
         }
 
         return new WC_Migpayments_ServiceResponse($error, $data);
@@ -78,10 +89,13 @@ class WC_Migpayments_Service
              $html .= '<hr>';
              $data = $html;
         }catch(Exception $e){
-         
+          
             $error = 'Failed  to get crypto prices html.';
         }
-
+        
+        if($error)
+            error_log($error);
+        
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
  
