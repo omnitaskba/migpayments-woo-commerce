@@ -27,7 +27,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		DEFINE('MIGPAYMENTSWC_AFFILIATE_KEY', 	'migpayments');
 		add_action( 'plugins_loaded', 		'migpayments_wc_gateway_load', 20 );
 		add_filter( 'plugin_action_links', 	'migpayments_wc_action_links', 10, 2 );
+		add_action( 'wp_head', 'migpayments_wc_stylesheet' );
 	}
+
+	function woocommmerce_style() {
+		wp_enqueue_style('migpayments_wc_stylesheet', WP_PLUGIN_URL. '/assets/css/migpayments_style.css',false,'1.0',"all");
+	 }
+	
  
 	function migpayments_wc_action_links($links, $file)
 	{
@@ -328,8 +334,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					if(!$response->error){
 						$data = $response->data;
 
-						update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $orderTotal );
-						update_post_meta( $orderId, '_migpayments_worder_fiat_amount',  $data['calculatedAmount']);
+						update_post_meta( $orderId, '_migpayments_worder_fiat_amount', $orderTotal );
+						update_post_meta( $orderId, '_migpayments_worder_crypto_amount',  $data['calculatedAmount']);
 
 
 						$responseHtml = 'Crypto address:'. $data['cryptoAddress'] .'<br>';
