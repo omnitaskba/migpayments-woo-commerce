@@ -136,7 +136,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->init_settings();
 				$this->migpayments_settings();
 	
- error_log($this->isSandbox);
+ 
 				if(WC()->cart)
 					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
 				
@@ -334,7 +334,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					// $response['success'] = true;
 					// $response['data']['cryptoAddress'] = '0x1234';
 					// $response['data']['calculatedAmount'] = 123;
-					if(!$response->error){
+					if(!$response->error && $response->data){
 						$data = $response->data;
 
 						update_post_meta( $orderId, '_migpayments_worder_fiat_amount', $orderTotal );
