@@ -27,12 +27,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		DEFINE('MIGPAYMENTSWC_AFFILIATE_KEY', 	'migpayments');
 		add_action( 'plugins_loaded', 		'migpayments_wc_gateway_load', 20 );
 		add_filter( 'plugin_action_links', 	'migpayments_wc_action_links', 10, 2 );
-		add_action( 'wp_head', 'migpayments_wc_stylesheet' );
+		// add_action( 'wp_head', 'migpayments_wc_style' );
 	}
 
-	function woocommmerce_style() {
-		wp_enqueue_style('migpayments_wc_stylesheet', WP_PLUGIN_URL. '/assets/css/migpayments_style.css',false,'1.0',"all");
-	 }
+	// function migpayments_wc_style() {
+	// 	wp_enqueue_style('migpayments_wc_stylesheet', WP_PLUGIN_URL. '/assets/css/migpayments_style.css',false,'1.0',"all");
+	//  }
 	
  
 	function migpayments_wc_action_links($links, $file)
@@ -110,7 +110,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 											// Logo on Checkout Page
 				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__));
 			 
-				// $this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token') );
+				$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token') );
+				
 				$enabled = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('enabled')==='') || $this->get_option('enabled') == 'yes' || $this->get_option('enabled') == '1' || $this->get_option('enabled') === true) ? true : false;
 	
 				if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS') && defined('MIGPAYMENTS_ADMIN') && is_object($migpayments))
