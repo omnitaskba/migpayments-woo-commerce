@@ -16,7 +16,7 @@ if (!defined( 'ABSPATH' )) exit; // Exit if accessed directly
 if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpayments_wc_action_links')) // Exit if duplicate
 {
 
-
+	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
 	DEFINE('MIGPAYMENTSWC_VERSION', '1.3.8');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
@@ -28,6 +28,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_action( 'plugins_loaded', 		'migpayments_wc_gateway_load', 20 );
 		add_filter( 'plugin_action_links', 	'migpayments_wc_action_links', 10, 2 );
 		add_action( 'wp_head', 'migpayments_wc_style' );
+
+		
 	}
 
 	function migpayments_wc_style() {
@@ -78,16 +80,17 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 		add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
-
-		
+		add_filter( 'woocommerce_form_field_multicheck', 'migpayments_wc_multicheck_form_field', 10, 4 );
 		/*
 		*	Payment Gateway WC Class
 		*/
 		class WC_Gateway_MigPayments extends WC_Payment_Gateway
 		{
-		
+			private $isSandbox  = true;
+			private $showCryptoPrices = true;
 			private $fiatCurrencies         = ['EUR', 'USD'];
 			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
+			private $availableCurrencies = [];
 			private $fiatCurrency = null;
 			private $mainplugin_url     = '';
 			private $url                = '';
@@ -137,9 +140,23 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->init_form_fields();
 				$this->init_settings();
 				$this->migpayments_settings();
-	
+				
+				$availableCurrenciesSetting = $this->get_option('available_currencies');
+			
+				if($availableCurrenciesSetting && is_array($availableCurrenciesSetting)){
+					$availableCurrencies = []; 
+				
+					foreach($availableCurrenciesSetting as $key => $currencyCode){
+						error_log(print_r($currencyCode, true));
+						if(isset($this->cryptoCurrencies[$currencyCode]))
+							$availableCurrencies[$currencyCode] = $this->cryptoCurrencies[$currencyCode];
+					}
+					
+					if(count($availableCurrencies))
+						$this->cryptoCurrencies = $availableCurrencies;
+				}
  
-				if(WC()->cart)
+				if(WC()->cart && $this->showCryptoPrices)
 					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
 				
 	
@@ -178,6 +195,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 				// Define user set variables
 				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
+				$this->showCryptoPrices          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('show_crypto_prices')==='') || $this->get_option('show_crypto_prices') == 'yes' || $this->get_option('show_crypto_prices') == '1' || $this->get_option('show_crypto_prices') === true) ? true : false;
+				
 				$this->apiToken          = $this->get_option( 'api_token' );
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
@@ -189,11 +208,44 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				return true;
 			}
 
-			 
+			public function migpayments_wc_multicheck_form_field( $field, $key, $args, $value ){
+
+				$field_html = '<fieldset>';
+			
+				if( isset( $args['label'] ) ){
+					$field_html .= '<legend>' . $args['label'] . '</legend>';
+				}
+			
+			
+				if ( ! empty( $args['options'] ) ) {
+					foreach ( $args['options'] as $option_key => $option_text ) {
+						$field_html .= '<input type="checkbox" class="input-multicheck ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" value="' . esc_attr( $option_key ) . '" name="' . esc_attr( $key ) . '[]" id="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '"' . checked( $value, $option_key, false ) . ' />';
+						$field_html .= '<label for="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '" class="multicheck ' . implode( ' ', $args['label_class'] ) . '">' . $option_text . '</label>';
+					}
+				}
+			
+				if ( $args['description'] ) {
+					$field_html .= '<span class="description">' . esc_html( $args['description'] ) . '</span>';
+				}
+			
+				$field_html .= '</fieldset>';
+			
+				$container_class = esc_attr( implode( ' ', $args['class'] ) );
+				$container_id = esc_attr( $args['id'] ) . '_field';
+			
+				$after = ! empty( $args['clear'] ) ? '<div class="clear"></div>' : '';
+			
+				$field_container = '<p class="form-row %1$s" id="%2$s" data-sort="' . esc_attr( $sort ) . '">%3$s</p>';
+			
+				$field = sprintf( $field_container, $container_class, $container_id, $field_html ) . $after;
+			
+				return $field;
+			}
+			
 			//default WC method
 			public function init_form_fields()
 			{
-
+ 
 				$this->form_fields = array(
 					'is_sandbox'		=> array(
 						'title'   	  	=> __( 'Sandbox Mode', MIGPAYMENTSWC ),
@@ -226,6 +278,27 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						'default'     	=> "200",
 						'description' 	=> sprintf(__( "QRcode image size in payment box. Enter 0 to hide QR code. Default width: 200px. Maximum width: 500px.", MIGPAYMENTSWC ))
 					),
+					'show_crypto_prices'		=> array(
+						'title'   	  	=> __( 'Crypto Totals Box', MIGPAYMENTSWC ),
+						'type'    	  	=> 'checkbox',
+						'default'	  	=> (MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments'?'yes':'no'),
+						'label'   	  	=> sprintf(__( "Show cart total converted to available crypto currencies on checkout page.", MIGPAYMENTSWC ), $this->url3)
+					),
+					'available_currencies' => array(
+						'title'       	=> __( 'Available Crypto Currencies', MIGPAYMENTSWC ),
+						'type' => 'multiselect',
+						'label'      => __( 'Available Currencies', MIGPAYMENTSWC),
+						'description'      => __( 'Check currency to make it visibile on checkout page. All currencies are visible by deafult.', MIGPAYMENTSWC ),
+						'required'  => false,
+						'default' => $this->cryptoCurrencies,
+						'class'             => 'wc-enhanced-select',
+						'css'               => 'width: 400px;',
+						'options' => $this->cryptoCurrencies,
+						'custom_attributes' => array(
+							'data-placeholder' => __( 'Select crypto currencies', MIGPAYMENTSWC ),
+						  ),
+					),
+					
 				);
 
 				return true;
@@ -259,14 +332,17 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				}
 				echo '<div class="form-row form-row-first">
 						<label>Choose Crypto Currency<span class="required">*</span></label>
-						<select id="crypto_currency" name="crypto_currency">
-
-							<option value="ETH">ETH</option>
-							<option value="BTC">BTC</option>
-							<option value="USDT">USDT</option>
-						</select>
-					</div>
+						<select id="crypto_currency" name="crypto_currency">';
 				
+				foreach($this->cryptoCurrencies as $k => $v)
+				{
+					echo '<option value="'. $k .'"> '. $v.' </option>';
+				}
+
+						 
+						
+				echo '	</select>
+						</div>
 					<div class="clear"></div>';
 			
 				do_action( 'woocommerce_crypto_payment_form_end', $this->id );
