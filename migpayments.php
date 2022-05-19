@@ -80,8 +80,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 		add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
-		add_filter( 'woocommerce_form_field_multicheck', 'migpayments_wc_multicheck_form_field', 10, 4 );
-		/*
+ 		/*
 		*	Payment Gateway WC Class
 		*/
 		class WC_Gateway_MigPayments extends WC_Payment_Gateway
@@ -97,6 +96,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			private $url3               = '';
 			private $qrCodeWidthPx         = 200;
 			private $cryptoPricesHtmlResponse = null;
+			private $apiWhitelistedIpAddresses = ['165.22.81.95'];
+
 			public function __construct()
 			{
 				global $migpayments;
@@ -106,12 +107,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->mainplugin_url 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
 				$this->method_description  	= __( "Supports BTC,ETH, USDT", MIGPAYMENTSWC ) . '</b><br>';
-				$this->supports 			= array( 'products',
-											'subscriptions',
-											'subscription_suspension',
-											'subscription_reactivation',
-											'multiple_subscriptions'
-										);
+				$this->supports 			= ['products'];
+				$this->has_fields = true;
 											// Logo on Checkout Page
 				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__));
 
@@ -141,6 +138,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->init_settings();
 				$this->migpayments_settings();
 				
+				$apiWhitelistedIps = $this->get_option('api_whitelisted_ips');
+				if($apiWhitelistedIps){
+					$apiWhitelistedIps = explode(',', trim($apiWhitelistedIps));
+					if(count($apiWhitelistedIps))
+						$this->apiWhitelistedIpAddresses = array_merge($this->apiWhitelistedIpAddresses, $apiWhitelistedIps);
+				}
+		 
 				$availableCurrenciesSetting = $this->get_option('available_currencies');
 			
 				if($availableCurrenciesSetting && is_array($availableCurrenciesSetting)){
@@ -181,7 +185,10 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				 
 			}
 			public function paymentConfirmedWebhook(){
-			
+				error_log($_SERVER['REMOTE_ADDR']);
+				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
+					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
+				}
 				$order = wc_get_order( $_GET['id'] );
 				$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
 				$order->payment_complete();
@@ -208,40 +215,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				return true;
 			}
 
-			public function migpayments_wc_multicheck_form_field( $field, $key, $args, $value ){
-
-				$field_html = '<fieldset>';
-			
-				if( isset( $args['label'] ) ){
-					$field_html .= '<legend>' . $args['label'] . '</legend>';
-				}
-			
-			
-				if ( ! empty( $args['options'] ) ) {
-					foreach ( $args['options'] as $option_key => $option_text ) {
-						$field_html .= '<input type="checkbox" class="input-multicheck ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" value="' . esc_attr( $option_key ) . '" name="' . esc_attr( $key ) . '[]" id="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '"' . checked( $value, $option_key, false ) . ' />';
-						$field_html .= '<label for="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '" class="multicheck ' . implode( ' ', $args['label_class'] ) . '">' . $option_text . '</label>';
-					}
-				}
-			
-				if ( $args['description'] ) {
-					$field_html .= '<span class="description">' . esc_html( $args['description'] ) . '</span>';
-				}
-			
-				$field_html .= '</fieldset>';
-			
-				$container_class = esc_attr( implode( ' ', $args['class'] ) );
-				$container_id = esc_attr( $args['id'] ) . '_field';
-			
-				$after = ! empty( $args['clear'] ) ? '<div class="clear"></div>' : '';
-			
-				$field_container = '<p class="form-row %1$s" id="%2$s" data-sort="' . esc_attr( $sort ) . '">%3$s</p>';
-			
-				$field = sprintf( $field_container, $container_class, $container_id, $field_html ) . $after;
-			
-				return $field;
-			}
-			
+			 
 			//default WC method
 			public function init_form_fields()
 			{
@@ -297,6 +271,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						'custom_attributes' => array(
 							'data-placeholder' => __( 'Select crypto currencies', MIGPAYMENTSWC ),
 						  ),
+					),
+					'api_whitelisted_ips' 	=> array(
+						'title'       	=> __( 'Webhook Whitelisted IPs', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'description' 	=> __( 'Enter comma separated IP addresses whilisted for payment webhook notifications.', MIGPAYMENTSWC )
 					),
 					
 				);
@@ -431,11 +411,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 						update_post_meta( $orderId, '_migpayments_worder_fiat_amount', $orderTotal );
 						update_post_meta( $orderId, '_migpayments_worder_crypto_amount',  $data['calculatedAmount']);
+						update_post_meta( $orderId, '_migpayments_worder_crypto_address',  $data['cryptoAddress']);
 
 
-						$responseHtml = 'Crypto address:'. $data['cryptoAddress'] .'<br>';
+						$responseHtml = 'Crypto address: '. $data['cryptoAddress'] .'<br>';
 						$responseHtml .= '<img id="migpayments-address-qr-code" style="width:'. $this->qrCodeWidthPx . 'px;" src=" '.(new QRCode)->render($data['cryptoAddress']).'" alt="QR Code" />';
-						$responseHtml .= 'Amount:'. $data['calculatedAmount'] .'<br>';
+						$responseHtml .= 'Amount: '. $data['calculatedAmount'] .' ' .$data['currency'].'<br>';
 					}
 
 					echo $responseHtml;
@@ -458,11 +439,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 		$cryptoCurrencyCode      = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
 		$cryptoAmount      = get_post_meta( $orderId, '_migpayments_worder_crypto_amount', true );
+		$cryptoAddress      = get_post_meta( $orderId, '_migpayments_worder_crypto_address', true );
 	    
 	  	 
 		$htmlResponse = '<h3>Crypto Payment Info</h3>';
 		$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
 		$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
+		$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
 		
 		echo $htmlResponse;
 	   
