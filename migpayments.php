@@ -176,14 +176,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				return true;
 			}
 			 
-			function migpayments_wc_validate($data, $errors = NULL   ){
-				if ( !isset( $data['crypto_curency'] ) ) {
-					wp_send_json_error( [ 'messages' => ['Crypto payment is not avaialble for '. $this->fiatCurrency .' shop currency.'], 'status' => 'notok' ] );
-					
-				 } 
-				//  wp_send_json_success(['success']);
-				 
-			}
+			 
 			public function paymentConfirmedWebhook(){
 				error_log($_SERVER['REMOTE_ADDR']);
 				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
@@ -298,29 +291,24 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				// Add this action hook if you want your custom payment gateway to support it
 				do_action( 'woocommerce_crypto_payment_form_start', $this->id );
 				
-				
-				
-
-				if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error)
-					echo $this->cryptoPricesHtmlResponse->data;
-			 
-			
-
+		 
 				if(!in_array($this->fiatCurrency, $this->fiatCurrencies)){
-					echo '<div class="wc-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
+					echo '<div class="woocommerce-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
 					return;
-				}
+				}  
+				
+				if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error)
+						echo $this->cryptoPricesHtmlResponse->data;
+				 
 				echo '<div class="form-row form-row-first">
 						<label>Choose Crypto Currency<span class="required">*</span></label>
 						<select id="crypto_currency" name="crypto_currency">';
 				
-				foreach($this->cryptoCurrencies as $k => $v)
-				{
-					echo '<option value="'. $k .'"> '. $v.' </option>';
-				}
-
-						 
-						
+					foreach($this->cryptoCurrencies as $k => $v)
+					{
+						echo '<option value="'. $k .'"> '. $v.' </option>';
+					}
+	
 				echo '	</select>
 						</div>
 					<div class="clear"></div>';
