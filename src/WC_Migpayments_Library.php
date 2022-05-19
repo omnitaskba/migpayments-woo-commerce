@@ -2,25 +2,29 @@
 
 class WC_Migpayments_Library {
 
-    private $baseUrl = 'http://mig.test:8888/api/v1/';
+    private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    private $baseUrl = 'https://migpayments.tech/api/v1/';
 
     private $http;
+    private $isSandbox;
 
-    public function __construct($http)
+    public function __construct($http, $isSandbox = false)
     {
         $this->http = $http;
+        $this->isSandbox = $isSandbox;
      
     }
     
-    public static function create()
+    public static function create($isSandbox = false)
     {
-        return new self(_wp_http_get_object());
+        return new self(_wp_http_get_object(), $isSandbox);
     }
  
 
     public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token)
     {
-        $url = $this->baseUrl . 'rest/get-payment-data';
+        $method = 'rest/get-payment-data';
+        $url = $this->getFullUrl($method);
         error_log($url);
         $data = [
             'shop_currency' => $fiatCurrencyCode,
@@ -39,8 +43,10 @@ class WC_Migpayments_Library {
 
     public function getCryptoPrices($total, $currencyCodes, $fiatCurrencyCode, $token)
     {
-        $url = $this->baseUrl . 'get-crypto-prices';
- 
+    
+        $method = 'get-crypto-prices';
+        $url = $this->getFullUrl($method);
+        error_log($url);
         $data = [
             'currencies' => implode(',', $currencyCodes),
             'shop_currency' => $fiatCurrencyCode,
@@ -50,6 +56,12 @@ class WC_Migpayments_Library {
 
         $response = $this->http->post($url, ['body' => $data]);
         return $this->processResults($response);
+    }
+
+    private function getFullUrl($method){
+        error_log($this->isSandbox);
+        $baseUrl = $this->isSandbox ? $this->sandboxUrl : $this->baseUrl;
+        return $baseUrl . $method;
     }
 
     private function processResults($response){

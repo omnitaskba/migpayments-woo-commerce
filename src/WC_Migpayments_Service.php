@@ -17,20 +17,20 @@ class WC_Migpayments_ServiceResponse
 class WC_Migpayments_Service
 {
  
-    public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token){
+    public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false){
         $error = null;
         $data = null;
-        $migpaymentsLibrary = WC_Migpayments_Library::create();
+        $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
     
         //now the logic
         try{
 			$response  = $migpaymentsLibrary->getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token);
-			$cryptoPricesHtml = '';
-
+		 
 			if(!$response['success'])
                 $error = 'Failed to get payment data.';
 
-            $data = $response['data'];
+            if(isset($response['data']))
+                $data = $response['data'];
 
         }catch(Exception $e){
          
@@ -40,10 +40,10 @@ class WC_Migpayments_Service
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
 
-    public static function getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token){
+    public static function getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
-        $migpaymentsLibrary = WC_Migpayments_Library::create();
+        $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
     
         //now the logic
         try{
@@ -52,7 +52,8 @@ class WC_Migpayments_Service
 			if(!$response['success'])
                 $error = 'Failed to get crypto prices.';
 
-            $data = $response['data'];
+            if(isset($response['data']))
+                $data = $response['data'];
 
         }catch(Exception $e){
          
@@ -62,13 +63,13 @@ class WC_Migpayments_Service
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
 
-    public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token){
+    public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
         $html = '';
         //now the logic
         try{
-			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token);
+			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
              if(!$response->error && isset($response->data['prices'])){
                  foreach($response->data['prices'] as $currencyCode => $price){
                      $html .=   $price . ' <b>' . $currencyCode. ' </b></br>';

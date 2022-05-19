@@ -109,11 +109,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 										);
 											// Logo on Checkout Page
 				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__));
-			 
-				$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token') );
-				
-				$enabled = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('enabled')==='') || $this->get_option('enabled') == 'yes' || $this->get_option('enabled') == '1' || $this->get_option('enabled') === true) ? true : false;
-	
+
+			
 				if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS') && defined('MIGPAYMENTS_ADMIN') && is_object($migpayments))
 				{
 						$this->cryptoCurrencies			= $migpayments->cryptoCurrencies(); 	// All Coins
@@ -138,6 +135,11 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->init_form_fields();
 				$this->init_settings();
 				$this->migpayments_settings();
+	
+ error_log($this->isSandbox);
+				if(WC()->cart)
+					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
+				
 	
 				//generate payment data
 				add_action( 'woocommerce_thankyou_migpaymentspayments', array( $this, 'getPaymentData' ) );
@@ -166,7 +168,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			{
 
 				// Define user set variables
-				$this->enabled          = $this->get_option( 'enabled' );
+				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
 				$this->apiToken          = $this->get_option( 'api_token' );
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
@@ -184,11 +186,11 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			{
 
 				$this->form_fields = array(
-					'enabled'		=> array(
-						'title'   	  	=> __( 'Enable/Disable', MIGPAYMENTSWC ),
+					'is_sandbox'		=> array(
+						'title'   	  	=> __( 'Sandbox Mode', MIGPAYMENTSWC ),
 						'type'    	  	=> 'checkbox',
 						'default'	  	=> (MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments'?'yes':'no'),
-						'label'   	  	=> sprintf(__( "Enable crypto payment method in WooCommerce", MIGPAYMENTSWC ), $this->url3)
+						'label'   	  	=> sprintf(__( "Choose to use sandbox or production enviroment", MIGPAYMENTSWC ), $this->url3)
 					),
 					'title'			=> array(
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
@@ -326,7 +328,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				{
 					
 				
-					$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken );
+					$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken, $this->isSandbox );
 					$responseHtml = '<div class="woocommerce-error">Failed to get crypto payment data.</div>';
 					
 					// $response['success'] = true;
