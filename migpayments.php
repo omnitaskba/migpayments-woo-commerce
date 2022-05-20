@@ -71,6 +71,27 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		return $methods;
 	}
 
+	// Admin Order details crypto payment info
+	function migpayments_wc_admin_order_stats( $order )
+	{
+ 
+		$orderId     = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
+		
+
+		$cryptoCurrencyCode      = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
+		$cryptoAmount      = get_post_meta( $orderId, '_migpayments_worder_crypto_amount', true );
+		$cryptoAddress      = get_post_meta( $orderId, '_migpayments_worder_crypto_address', true );
+		
+		   
+		$htmlResponse = '<h3>Crypto Payment Info</h3>';
+		$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
+		$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
+		$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
+		
+		echo $htmlResponse;
+	   
+		return;
+	}
 	 
 	function migpayments_wc_gateway_load()
 	{
@@ -89,7 +110,6 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			private $showCryptoPrices = true;
 			private $fiatCurrencies         = ['EUR', 'USD'];
 			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
-			private $availableCurrencies = [];
 			private $fiatCurrency = null;
 			private $mainplugin_url     = '';
 			private $url                = '';
@@ -108,30 +128,20 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
 				$this->method_description  	= __( "Supports BTC,ETH, USDT", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
-				$this->has_fields = true;
-											// Logo on Checkout Page
-				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__));
-
-			
-				if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS') && defined('MIGPAYMENTS_ADMIN') && is_object($migpayments))
+				$this->has_fields = false;
+				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__)); //Logo on Checkout Page
+				$this->fiatCurrency = get_woocommerce_currency();
+		 
+				if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS')  && is_object($migpayments))
 				{
-						$this->cryptoCurrencies			= $migpayments->cryptoCurrencies(); 	// All Coins
-						$this->languages			= $migpayments->languages(); 		// All Languages
-
+					$this->cryptoCurrencies			= $migpayments->cryptoCurrencies(); 	// All Coins
+					$this->languages			= $migpayments->languages(); 		// All Languages
+					$this->cryptoPricesHtmlResponse = $migpayments->cryptoPricesHtmlResponse();
 					$this->url		= MIGPAYMENTS_ADMIN.MIGPAYMENTS."settings";
 					$this->url2		= MIGPAYMENTS_ADMIN.MIGPAYMENTS."payments&s=migpaymentswoocommerce";
-					$this->url3		= MIGPAYMENTS_ADMIN.MIGPAYMENTS;
+					$this->url3		= MIGPAYMENTS_ADMIN.MIGPAYMENTS; 
 				}
-				else
-				{
-				
-					$this->url		= $this->mainplugin_url;
-					$this->url2		= $this->url;
-					$this->url3		= $this->url;
-					$this->cointxt 	= '<b>'.__( 'Please install MigPayments Gateway WP Plugin', MIGPAYMENTSWC ).' &#187;</b>';
-
-				}
-				$this->fiatCurrency = get_woocommerce_currency();
+				 
 	
 				// Load the settings.
 				$this->init_form_fields();
@@ -160,7 +170,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						$this->cryptoCurrencies = $availableCurrencies;
 				}
  
-				if(WC()->cart && $this->showCryptoPrices)
+				if(!$this->cryptoPricesHtmlResponse  || (WC()->cart && $this->showCryptoPrices && !$migpayments))
 					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
 				
 	
@@ -279,7 +289,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 			//default WC method
 			public function payment_fields() {
-	
+				global $migpayments;
 			
 				if ( $this->description ) {
 					echo wpautop( wp_kses_post( $this->description ) );
@@ -297,7 +307,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					return;
 				}  
 				
-				if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error)
+				if(($migpayments && $migpayments->cryptoPricesHtmlResponse() && !$migpayments->cryptoPricesHtmlResponse()->error)  || !$migpayments)
 						echo $this->cryptoPricesHtmlResponse->data;
 				 
 				echo '<div class="form-row form-row-first">
@@ -412,32 +422,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				
 				return  true;
 			}
-	
+			
+			
 		}
 		// end class WC_Gateway_MigPayments
-
-	}	
-
-	// Admin Order details crypto payment info
-  	function migpayments_wc_admin_order_stats( $order )
-	{
- 
-	    $orderId     = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
-	    
-
-		$cryptoCurrencyCode      = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
-		$cryptoAmount      = get_post_meta( $orderId, '_migpayments_worder_crypto_amount', true );
-		$cryptoAddress      = get_post_meta( $orderId, '_migpayments_worder_crypto_address', true );
-	    
-	  	 
-		$htmlResponse = '<h3>Crypto Payment Info</h3>';
-		$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
-		$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
-		$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
-		
-		echo $htmlResponse;
-	   
-		return;
-	}
- 
+ 	}
 }
