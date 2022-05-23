@@ -413,10 +413,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						update_post_meta( $orderId, '_migpayments_worder_crypto_amount',  $data['calculatedAmount']);
 						update_post_meta( $orderId, '_migpayments_worder_crypto_address',  $data['cryptoAddress']);
 
-
-						$responseHtml = 'Crypto address: '. $data['cryptoAddress'] .'<br>';
-						$responseHtml .= '<img id="migpayments-address-qr-code" style="width:'. $this->qrCodeWidthPx . 'px;" src=" '.(new QRCode)->render($data['cryptoAddress']).'" alt="QR Code" />';
-						$responseHtml .= 'Amount: '. $data['calculatedAmount'] .' ' .$data['currency'].'<br>';
+                        $responseHtml = '<h1 class="entry-title">Payment instructions</h1>';
+						$responseHtml .= '<strong>Please send whole amount in ONE transaction.</strong></br>';
+						$responseHtml .= '<strong>Please add the mining fee on top of the displayed amount.</strong></br><hr>';
+						$responseHtml .= 'Send transaction to this address: <strong>'. $data['cryptoAddress'] .'</strong><br>';
+						$responseHtml .= 'Send this exact amount: <strong>'. $data['calculatedAmount'] .' ' .$data['currency'].'</strong><br>';
+						$responseHtml .= 'You can scan the QR Code below with your cryptocurrency wallet to get the payment address<br>';
+						$responseHtml .= '<div text-align="center"> <img id="migpayments-address-qr-code" style="width:'. $this->qrCodeWidthPx . 'px;" src=" '.(new QRCode)->render($data['cryptoAddress']).'" alt="QR Code" /></div>';
 					}
 
 					echo $responseHtml;
