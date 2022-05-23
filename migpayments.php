@@ -117,7 +117,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			private $qrCodeWidthPx         = 200;
 			private $cryptoPricesHtmlResponse = null;
 			private $apiWhitelistedIpAddresses = ['165.22.81.95'];
-
+			private $isRefreshing = false;
 			public function __construct()
 			{
 				global $migpayments;
@@ -128,7 +128,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
 				$this->method_description  	= __( "Supports BTC,ETH, USDT", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
-				$this->has_fields = false;
+				$this->has_fields = true;
 				$this->icon = apply_filters('woocommerce_migpaymentspayments_icon', plugins_url("/assets/img/logo.png", __FILE__)); //Logo on Checkout Page
 				$this->fiatCurrency = get_woocommerce_currency();
 		 
@@ -136,13 +136,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				{
 					$this->cryptoCurrencies			= $migpayments->cryptoCurrencies(); 	// All Coins
 					$this->languages			= $migpayments->languages(); 		// All Languages
-					$this->cryptoPricesHtmlResponse = $migpayments->cryptoPricesHtmlResponse();
 					$this->url		= MIGPAYMENTS_ADMIN.MIGPAYMENTS."settings";
 					$this->url2		= MIGPAYMENTS_ADMIN.MIGPAYMENTS."payments&s=migpaymentswoocommerce";
 					$this->url3		= MIGPAYMENTS_ADMIN.MIGPAYMENTS; 
 				}
 				 
-	
+				 if(isset($_REQUEST['wc-ajax'])){
+					 $this->isRefreshing = true;
+					 
+				 }
 				// Load the settings.
 				$this->init_form_fields();
 				$this->init_settings();
@@ -169,8 +171,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					if(count($availableCurrencies))
 						$this->cryptoCurrencies = $availableCurrencies;
 				}
- 
-				if(!$this->cryptoPricesHtmlResponse  || (WC()->cart && $this->showCryptoPrices && !$migpayments))
+ error_log('IS REWFRE'.$this->isRefreshing );
+				if((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || (WC()->cart && $this->showCryptoPrices))
 					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
 				
 	
@@ -307,7 +309,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					return;
 				}  
 				
-				if(($migpayments && $migpayments->cryptoPricesHtmlResponse() && !$migpayments->cryptoPricesHtmlResponse()->error)  || !$migpayments)
+				if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error && $this->cryptoPricesHtmlResponse->data)
 						echo $this->cryptoPricesHtmlResponse->data;
 				 
 				echo '<div class="form-row form-row-first">
