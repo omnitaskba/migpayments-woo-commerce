@@ -47,11 +47,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	  if (!$pageExists) {
 		wp_insert_post ([
 			'post_type' =>'page',
+			'post_status' => 'private',
 			'post_title' => 'Migpayments - Payment Instructions' ,       
 			'post_name' => $page_name,
 			'post_status' => 'publish',
 			'post_type' => 'page',
-			'meta_input' => ['_visibility' => 'private']
+			'meta_input' => ['visibility' => 'private']
 		]);
 	  }
 	}
@@ -173,7 +174,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$this->method_description  	= __( "Supports BTC,ETH, USDT", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
 				$this->has_fields = true;
-				$this->icon = apply_filters('woocommerce'. $this->id.'icon', plugins_url("/assets/img/logo.png", __FILE__)); //Logo on Checkout Page
+				$this->icon = apply_filters('woocommerce'. $this->id.'icon', plugins_url("/assets/img/currencies.png", __FILE__)); //Logo on Checkout Page
 				$this->fiatCurrency = get_woocommerce_currency();
 		 
 				if (class_exists('migpaymentsclass') && defined('MIGPAYMENTS')  && is_object($migpayments))
