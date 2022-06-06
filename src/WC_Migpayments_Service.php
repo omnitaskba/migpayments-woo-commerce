@@ -77,16 +77,16 @@ class WC_Migpayments_Service
     public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
-        $html = '';
+        $html = '<div id="wc-migpayments-crypto-estimate-wrapper">';
         //now the logic
         try{
 			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
              if(!$response->error && isset($response->data['prices'])){
                  foreach($response->data['prices'] as $currencyCode => $price){
-                     $html .=   $price . ' <b>' . $currencyCode. ' </b></br>';
+                     $html .=  '<div>'. $price . ' ' . $currencyCode. '</div>';
                  }
              }
-             $html .= '<hr>';
+             $html .= '</div>';
              $data = $html;
         }catch(Exception $e){
           

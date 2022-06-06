@@ -411,8 +411,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 						echo $this->cryptoPricesHtmlResponse->data;
 				 
 				echo '<div class="form-row form-row-first">
-						<label>Choose Crypto Currency<span class="required">*</span></label>
-						<select id="crypto_currency" name="crypto_currency">';
+						<label id="wc-migpayments-crypto-currency-select-label">Choose Crypto Currency<span class="required">*</span></label>
+						<select id="wc-migpayments-crypto-currency-select" name="crypto_currency">';
 				
 					foreach($this->cryptoCurrencies as $k => $v)
 					{
