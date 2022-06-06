@@ -17,14 +17,14 @@ class WC_Migpayments_ServiceResponse
 class WC_Migpayments_Service
 {
  
-    public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false){
+    public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
         $error = null;
         $data = null;
         $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
     
         //now the logic
         try{
-			$response  = $migpaymentsLibrary->getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token);
+			$response  = $migpaymentsLibrary->getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData);
 		 
 			if(!$response['success']){
                 $error = 'Failed to get payment data.';

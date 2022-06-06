@@ -27,7 +27,11 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_action( 'plugins_loaded', 		'migpayments_wc_gateway_load', 20 );
 		add_filter( 'plugin_action_links', 	'migpayments_wc_action_links', 10, 2 );
 		add_action( 'wp_head', 'migpayments_wc_style' );
-		add_filter( 'page_template', 'wc_migpayments_page_template' );
+		add_action('wp_enqueue_scripts','migpayments_wc_scripts');
+		add_filter( 'page_template', 'migpayments_wc_page_template' );
+		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
+		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
+
 		register_activation_hook(__FILE__, 'myplugin_activate'); 
 	}
 	
@@ -58,10 +62,41 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	}
 	function migpayments_wc_style() {
 		wp_enqueue_style('migpayments_wc_style', WP_PLUGIN_URL. '/migpayments/assets/css/migpayments_style.css');
-	 }
+
+	}
 	
+	function migpayments_wc_scripts(){
+		if ( is_page( 'migpayments-payment-instructions' ) ) {
+
+			wp_register_script( 'redirect-js',  WP_PLUGIN_URL. '/migpayments/assets/js/migpayments_scripts.js' );
+
+			wp_localize_script( 
+				'redirect-js', 
+				'ajaxObj', 
+				array( 
+					'ajaxurl' => admin_url( 'admin-ajax.php' ) ,
+					'orderId' => $_GET['orderId'],
+					'redirectUrl' => $_GET['success_url']
+				)
+			);
+		
+			wp_enqueue_script( 'redirect-js' );
+		 
+		} 
+ 
+	}
 	
-	 function wc_migpayments_page_template( $page_template )
+
+	function migpayments_wc_asyncCheckPaymentStatus() {
+		global $migpayments;  
+		error_log('check payment status');
+		$status      = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_payment_status', true );
+		if($status === 'Completed')
+			wp_send_json('success');
+		wp_send_json($status, 406);
+	}
+	
+	 function migpayments_wc_page_template( $page_template )
 	 {
 		 if ( is_page( 'migpayments-payment-instructions' ) ) {
 			 $page_template = dirname( __FILE__ ) . '/redirect.php';
@@ -110,12 +145,14 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		$orderId     = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
 		
 
+		$status      = get_post_meta( $orderId, '_migpayments_worder_crypto_payment_status', true );
 		$cryptoCurrencyCode      = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
 		$cryptoAmount      = get_post_meta( $orderId, '_migpayments_worder_crypto_amount', true );
 		$cryptoAddress      = get_post_meta( $orderId, '_migpayments_worder_crypto_address', true );
 		
 		   
 		$htmlResponse = '<h3>Crypto Payment Info</h3>';
+		$htmlResponse .= 'Payment Status: '. $status . '<br>';
 		$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
 		$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
 		$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
@@ -230,21 +267,44 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 				//payment confirmed webhook
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
+				add_action( 'woocommerce_api_crypto-partial-payment', array( $this, 'partialPaymentWebhook' ) );
 			 
 				return true;
 			}
 			 
 			 
 			public function paymentConfirmedWebhook(){
-				error_log($_SERVER['REMOTE_ADDR']);
+			 
 				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
 					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
 				}
+				
 				$order = wc_get_order( $_GET['id'] );
 				$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
+				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Completed');
+ 
 				$order->payment_complete();
 			
 				wp_send_json('success');
+			}
+
+			public function partialPaymentWebhook(){
+			    
+				// $parameters = json_decode( $request->get_body(), true);
+				
+				$data = json_decode(file_get_contents('php://input'), true);
+			 
+				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
+					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
+				}
+
+				$order = wc_get_order( $_GET['id'] );
+				// $order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
+				// $order->payment_complete();
+				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Partially paid');
+
+				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' '.$data['crypto_currency']. '.');
+ 				wp_send_json('success');
 			}
 
 			
@@ -391,6 +451,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 				if (!get_post_meta( $orderId, '_migpayments_worder_orderid', true ))
 				{
+ 	
+					update_post_meta( $orderId, '_migpayments_worder_crypto_payment_status', 'Pending');
 					update_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', 	    $_POST['crypto_currency'] );
 					update_post_meta( $orderId, '_migpayments_worder_orderid', 	    $orderId );
 					update_post_meta( $orderId, '_migpayments_worder_userid', 	    $userID );
@@ -400,7 +462,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 					update_post_meta( $orderId, '_migpayments_worder_created',      gmdate("d M Y, H:i") );
 		
 				}
-		
+			 
 				// Empty cart
 				WC()->cart->empty_cart();
 				
@@ -422,9 +484,13 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 						$currencyCode = $response->data['currency'];
 					}
 				}
+
+				update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $cryptoAmount );
+				update_post_meta( $orderId, '_migpayments_worder_crypto_address', $cryptoAddress );
+
 				return array(
 					'result' => 'success',
-					'redirect' => site_url('migpayments-payment-instructions?address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&success_url='. $this->get_return_url($order))
+					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&success_url='. $this->get_return_url($order))
 				);
 				
 				// Return redirect
@@ -443,8 +509,16 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
 				$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
 				$cryptoCurrencyCode = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
+					 
+				$user = $order->get_user();
 
-				$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken, $this->isSandbox );
+				$orderData = [
+					'customer_email_address' =>  $user ? $user->user_email : null,
+					'customer_username' =>  $user ? $user->user_login . '('. $user->display_name . ')' : null,
+				 
+					
+				];
+				$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken, $this->isSandbox , $orderData );
 
 				
 				return  $response;

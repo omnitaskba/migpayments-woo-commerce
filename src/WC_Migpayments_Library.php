@@ -2,7 +2,8 @@
 
 class WC_Migpayments_Library {
 
-    private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    // private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    private $sandboxUrl = 'http://mig.test:8888/api/v1/';
     private $baseUrl = 'https://migpayments.tech/api/v1/';
 
     private $http;
@@ -21,7 +22,7 @@ class WC_Migpayments_Library {
     }
  
 
-    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token)
+    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [])
     {
         $method = 'rest/get-payment-data';
         $url = $this->getFullUrl($method);
@@ -33,8 +34,10 @@ class WC_Migpayments_Library {
             'amount' => $total,
             'payment_confirmed' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
             'notification_url' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
+            'partial_payment_url' => get_site_url().'/wc-api/crypto-partial-payment?id='. $orderNumber,
             'order_number' => $orderNumber,
-            'plugin' => 'wordpress'
+            'plugin' => 'wordpress',
+            'order_data' => $orderData
         ];
 
         $response = $this->http->post($url, ['body' => $data]);
