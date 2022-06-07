@@ -1,53 +1,57 @@
- 
+<?php use chillerlan\QRCode\QRCode;  ?>
+   
  <!DOCTYPE html>
  <html>
- <head>
-     <title>Migpayments</title>
-  </head>
- <body >
-  
-  <?php
+    <head>
+        <title><?php echo the_title() ?></title>
+    </head>
+    <body>
+        <?php get_header(); ?>
 
-  use chillerlan\QRCode\QRCode;
-  
-  get_header();
-  ?>
+        <div id="wc-migpayments-primary" class="content-area">
+            <main id="wc-migpayments-main" class="site-main" role="main">
+                <header>
+                    <h1 id="wc-migpayments-payment-data-title" class="entry-title"> <?php echo the_title() ?></h1>
+                </header>
+        <?php global $paymentDataPageTitle; echo $paymentDataPageTitle;?>
+                <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
+        
+                    <div id="wc-migpayments-page-content">
+                        <?php echo the_content();?>
+                    </div> 
+                 
+                    <div id="wc-migpayments-payment-data">
+                        <div class="wc-migpayments-crypto-address-wrapper">
+                            <span class="wc-migpayments-crypto-address-label">Send transaction to this address:</span>  
+                            <span class="wc-migpayments-crypto-address">
+                                <?php echo  $_GET['address'];?>
+                            </span>
+                        </div>  
+                        <div class="wc-migpayments-crypto-amount-wrapper">
+                            <span class="wc-migpayments-crypto-amount-label">Send this exact amount: </span>  
+                            <span class="wc-migpayments-crypto-amount">
+                                <?php echo  $_GET['amount'];?>  <?php echo  $_GET['currency'];?>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div  id="wc-migpayments-address-qr-code-wrapper">  
+                        <img id="wc-migpayments-address-qr-code" style="width:300px;" src="<?php echo (new QRCode())->render($_GET['address'])?>" alt="QR Code" /> 
+                    </div>
+                <?php else: ?>
+                <div id="wc-migpayments-payment-data-error" class="woocommerce-error">Failed to get crypto payment data.</div>
+                <?php endif; ?>
 
-<div id="wc-migpayments-primary" class="content-area">
-			<main id="wc-migpayments-main" class="site-main" role="main">
-        <header>
-          <h1 id="wc-migpayments-payment-data-title" class="entry-title">Payment instructions</h1>
-        </header>
-
-        <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
-          
-        <strong>Please send whole amount in ONE transaction.</strong></br>
-        <strong>Please add the mining fee on top of the displayed amount.</strong></br><hr>
-
-
-          Send transaction to this address: <strong> <?php echo  $_GET['address'];?></strong> <br>
-          Send this exact amount: <strong> <?php echo  $_GET['amount'];?>  <?php echo  $_GET['currency'];?> </strong><br>
-          
-          <div text-align="center" id="wc-migpayments-address-qr-code-wrapper">  
-            <img id="wc-migpayments-address-qr-code" style="width:300px;" src="<?php echo (new QRCode())->render($_GET['address'])?>" alt="QR Code" /> 
+                <div  id="wc-migpayments-review-order-button-wrapper">
+                    <a id="wc-migpayments-review-order-button" class="button" href="<?php echo $_GET['success_url'] ;?>">
+                        Review Order
+                    </a>
+                </div>
+            </main> 
         </div>
-        <?php else: ?>
-          <div id="wc-migpayments-payment-data-error" class="woocommerce-error">Failed to get crypto payment data.</div>
-        <?php endif; ?>
-
-          <div  id="wc-review-order-button-wrapper">
-            <a id="wc-review-order-button" class="button" href="<?php echo $_GET['success_url'] ;?>">
-              Review Order
-            </a>
-          </div>
-      
-      
-    </main><!-- #main -->
-</div>
-</body>
-        </html>
+    </body>
+</html>
  
-  <?php
-  get_sidebar();
-  get_footer();
- 
+<?php
+get_sidebar();
+get_footer();

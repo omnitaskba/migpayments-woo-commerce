@@ -30,7 +30,7 @@ class WC_Migpayments_Service
                 $error = 'Failed to get payment data.';
                 error_log($error);
             }
-            if(isset($response['data']));
+            if(isset($response['data']) && !empty($response['data']));
                 $data = $response['data'];
              
 
@@ -38,9 +38,7 @@ class WC_Migpayments_Service
          
             $error = 'Failed to get payment datae.';
         }
-        if($error){
-            error_log($error);
-        }
+         
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
 
@@ -58,7 +56,7 @@ class WC_Migpayments_Service
                  
             }
              
-            if(isset($response['data']));
+            if(isset($response['data']) && !empty($response['data']))
                 $data = $response['data'];
              
 
@@ -67,10 +65,7 @@ class WC_Migpayments_Service
             $error = 'Failed  to get crypto prices.';
         }
         
-        if($error){
-            error_log($error);
-        }
-
+       
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
 
@@ -83,7 +78,7 @@ class WC_Migpayments_Service
 			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
              if(!$response->error && isset($response->data['prices'])){
                  foreach($response->data['prices'] as $currencyCode => $price){
-                     $html .=  '<div>'. $price . ' ' . $currencyCode. '</div>';
+                     $html .=  '<div><span class="wc-migpayments-crypto-total">'. $price . '</span> <span class="wc-migpayments-currency-symbol">' . $currencyCode. '</span></div>';
                  }
              }
              $html .= '</div>';
@@ -92,9 +87,6 @@ class WC_Migpayments_Service
           
             $error = 'Failed  to get crypto prices html.';
         }
-        
-        if($error)
-            error_log($error);
         
         return new WC_Migpayments_ServiceResponse($error, $data);
     }

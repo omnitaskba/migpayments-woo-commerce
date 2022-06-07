@@ -17,9 +17,13 @@ setInterval(function(){
     try {
        
         const fetchResponse = fetch(ajaxObj.ajaxurl, settings);
-        
-       window.location.href = ajaxObj.redirectUrl;
-       console.log(ajaxObj.redirectUrl);
+       
+
+        const data = fetchResponse.json();
+        console.log(data)
+        if(data.redirect)
+            window.location.href = ajaxObj.redirectUrl;
+      
     } catch (e) {
         
     }       

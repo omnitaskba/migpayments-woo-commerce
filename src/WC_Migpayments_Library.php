@@ -2,7 +2,8 @@
 
 class WC_Migpayments_Library {
 
-    private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    // private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    private $sandboxUrl = 'http://mig.test:8888/api/v1/';
     private $baseUrl = 'https://migpayments.tech/api/v1/';
 
     private $http;
@@ -25,7 +26,7 @@ class WC_Migpayments_Library {
     {
         $method = 'rest/get-payment-data';
         $url = $this->getFullUrl($method);
-        error_log($url);
+       
         $data = [
             'shop_currency' => $fiatCurrencyCode,
             'selected_currency' => $currencyCode,
@@ -48,7 +49,7 @@ class WC_Migpayments_Library {
     
         $method = 'get-crypto-prices';
         $url = $this->getFullUrl($method);
-        error_log($url);
+        
         $data = [
             'currencies' => implode(',', $currencyCodes),
             'shop_currency' => $fiatCurrencyCode,
@@ -61,7 +62,7 @@ class WC_Migpayments_Library {
     }
 
     private function getFullUrl($method){
-        error_log($this->isSandbox);
+       
         $baseUrl = $this->isSandbox ? $this->sandboxUrl : $this->baseUrl;
         return $baseUrl . $method;
     }
@@ -77,7 +78,7 @@ class WC_Migpayments_Library {
 
         $data  = is_array($response) &&  isset($response['body']) ? json_decode($response['body'], true) : [];
 
-        if(isset($data['data'])){
+        if(isset($data['data'] ) && !empty($data['data'])){
             $data = $data['data'];
         }
         return [
