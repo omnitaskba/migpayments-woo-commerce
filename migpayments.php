@@ -17,7 +17,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 {
 	global $paymentDataPageTitle;
 	global $redirectBtnText;
-	
+	global $migpayments;
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
 	DEFINE('MIGPAYMENTSWC_VERSION', '1.3.8');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
@@ -135,6 +135,38 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 		return $links;
 	}
+	
+	function migpayments_wc_get_redirectBtnText() {
+		global $migpayments;
+		$migpayments = new WC_Gateway_MigPayments();
+		echo $migpayments->redirectBtnText;
+
+	}
+
+	function migpayments_wc_get_cryptoAmountLabelTxt() {
+		global $migpayments;
+		$migpayments = new WC_Gateway_MigPayments();
+		echo $migpayments->cryptoAmountLabelTxt;
+
+	}
+
+	function migpayments_wc_get_cryptoAddressLabelTxt() {
+		global $migpayments;
+		$migpayments = new WC_Gateway_MigPayments();
+		echo $migpayments->cryptoAddressLabelTxt;
+
+	}
+
+	function migpayments_wc_get_paymentDataErrorTxt() {
+		global $migpayments;
+		$migpayments = new WC_Gateway_MigPayments();
+		echo $migpayments->paymentDataErrorTxt;
+
+	}
+
+
+	
+	
 
 	function migpayments_wc_gateway_add( $methods )
 	{
@@ -205,10 +237,15 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			private $cryptoPricesHtmlResponse = null;
 			private $apiWhitelistedIpAddresses = ['165.22.81.95'];
 			private $isRefreshing = false;
-
+			public $redirectBtnText = 'I have sent the payment';
+			public $cryptoAddressLabelTxt = 'Send transaction to this address: ';
+			public $cryptoAmountLabelTxt = 'Send this exact amount:';
+			public $paymentDataErrorTxt = 'Failed to get crypto payment data.';
+			
 			public function __construct()
 			{
 				global $migpayments;
+			
 			 
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainplugin_url 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
@@ -277,6 +314,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				return true;
 			}
 			 
+
 			 
 			public function paymentConfirmedWebhook(){
 			 
@@ -320,6 +358,10 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$this->apiToken          = $this->get_option( 'api_token' );
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
+				$this->redirectBtnText      =$this->get_option( 'redirect_button_txt' ) && $this->get_option( 'redirect_button_txt' ) != '' ? $this->get_option( 'redirect_button_txt' ) : $this->redirectBtnText;
+				$this->cryptoAddressLabelTxt      =$this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
+				$this->cryptoAmountLabelTxt      =$this->get_option( 'redirect_button_txt' ) && $this->get_option( 'redirect_button_txt' ) != '' ? $this->get_option( 'redirect_button_txt' ) : $this->cryptoAmountLabelTxt;
+				$this->paymentDataErrorTxt      =$this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
 				
 				return true;
 			}
@@ -328,7 +370,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			//default WC method
 			public function init_form_fields()
 			{
- 
+			 
+			 
 				$this->form_fields = array(
 					'is_sandbox'		=> array(
 						'title'   	  	=> __( 'Sandbox Mode', MIGPAYMENTSWC ),
@@ -348,7 +391,31 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 						'default'     	=> __( 'Secure, anonymous payment with virtual currency.', MIGPAYMENTSWC),
 						'description' 	=> __( 'Payment method description that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
-				
+					'redirect_button_txt'			=> array(
+						'title'       	=> __( 'Redirect Button Text', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> __( 'I have sent the payment', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Payment success redirect button  text placed on payment instructions page.', MIGPAYMENTSWC )
+					),
+					'crypto_address_label_txt'			=> array(
+						'title'       	=> __( 'Crypto Address Label Text', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> __( 'Send transaction to this address:', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Crypto address label text placed on payment instructions page.', MIGPAYMENTSWC )
+					),
+					'crypto_amount_label_txt'			=> array(
+						'title'       	=> __( 'Crypto Amount Label Text', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> __( 'Send this exact amount: ', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Crypto amount label text placed on payment instructions page.', MIGPAYMENTSWC )
+					),
+					'payment_data_error_txt' 	=> array(
+						'title'       	=> __( 'Payment Data Error Text', MIGPAYMENTSWC ),
+						'type'        	=> 'textarea',
+						'default'     	=> __( 'Failed to get crypto payment data.', MIGPAYMENTSWC),
+						'description' 	=> __( 'Error text show on payment instructions pages', MIGPAYMENTSWC )
+					),
+					
 					'api_token' 	=> array(
 						'title'       	=> __( 'Migpayments API Token', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
