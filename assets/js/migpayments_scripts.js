@@ -14,19 +14,15 @@ setInterval(function(){
         body: params,
         credentials: 'same-origin',
     };
-    try {
-       
-        const fetchResponse = fetch(ajaxObj.ajaxurl, settings);
-       
 
-        const data = fetchResponse.json();
-        console.log(data)
-        if(data.redirect)
+    const fetchResponse = fetch(ajaxObj.ajaxurl, settings).then(response => response.json()).then(data => {
+        if(data.redirect == true)
             window.location.href = ajaxObj.redirectUrl;
-      
-    } catch (e) {
-        
-    }       
+    }).catch(e => {
+        console.log(e)
+    });
+       
+  
  }, 5000);
 
   
