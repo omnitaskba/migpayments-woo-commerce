@@ -17,7 +17,12 @@
                 <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
     
                     <div id="wc-migpayments-page-content">
-                        <?php echo the_content();?>
+                        <p>
+                            Please send whole amount in ONE transaction.
+                            <br>
+                            Please add the mining fee on top of the displayed amount.
+                        </p>
+
                     </div> 
                  
                     <div id="wc-migpayments-payment-data">
