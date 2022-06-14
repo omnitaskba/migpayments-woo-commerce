@@ -18,6 +18,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $paymentDataPageTitle;
 	global $redirectBtnText;
 	global $migpayments;
+	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
 	DEFINE('MIGPAYMENTSWC_VERSION', '1.3.8');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
