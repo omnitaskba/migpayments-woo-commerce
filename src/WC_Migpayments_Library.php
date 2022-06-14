@@ -2,8 +2,7 @@
 
 class WC_Migpayments_Library {
 
-    // private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
-    private $sandboxUrl = 'http://mig.test:8888/api/v1/';
+    private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
     private $baseUrl = 'https://migpayments.tech/api/v1/';
 
     private $http;
