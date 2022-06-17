@@ -361,7 +361,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$this->description      = $this->get_option( 'description' );
 				$this->redirectBtnText      =$this->get_option( 'redirect_button_txt' ) && $this->get_option( 'redirect_button_txt' ) != '' ? $this->get_option( 'redirect_button_txt' ) : $this->redirectBtnText;
 				$this->cryptoAddressLabelTxt      =$this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
-				$this->cryptoAmountLabelTxt      =$this->get_option( 'redirect_button_txt' ) && $this->get_option( 'redirect_button_txt' ) != '' ? $this->get_option( 'redirect_button_txt' ) : $this->cryptoAmountLabelTxt;
+				$this->cryptoAmountLabelTxt      =$this->get_option( 'crypto_amount_label_txt' ) && $this->get_option( 'crypto_amount_label_txt' ) != '' ? $this->get_option( 'crypto_amount_label_txt' ) : $this->cryptoAmountLabelTxt;
 				$this->paymentDataErrorTxt      =$this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
 				
 				return true;
