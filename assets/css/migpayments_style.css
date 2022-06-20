@@ -4,6 +4,7 @@
  }
  #wc-migpayments-review-order-button-wrapper, #wc-migpayments-payment-data {
  text-align: center;
+ margin:1em;
 }
 
 #wc-migpayments-crypto-estimate-wrapper{
@@ -12,4 +13,22 @@
 }
 #wc-migpayments-crypto-estimate-wrapper .wc-migpayments-currency-symbol{
    font-weight: bold;
+}
+#wc-migpayments-review-order-button{
+    background-color: #F7941E;
+    padding: 0.6180469716em 1.41575em;
+    border-radius: 8px;
+    color:#FFFFFF;
+}
+#wc-migpayments-primary{
+    text-align: center;
+}
+
+#wc-migpayments-address-qr-code{
+    border: 1px solid #eeee;
+}
+#wc-migpayments-payment-data-title{
+    font-size: 2.617924em;
+    line-height: 1.214;
+    letter-spacing: -1px;
 }
