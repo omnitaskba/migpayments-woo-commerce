@@ -231,6 +231,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 		{
 			private $isSandbox  = true;
 			private $showCryptoPrices = true;
+			private $apiToken = null;
 			private $fiatCurrencies         = ['EUR', 'USD'];
 			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
 			private $fiatCurrency = null;
@@ -506,7 +507,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$orderId    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
 				$userID      = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->user_id     : $order->get_user_id();
 					
-				$order->update_status('pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
+				$order->update_status('Pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
 
 			
 				// Payment Page
