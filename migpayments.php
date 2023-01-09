@@ -86,7 +86,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			);
 		
 			wp_enqueue_script( 'redirect-js' );
-		 
+			wp_register_style('wc-migpayments_bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css');
+			wp_enqueue_style('wc-migpayments_bootstrap');
 		} 
  
 	}
@@ -96,9 +97,23 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		global $migpayments;  
 	 
 		$status      = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_payment_status', true );
+		$currencyCode = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_currency_code', true );
+		$data  = [
+			'status' => $status,
+			'currency_code' => $currencyCode
+		];
+
 		if($status === 'Completed')
-			wp_send_json(['redirect' => true]);
-		wp_send_json($status, 406);
+		{
+			$data['redirect'] = true;
+		}
+
+		if($status === 'Partially paid'){
+			$data['partial_payments'] =  get_post_meta($_POST['order_id'], '_migpayments_worder_partial_payments');
+		 
+		}
+		
+		wp_send_json($data);
 	}
 	
 	 function migpayments_wc_page_template( $page_template )
@@ -343,9 +358,20 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$data = json_decode(file_get_contents('php://input'), true);
 
 				$order = wc_get_order( $_GET['id'] );
-				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' '.$data['crypto_currency']. '.', true);
+				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
 
 				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Partially paid');
+
+				$partialPayments = 	get_post_meta( $order->get_id(), '_migpayments_worder_partial_payments');
+				if(!$partialPayments){
+					$partialPayments = [
+						$data['amount']
+					];
+				} else {
+					$partialPayments[] = $data['amount'];
+				}
+
+				update_post_meta( $order->get_id(), '_migpayments_worder_partial_payments', $partialPayments);
 
  				wp_send_json('success');
 			}

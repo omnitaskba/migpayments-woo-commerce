@@ -1,7 +1,7 @@
 setInterval(function(){ 
     
     const data = new FormData();
-   
+    var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
     data.append( 'action', 'migpayments_wc_check_payment_status' );
     data.append( 'order_id', ajaxObj.orderId);
     const params = new URLSearchParams(data);
@@ -16,8 +16,15 @@ setInterval(function(){
     };
 
     const fetchResponse = fetch(ajaxObj.ajaxurl, settings).then(response => response.json()).then(data => {
-        if(data.redirect == true)
+        console.log(data);
+        //Payment confirmed
+        if(data.redirect == true){
             window.location.href = ajaxObj.redirectUrl;
+        } else{  //PartialPayment
+            // each payments
+            partialPaymentsEl.innerHTML = ('<div>Partial payment received: <b>' + data.partial_payment_amount  + ' ' + data.currency_code  + '</b></div>')
+        }
+           
     }).catch(e => {
         console.log(e)
     });

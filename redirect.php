@@ -13,22 +13,23 @@
             .order-details {
                 background-color: #f4f4f4;
                 text-align: left;
-                padding: 20px 100px;
+                /* padding: 20px 100px; */
+                padding:20px;
                 height: 100vh;
                 position: relative;
             }
-            .outer-card{
+            /* .outer-card{
                 position: absolute;
                 top: 40%;
                 transform: translateY(-50%);
                 left: 18%;
-            }
+            } */
             .order-card {
                 background-color: #eaeaea;
                 padding: 10px 20px;
                 border-top-right-radius: 10px;
                 border-top-left-radius: 10px;
-                width: 400px;
+                /* width: 400px; */
             }
             .card-title {
                 display: flex;
@@ -66,19 +67,19 @@
             }
             #afg_maindiv{
                 width: 80% !important;
-                margin: 70px auto !important;
+                /* margin: 70px auto !important; */
                 border-radius: 10px;
 				background: #eeeeee;
 				padding-top: 20px;
 				padding-bottom: 15px;
             }
 			input#myInput {
-    color: black;
-    width: 60%;
-    background-color: #eeee;
-    border: 1px;
-    height: 25px;
-}
+                color: black;
+                width: 60%;
+                background-color: #eeee;
+                border: 1px;
+                height: 25px;
+            }
             .send-payment-top{
                 text-align: left;
                 padding: 0 20px;
@@ -143,116 +144,116 @@
             }
 			.afg_databtn{
 				text-align:right !important;
-			}
-button.afg_bntcopy {
-    font-size: 12px !important;
-    padding: unset;
-    color: black !important; 
-    background: #eeee !important;
-    text-transform: capitalize !important;
-    padding: 4px !important;
-}		
-			
-.afg_crypto_address, .afg_currency_text, .afg_amountdata, .afg_cryptocode{
-    text-align: left;
-}
+            }
+            button.afg_bntcopy {
+                font-size: 12px !important;
+                padding: unset;
+                color: black !important; 
+                background: #eeee !important;
+                text-transform: capitalize !important;
+                padding: 4px !important;
+            }		
+                        
+            .afg_crypto_address, .afg_currency_text, .afg_amountdata, .afg_cryptocode{
+                text-align: left;
+            }
 
-span.copy_clipbord {
-    text-align: end !important;
-    float: right;
-}
-span.copy_clipbord:hover {
-    cursor: pointer;
-}
-.afg_cryptocode {
-    margin-top: 5px;
-    margin-left: 10px;
-}
-.afg_amountdata {
-    margin-left: 10px;
-    margin-top: 5px;
-}
-span.wc-migpayments-crypto-amount-label {
-    font-size: 16px;
-    font-weight: 600;
-}
-span.wc-migpayments-crypto-address-label {
-    font-size: 16px;
-    font-weight: 600;
-}
-div#afg_maindiv {
-    width: 60%;
-    margin: 0px auto;
-    background: #eeeeee;
-    padding-top: 20px;
-    padding-bottom: 15px;
-}
-div#wc-migpayments-address-qr-code-wrapper {
-    border-top: 1px solid #6d6d6d6d;
-    border-bottom: 1px solid #6d6d6d6d;
-}
-div#wc-migpayments-payment-data {
-    margin: unset;
-}
-.wc-migpayments-crypto-address-wrapper {
-    border-bottom: 1px solid #6d6d6d6d;
-	padding-bottom: 10px;
-}
-.wc-migpayments-crypto-amount-wrapper {
-	padding-bottom: 10px;
-	border-bottom: 1px solid #6d6d6d6d;}
-button.afg_bntcopy{
-    font-size: 12px;
-    padding: unset;
-    color: black;
-    background: #eeee;	
-	  text-transform: capitalize;
-	 padding: 4px;
-}
-input#myInput {
-    color: black;
-    width: 60%;
-	  background-color: #eeee;
-	border:1px;
-	height:25px;
-}
-input#myInput:focus {
-    background-color: #eeee !important;
-    border: 1px;
-}
-input#myInput_price {
-    color: black;
-    width: 15%;
-    background-color: #eeee;
-    border: 1px;
-    padding-right: unset;
-		height:25px;
-}
-input#myInput_price:focus {
-    background-color: #eeee !important;
-    border: 1px;
-	border-color:unset;
-}
-button.afg_bntcopy:hover {
-    background: #f7941e;
-    color: white;
-    text-transform: capitalize;
-   border-color:#f7941e;
-}
-i.afg_copyicon.fa.fa-clone {
-    margin-right: 7px;
-}
-span.copy_clipbord {
-    /* text-align: end !important; */
-    float: right;
-    margin-right: 20px;
-}
-span.wc-migpayments-crypto-address-label {
-    padding-left: 10px;
-}
-span.wc-migpayments-crypto-amount-label {
-    padding-left: 10px;
-}
+            span.copy_clipbord {
+                text-align: end !important;
+                float: right;
+            }
+            span.copy_clipbord:hover {
+                cursor: pointer;
+            }
+            .afg_cryptocode {
+                margin-top: 5px;
+                margin-left: 10px;
+            }
+            .afg_amountdata {
+                margin-left: 10px;
+                margin-top: 5px;
+            }
+            span.wc-migpayments-crypto-amount-label {
+                font-size: 16px;
+                font-weight: 600;
+            }
+            span.wc-migpayments-crypto-address-label {
+                font-size: 16px;
+                font-weight: 600;
+            }
+            div#afg_maindiv {
+                width: 60%;
+                margin: 0px auto;
+                background: #eeeeee;
+                padding-top: 20px;
+                padding-bottom: 15px;
+            }
+            div#wc-migpayments-address-qr-code-wrapper {
+                border-top: 1px solid #6d6d6d6d;
+                border-bottom: 1px solid #6d6d6d6d;
+            }
+            div#wc-migpayments-payment-data {
+                margin: unset;
+            }
+            .wc-migpayments-crypto-address-wrapper {
+                border-bottom: 1px solid #6d6d6d6d;
+                padding-bottom: 10px;
+            }
+            .wc-migpayments-crypto-amount-wrapper {
+                padding-bottom: 10px;
+                border-bottom: 1px solid #6d6d6d6d;}
+            button.afg_bntcopy{
+                font-size: 12px;
+                padding: unset;
+                color: black;
+                background: #eeee;	
+                text-transform: capitalize;
+                padding: 4px;
+            }
+            input#myInput {
+                color: black;
+                width: 60%;
+                background-color: #eeee;
+                border:1px;
+                height:25px;
+            }
+            input#myInput:focus {
+                background-color: #eeee !important;
+                border: 1px;
+            }
+            input#myInput_price {
+                color: black;
+                width: 15%;
+                background-color: #eeee;
+                border: 1px;
+                padding-right: unset;
+                    height:25px;
+            }
+            input#myInput_price:focus {
+                background-color: #eeee !important;
+                border: 1px;
+                border-color:unset;
+            }
+            button.afg_bntcopy:hover {
+                background: #f7941e;
+                color: white;
+                text-transform: capitalize;
+            border-color:#f7941e;
+            }
+            i.afg_copyicon.fa.fa-clone {
+                margin-right: 7px;
+            }
+            span.copy_clipbord {
+                /* text-align: end !important; */
+                float: right;
+                margin-right: 20px;
+            }
+            span.wc-migpayments-crypto-address-label {
+                padding-left: 10px;
+            }
+            span.wc-migpayments-crypto-amount-label {
+                padding-left: 10px;
+            }
         </style>
     </head>
     <body>
@@ -280,7 +281,7 @@ $get_total_amount = $order->get_total();
         $product_variation_id = $item->get_variation_id();
         $Item_quantity = $item['quantity'];
         $get_itemImage = get_the_post_thumbnail_url($product_id);
-        $item_price  = $getproduct_detail->price;
+        $item_price  = $getproduct_detail->get_attribute('price');
         $terms = get_the_terms($product_id, 'product_cat');
         $item_url = get_permalink( $product_id );
         $get_account_size = $item->get_meta( 'pa_account', true );
@@ -289,7 +290,7 @@ $get_total_amount = $order->get_total();
         $categoryname = $terms['0']->name;
     }
 ?>
-        <div id="wc-migpayments-primary" class="content-area">
+        <div id="wc-migpayments-primary"  >
             <main id="wc-migpayments-main" class="site-main" role="main">
 				
 				
@@ -379,6 +380,10 @@ $get_total_amount = $order->get_total();
                                                 <?php //migpayments_wc_get_redirectBtnText();?>
                                                 Cancel Payment
                                             </a>
+                                            <a id="wc-migpayments-review-order-button" disabled style="background-color:#f7941e !important ;" class="button" >
+												
+                                                <?php migpayments_wc_get_redirectBtnText();?>
+                                            </a>
                                         </div>
 
                                     <?php else: ?>
@@ -386,11 +391,10 @@ $get_total_amount = $order->get_total();
                                     <?php endif; ?>
                                 </div>
 								<div  id="wc-migpayments-review-order-button-wrapper" style="text-align-last:center;" class="afg_databtn">
-                                    <img src="https://devops.thefundedtraderprogram.com/wp-content/uploads/2022/12/giphy.gif" style="height:100px;">        
-									<a id="wc-migpayments-review-order-button" disabled style="background-color:#f7941e !important ;" class="button" >
-												
-                                                <?php migpayments_wc_get_redirectBtnText();?>
-                                            </a>
+                                    <div id="wc-mipgpayments-partial-payments">
+                                        <img src="https://devops.thefundedtraderprogram.com/wp-content/uploads/2022/12/giphy.gif" style="height:100px;">        
+                                    </div>
+									
 											
                                 </div>
                             </div>
@@ -474,9 +478,9 @@ function clock() {
         var secondsInMinutes = (c - seconds) / 60; 
         var minutes = secondsInMinutes % 60; 
         var hours = (secondsInMinutes - minutes) / 60;
-        console.clear();
+        // console.clear();
           document.getElementById("demo").innerHTML = minutes + ":" + seconds;
-        console.log(minutes + ":" + seconds)
+        // console.log(minutes + ":" + seconds)
         if (c == 0) {
          // document.getElementById("demo").innerHTML = "time end";
             clearInterval(myTimer);
