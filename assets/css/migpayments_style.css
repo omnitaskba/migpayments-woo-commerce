@@ -1,12 +1,19 @@
  #wc-migpayments-address-qr-code {
-     margin-left:auto;
-     margin-right:auto;
+    margin-left:auto;
+    margin-right:auto;
+    border: 1px solid #eeee;
  }
- #wc-migpayments-review-order-button-wrapper, #wc-migpayments-payment-data {
+
+ #wc-migpayments-review-order-button-wrapper {
  text-align: center;
  margin:1em;
+ display: flex;
+ justify-content: space-between;
 }
-
+#wc-migyments-review-order-button a, #wc-migyments-review-order-button a:hover, #wc-migyments-cancel-order-button a, #wc-migyments-cancel-order-button a:hover{
+    text-decoration: none !important;
+    font-size:14px;
+}
 #wc-migpayments-crypto-estimate-wrapper{
     margin-top: 1rem;
     margin-bottom:1rem;
@@ -14,21 +21,216 @@
 #wc-migpayments-crypto-estimate-wrapper .wc-migpayments-currency-symbol{
    font-weight: bold;
 }
+#wc-migpayments-cancel-order-button{
+    margin-right: 10px;
+    background-color: #000000;
+}
+#wc-migpayments-review-order-button, #wc-migpayments-cancel-order-button{
+    padding: 0.6180469716em 1.41575em;
+    border-radius: 8px !important;
+    color:#FFFFFF;
+}
 #wc-migpayments-review-order-button{
     background-color: #F7941E;
-    padding: 0.6180469716em 1.41575em;
-    border-radius: 8px;
-    color:#FFFFFF;
 }
 #wc-migpayments-primary{
     text-align: center;
 }
-
-#wc-migpayments-address-qr-code{
-    border: 1px solid #eeee;
-}
+ 
 #wc-migpayments-payment-data-title{
     font-size: 2.617924em;
     line-height: 1.214;
     letter-spacing: -1px;
 }
+.wc-migpayments-crypto-address-wrapper, .wc-migpayments-crypto-amount-wrapper{
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+}
+#wc-migpayments-partial-payments-list{
+    padding: 20px;
+}
+
+.back-button a{
+    font-size: 13px;
+    font-weight: 600;
+}
+.order-details {
+    background-color: #f4f4f4;
+    text-align: left;
+    border-radius: 10px;
+    padding:20px;
+    position: relative;
+}
+/* .outer-card{
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    left: 18%;
+} */
+.order-card {
+    background-color: #eaeaea;
+    padding: 10px 20px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    /* width: 400px; */
+}
+.card-title {
+    display: flex;
+    justify-content: space-between;
+}
+.order-title p.name{
+    margin: 0;
+    font-weight: 600;
+    color: #aaa;
+    font-size: 20px;
+}
+.order-title .price{
+    font-weight: bold;
+    font-size: 30px;
+    position: relative;
+    top: -10px;
+}
+.product-title,.product-price {
+    font-weight: 600;
+}
+.card-meta{
+    margin-bottom: 30px;
+}
+.meta {
+    font-size: 12px;
+    font-weight: 600;
+    color: #aaa;
+}
+.card-title.total {
+    padding: 10px 20px;
+    border-top: 1px solid #a8a8a8;
+    background-color: #eaeaea;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+#afg_maindiv{
+    border-radius: 10px;
+    background: #eeeeee;
+    padding-top: 20px;
+    padding-bottom: 15px;
+}
+ 
+.send-payment-top{
+    text-align: left;
+    padding: 0 20px;
+}
+.send-payment-top > p{
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+.timer-main{
+    display: flex;
+    justify-content: space-between;
+}
+.time.meta{
+    white-space: nowrap;
+    border-radius: 50%;
+    border: 1px solid #ff9800;
+    width: 40px;
+    height: 40px;
+    display: flex;
+     align-items: center;
+    justify-content: space-between;
+    justify-content: center;
+    font-size: 10px;
+}
+
+#wc-migpayments-review-order-button{
+    background-color: black !important;
+    color: white;
+}
+.back-button+.order-title{
+    margin-top: 20px;
+}
+.order-details+footer{
+    background-color: #f4f4f4;
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+}
+.footer-links a{
+    color: #aaa;
+    font-size: 14px;
+}
+ 
+.afg_databtn{
+    text-align:right !important;
+}
+button.afg_bntcopy {
+    font-size: 12px !important;
+    padding: unset;
+    color: black !important; 
+    background: #eeee !important;
+    text-transform: capitalize !important;
+    padding: 4px !important;
+}		
+            
+.afg_crypto_address, .afg_currency_text, .afg_amountdata, .afg_cryptocode{
+    text-align: left;
+}
+
+span.copy_clipbord {
+    text-align: end !important;
+    float: right;
+}
+span.copy_clipbord:hover {
+    cursor: pointer;
+}
+
+span.wc-migpayments-crypto-amount-label {
+    font-size: 16px;
+    font-weight: 600;
+}
+span.wc-migpayments-crypto-address-label {
+    font-size: 16px;
+    font-weight: 600;
+}
+div#afg_maindiv {
+    margin: 0px auto;
+    background: #eeeeee;
+    padding-top: 20px;
+    padding-bottom: 15px;
+}
+div#wc-migpayments-address-qr-code-wrapper {
+    border-top: 1px solid #6d6d6d6d;
+    border-bottom: 1px solid #6d6d6d6d;
+}
+div#wc-migpayments-payment-data {
+    margin: unset;
+}
+.wc-migpayments-crypto-address-wrapper {
+    border-bottom: 1px solid #6d6d6d6d;
+    padding-bottom: 10px;
+}
+.wc-migpayments-crypto-amount-wrapper {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #6d6d6d6d;}
+button.afg_bntcopy{
+    font-size: 12px;
+    padding: unset;
+    color: black;
+    background: #eeee;	
+    text-transform: capitalize;
+    padding: 4px;
+} 
+button.afg_bntcopy:hover {
+    background: #f7941e;
+    color: white;
+    text-transform: capitalize;
+border-color:#f7941e;
+}
+i.afg_copyicon.fa.fa-clone {
+    margin-right: 7px;
+}
+span.copy_clipbord {
+    /* text-align: end !important; */
+    float: right;
+    /* margin-right: 20px; */
+} 

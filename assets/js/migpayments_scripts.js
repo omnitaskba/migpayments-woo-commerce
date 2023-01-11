@@ -16,13 +16,30 @@ setInterval(function(){
     };
 
     const fetchResponse = fetch(ajaxObj.ajaxurl, settings).then(response => response.json()).then(data => {
-        console.log(data);
+        // console.log(data);
         //Payment confirmed
         if(data.redirect == true){
             window.location.href = ajaxObj.redirectUrl;
         } else{  //PartialPayment
-            // each payments
-            partialPaymentsEl.innerHTML = ('<div>Partial payment received: <b>' + data.partial_payment_amount  + ' ' + data.currency_code  + '</b></div>')
+          
+            if(data.partial_payments && data.partial_payments.length > 0){
+                var html = '<h5>Partial Payments</h5><table id="wc-migpayments-partial-payments-list" class="table">';
+                html += '<thead><th>Amount</th><th>Received At</th></thead><tbody>'
+
+                let payments = data.partial_payments;
+                for (let i = 0; i < payments.length; i++) {
+                    console.log(payments[i])
+                    html += '<tr><td> <span class="text-success">'+ payments[i].amount  + '</span> ' +  payments[i].currency_code + '</td><td> ' + payments[i].received_at + '</b></tr>'
+                  }
+                html += '</tbody></table>';
+                // each payments
+                partialPaymentsEl.innerHTML = html;
+                var cancelBtn = document.getElementById('wc-migpayments-cancel-order-button');
+                var reviewBtn = document.getElementById('wc-migpayments-review-order-button');
+                cancelBtn.remove();
+                reviewBtn.remove();
+            }
+           
         }
            
     }).catch(e => {

@@ -109,7 +109,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		}
 
 		if($status === 'Partially paid'){
-			$data['partial_payments'] =  get_post_meta($_POST['order_id'], '_migpayments_worder_partial_payments');
+			$data['partial_payments'] =  get_post_meta($_POST['order_id'], '_migpayments_worder_partial_payments', true);
 		 
 		}
 		
@@ -362,14 +362,19 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Partially paid');
 
-				$partialPayments = 	get_post_meta( $order->get_id(), '_migpayments_worder_partial_payments');
+				$partialPayments = 	get_post_meta( $order->get_id(), '_migpayments_worder_partial_payments', true);
 				if(!$partialPayments){
-					$partialPayments = [
-						$data['amount']
-					];
-				} else {
-					$partialPayments[] = $data['amount'];
+					$partialPayments = [];
 				}
+
+				$payment =  [
+					'amount' => $data['amount'],
+					'received_at' => current_time('d.m.Y H:i'),
+					'currency_code' => $data['crypto_currency']
+				];
+
+				$partialPayments[] = $payment;
+				 
 
 				update_post_meta( $order->get_id(), '_migpayments_worder_partial_payments', $partialPayments);
 
@@ -564,6 +569,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$cryptoAddress = null;
 				$cryptoAmount = null;
 				$currencyCode = null;
+				$expiresAt = null;
 
 				if(!$response->error){
 					if(isset($response->data['cryptoAddress'])){
@@ -575,14 +581,17 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 					if(isset($response->data['currency'])){
 						$currencyCode = $response->data['currency'];
 					}
+
+					$expiresAt = $response->data['expires_at'];
 				}
 
 				update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $cryptoAmount );
 				update_post_meta( $orderId, '_migpayments_worder_crypto_address', $cryptoAddress );
+				update_post_meta( $orderId, '_migpayments_worder_crypto_expires_at', $expiresAt );
 
 				return array(
 					'result' => 'success',
-					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&success_url='. $this->get_return_url($order))
+					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&expires_at=' . $expiresAt . '&success_url='. $this->get_return_url($order))
 				);
 				
 				// Return redirect
