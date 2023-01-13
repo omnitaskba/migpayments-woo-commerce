@@ -94,6 +94,10 @@
 .product-title,.product-price {
     font-weight: 600;
 }
+.product-title a{
+    text-decoration: none;
+    color:#6d6d6d6d;
+}
 .card-meta{
     margin-bottom: 30px;
 }

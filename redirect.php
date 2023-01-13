@@ -13,6 +13,7 @@
 <?php
     $order_id = $_GET['orderId'];
     $order = new WC_Order( $order_id );
+    
     $order_data = $order->get_data();
     $expiresAt = $order->get_meta('_migpayments_worder_crypto_expires_at');
 	$get_subtotal_price = $order->get_subtotal();
@@ -20,6 +21,9 @@
     $orderCurrencySymbol = get_woocommerce_currency_symbol($order->get_currency());
     $get_total_amount = $order->get_total();
     $items = $order->get_items();
+
+ 
+
      // foreach ( $items as $item ) {
 	// 	/* echo"<pre>";
 	// 	print_r($item);
@@ -65,7 +69,12 @@
                                         <div class="order-card">
                                             <?php foreach($items as $item): ?>
                                             <div class="card-title">
-                                                <div class="product-title"><span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?> </span> <?php echo $item->get_name(); ?></div>
+                                                <div class="product-title">
+                                                    <span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?> </span> 
+                                                    <a href="<?php echo get_permalink( $item->get_product_id());?>">
+                                                        <?php echo $item->get_name(); ?>
+                                                    </a>
+                                                </div>
                                                 <div class="product-price"><?php echo $orderCurrencySymbol; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
                                             </div>
                                             <?php endforeach;?>
@@ -77,6 +86,11 @@
                                                 <?php if( $item->get_meta( 'pa_platform', true )) : ?>
                                                     <div class="meta">Platform: <?php echo $item->get_meta( 'pa_platform', true ); ?></div>
                                                 <?php endif;?>
+
+                                                <?php if($item->get_meta('pa_account')) :?>
+
+                                                    <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="card-title subtotal">
                                                 <div class="product-title">Subtotal</div>
@@ -159,26 +173,7 @@
                         </div>
                     </div>
                 </div>
-
-
-
-                <header>
-                    <!-- <h1 id="wc-migpayments-payment-data-title" class="entry-title"> <?php //echo the_title() ?></h1> -->
-                </header>
-        
-                
-
-
-
-                
-
-
-
-
-
-
-				
-               
+ 
             </main> 
         </div>
 		
