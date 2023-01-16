@@ -22,4 +22,4 @@ To add custom styles navigate to Appearance than Customize section of your dashb
 ### Example CSS:
     .wc-migpayments-crypto-total{
 	    font-size:20px;
-    }`
+    }
