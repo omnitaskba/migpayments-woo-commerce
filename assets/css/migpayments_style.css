@@ -47,7 +47,7 @@
     padding-right: 20px;
     padding-top: 10px;
 }
-#wc-migpayments-partial-payments-list{
+#wc-mipgpayments-partial-payments{
     padding: 20px;
 }
 
@@ -238,3 +238,6 @@ span.copy_clipbord {
     float: right;
     /* margin-right: 20px; */
 } 
+#total_crypto_amount{
+    visibility: hidden;
+}

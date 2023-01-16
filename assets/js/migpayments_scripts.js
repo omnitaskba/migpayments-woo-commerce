@@ -21,22 +21,33 @@ setInterval(function(){
         if(data.redirect == true){
             window.location.href = ajaxObj.redirectUrl;
         } else{  //PartialPayment
-          
+            var totalAmount =  document.getElementById('total_crypto_amount').dataset.amount;
+            var totalPartialsAmount = 0;
+            var currencyCode = null;
             if(data.partial_payments && data.partial_payments.length > 0){
-                var html = '<h5>Partial Payments</h5><table id="wc-migpayments-partial-payments-list" class="table">';
+                var html = '<h5 class="text-left">Partial Payments</h5><table id="wc-migpayments-partial-payments-list" class="table">';
                 html += '<thead><th>Amount</th><th>Received At</th></thead><tbody>'
 
                 let payments = data.partial_payments;
                 for (let i = 0; i < payments.length; i++) {
-                    console.log(payments[i])
+                    currencyCode = payments[i].currency_code;
                     html += '<tr><td> <span class="text-success">'+ payments[i].amount  + '</span> ' +  payments[i].currency_code + '</td><td> ' + payments[i].received_at + '</b></tr>'
-                  }
+                    totalPartialsAmount = parseFloat(payments[i].amount) + parseFloat(totalPartialsAmount);
+                   
+                }
+
+                console.log(totalPartialsAmount);
                 html += '</tbody></table>';
+                amountDifference = parseFloat(totalAmount) - parseFloat(totalPartialsAmount);
+                var decimals = currencyCode == 'USDT' ? 6 : 8;
+                html += '<p class="text-left">Remaining Payment Amount: <b>' + parseFloat(amountDifference).toFixed(decimals) + ' '+ currencyCode  +'</b>';
                 // each payments
                 partialPaymentsEl.innerHTML = html;
                 var cancelBtn = document.getElementById('wc-migpayments-cancel-order-button');
                 var reviewBtn = document.getElementById('wc-migpayments-review-order-button');
+                if(cancelBtn)
                 cancelBtn.remove();
+                if(reviewBtn)
                 reviewBtn.remove();
             }
            
@@ -47,6 +58,6 @@ setInterval(function(){
     });
        
   
- }, 5000);
+ }, 1000);
 
   

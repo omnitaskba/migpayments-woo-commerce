@@ -105,9 +105,9 @@
                                 </div>
                                 <footer>
                                     <div class="footer-links">
-                                        <a href="/privacy-policy">Privacy Policy - </a>
-                                        <a href="/terms-of-use">Terms and Conditions - </a>
-                                        <a href="/refund-policy">Refunds Policy</a>
+                                        <a target="_blank" href="https://thefundedtraderprogram.com/privacy-policy/">Privacy Policy - </a>
+                                        <a target="_blank" href="https://thefundedtraderprogram.com/terms-of-use/">Terms and Conditions - </a>
+                                        <a target="_blank" href="https://thefundedtraderprogram.com/refund-policy/">Refunds Policy</a>
                                     </div>
                                 </footer>
                             </div>
@@ -159,6 +159,7 @@
                                                 <?php migpayments_wc_get_redirectBtnText();?>
                                             </a>
                                         </div>
+                                        <div id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];?>"></div>
                                         <div id="wc-mipgpayments-partial-payments">
                                         <!-- <img src="https://devops.thefundedtraderprogram.com/wp-content/uploads/2022/12/giphy.gif" style="height:100px;">  -->
                                         </div>
