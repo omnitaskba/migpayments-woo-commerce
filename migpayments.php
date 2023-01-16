@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.0.2
+Version: 			1.1
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
