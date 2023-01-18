@@ -13,19 +13,12 @@
 namespace chillerlan\QRCodeTest\Data;
 
 use chillerlan\QRCode\Data\Byte;
-use chillerlan\QRCode\Data\QRDataInterface;
-use chillerlan\QRCode\QROptions;
 
-/**
- * Tests the Byte class
- */
-final class ByteTest extends DatainterfaceTestAbstract{
+class ByteTest extends DatainterfaceTestAbstract{
 
-	/** @internal */
-	protected string $testdata = '[¯\_(ツ)_/¯]';
-
-	/** @internal */
-	protected array  $expected = [
+	protected $FQCN = Byte::class;
+	protected $testdata = '[¯\_(ツ)_/¯]';
+	protected $expected = [
 		64, 245, 188, 42, 245, 197, 242, 142,
 		56, 56, 66, 149, 242, 252, 42, 245,
 		208, 236, 17, 236, 17, 236, 17, 236,
@@ -41,12 +34,5 @@ final class ByteTest extends DatainterfaceTestAbstract{
 		21, 47, 250, 101
 	];
 
-	/**
-	 * @inheritDoc
-	 * @internal
-	 */
-	protected function getDataInterfaceInstance(QROptions $options):QRDataInterface{
-		return new Byte($options);
-	}
 
 }

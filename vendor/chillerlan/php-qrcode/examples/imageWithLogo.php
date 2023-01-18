@@ -16,15 +16,14 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 $data = 'https://www.youtube.com/watch?v=DLzxrzFCyOs&t=43s';
 /**
- * @property int $logoSpaceWidth
- * @property int $logoSpaceHeight
+ * @property int $logoWidth
+ * @property int $logoHeight
  *
  * @noinspection PhpIllegalPsrClassPathInspection
  */
 class LogoOptions extends QROptions{
-	// size in QR modules, multiply with QROptions::$scale for pixel size
-	protected int $logoSpaceWidth;
-	protected int $logoSpaceHeight;
+	protected $logoWidth;
+	protected $logoHeight;
 }
 
 $options = new LogoOptions;
@@ -32,8 +31,8 @@ $options = new LogoOptions;
 $options->version          = 7;
 $options->eccLevel         = QRCode::ECC_H;
 $options->imageBase64      = false;
-$options->logoSpaceWidth   = 13;
-$options->logoSpaceHeight  = 13;
+$options->logoWidth        = 13;
+$options->logoHeight       = 13;
 $options->scale            = 5;
 $options->imageTransparent = false;
 

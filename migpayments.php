@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.1
+Version: 			1.4
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.3.8');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.4');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
 
 
@@ -66,14 +66,14 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	  }
 	}
 	function migpayments_wc_style() {
-		wp_enqueue_style('migpayments_wc_style', WP_PLUGIN_URL. '/migpayments/assets/css/migpayments_style.css?v=1.1');
+		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4');
 
 	}
 	
 	function migpayments_wc_scripts(){
 		if ( is_page( 'migpayments-payment-instructions' ) ) {
 
-			wp_register_script( 'redirect-js',  WP_PLUGIN_URL. '/migpayments/assets/js/migpayments_scripts.js' );
+			wp_register_script( 'redirect-js',   plugin_dir_url(__FILE__) . '/assets/js/migpayments_scripts.js' );
 
 			wp_localize_script( 
 				'redirect-js', 

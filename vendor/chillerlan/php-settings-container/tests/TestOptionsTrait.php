@@ -2,7 +2,9 @@
 /**
  * Trait TestOptionsTrait
  *
+ * @filesource   TestOptionsTrait.php
  * @created      28.08.2018
+ * @package      chillerlan\SettingsTest
  * @author       smiley <smiley@chillerlan.net>
  * @copyright    2018 smiley
  * @license      MIT
@@ -10,31 +12,29 @@
 
 namespace chillerlan\SettingsTest;
 
-use function sha1;
-
 trait TestOptionsTrait{
 
-	protected string $test1 = 'foo';
+	protected $test1 = 'foo';
 
-	protected ?bool $test2 = null;
+	protected $test2;
 
-	protected string $testConstruct;
+	protected $testConstruct;
 
-	protected ?string $test4 = null;
+	protected $test4;
 
-	protected ?string $test5 = null;
+	protected $test5;
 
-	protected ?string $test6 = null;
+	protected $test6;
 
-	protected function TestOptionsTrait():void{
+	protected function TestOptionsTrait(){
 		$this->testConstruct = 'success';
 	}
 
-	protected function set_test5($value):void{
+	protected function set_test5($value){
 		$this->test5 = $value.'_test5';
 	}
 
-	protected function get_test6():string{
+	protected function get_test6(){
 		return $this->test6 === null
 			? 'null'
 			: sha1($this->test6);
