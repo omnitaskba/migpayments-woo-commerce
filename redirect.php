@@ -137,7 +137,7 @@
                                                     <span class="copy_clipbord"><button class="afg_bntcopy" onclick="copyToClipboard('<?php echo $_GET['address'];  ?>')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>
                                                 </div>
                                             </div>  
-                                            <div class="wc-migpayments-crypto-amount-wrapper">
+                                            <div class="wc-migpayments-crypto-amount-wrapper" id="wc-migpayments-crypto-amount-wrapper">
                                                 <div class="afg_currency_text"> <span class="wc-migpayments-crypto-amount-label"><?php migpayments_wc_get_cryptoAmountLabelTxt();?></span></div>
                                                     <div class="afg_amountdata">
                                                     <span class="wc-migpayments-crypto-amount">
@@ -160,8 +160,16 @@
                                             </a>
                                         </div>
                                         <div id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];?>"></div>
+                                        <div class="text-center">
+                                            <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100" class="wc-migpayments-thefunded-trader-logo">
+                                        </div>
+                                        <div id="wc-migpayments-info-box">
+                                      
+                                            <svg style="width:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /> </svg>
+
+                                            Note: If you have sent payment and have not received an order confirmation after 10 minutes or have sent partial payment and are unable to complete the entire transaction, please contact <a href="https://help.thefundedtraderprogram.com">support</a>.
+                                        </div>
                                         <div id="wc-mipgpayments-partial-payments">
-                                        <!-- <img src="https://devops.thefundedtraderprogram.com/wp-content/uploads/2022/12/giphy.gif" style="height:100px;">  -->
                                         </div>
 
                                     <?php else: ?>

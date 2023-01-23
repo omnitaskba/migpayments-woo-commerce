@@ -35,6 +35,7 @@ class WC_Migpayments_Library {
             'payment_confirmed' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
             'notification_url' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
             'partial_payment_url' => get_site_url().'/wc-api/crypto-partial-payment?id='. $orderNumber,
+            'overpaid_payment_url' => get_site_url().'/wc-api/crypto-overpaid-payment?id='. $orderNumber,
             'order_number' => $orderNumber,
             'plugin' => 'wordpress',
             'order_data' => $orderData

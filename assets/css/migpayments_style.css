@@ -49,6 +49,8 @@
 }
 #wc-mipgpayments-partial-payments{
     padding: 20px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 .back-button a{
@@ -171,7 +173,7 @@ button.afg_bntcopy {
     font-size: 12px !important;
     padding: unset;
     color: black !important; 
-    background: #eeee !important;
+    /* background: #eeee !important; */
     text-transform: capitalize !important;
     padding: 4px !important;
 }		
@@ -200,7 +202,6 @@ div#afg_maindiv {
     margin: 0px auto;
     background: #eeeeee;
     padding-top: 20px;
-    padding-bottom: 15px;
 }
 div#wc-migpayments-address-qr-code-wrapper {
     border-top: 1px solid #6d6d6d6d;
@@ -216,28 +217,56 @@ div#wc-migpayments-payment-data {
 .wc-migpayments-crypto-amount-wrapper {
     padding-bottom: 10px;
     border-bottom: 1px solid #6d6d6d6d;}
-button.afg_bntcopy{
-    font-size: 12px;
-    padding: unset;
-    color: black;
-    background: #eeee;	
-    text-transform: capitalize;
-    padding: 4px;
-} 
-button.afg_bntcopy:hover {
-    background: #f7941e;
-    color: white;
-    text-transform: capitalize;
-border-color:#f7941e;
-}
+ 
 i.afg_copyicon.fa.fa-clone {
     margin-right: 7px;
 }
 span.copy_clipbord {
-    /* text-align: end !important; */
     float: right;
-    /* margin-right: 20px; */
 } 
 #total_crypto_amount{
     visibility: hidden;
+}
+#wc-migpayments-info-box{
+    padding:1rem;
+    padding-top: 0px;
+    text-align: justify;
+    color:red;
+
+}
+#wc-migpayments-info-box p{
+    margin-bottom: 0px;
+}
+#wc-migpayments-info-box a{
+    font-weight: bold;
+    color:#000000;
+}
+
+.wc-migpayments-order-info-box{
+    padding:1rem;
+    color:black;
+    background-color: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    width: 250px;
+    margin-bottom: 20px;
+    text-align: justify;
+    
+}
+.wc-migpayments-order-info-box .copy_clipbord{
+    font-size:12px;
+
+}
+.wc-migpayments-remaining-amount{
+    display: flex;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+    padding:10px;
+}
+
+.wc-migpayments-thefunded-trader-logo{
+    width: 100px;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
