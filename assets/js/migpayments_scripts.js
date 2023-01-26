@@ -28,22 +28,24 @@ setInterval(function(){
         } else{ 
              
             if(data.status == 'Overpaid'){
+
                 var partialAmountEl = document.getElementById('wc-migpayments-remaining-amount');
                 if(partialAmountEl){
                     partialAmountEl.remove();
                 }
-                var html = '<p>';
-                html += '<svg style="width:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /> </svg> ';
+                // var html = '<p>';
+                // html += '<svg style="width:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /> </svg> ';
 
-                html += 'Our system has detected an overpayment, and your order has been set to be manually processed. Please contact <a target="_blank" href="https://help.thefundedtraderprogram.com/">support</a> for further assistance. Thank you for your order, and we apologize for any inconvenience!</p>';
+                // html += 'Our system has detected an overpayment, and your order has been set to be manually processed. Please contact <a target="_blank" href="https://help.thefundedtraderprogram.com/">support</a> for further assistance. Thank you for your order, and we apologize for any inconvenience!</p>';
               
-                infoBoxEl.innerHTML = html;
+                infoBoxEl.innerHTML = '';
                 if(cancelBtn)
                      cancelBtn.remove();
                 if(reviewBtn)
                     reviewBtn.remove();
                 
                 amountEl.remove();
+                jQuery('#overpaidModal').modal('show');
             
             } else{
 
@@ -102,3 +104,9 @@ setInterval(function(){
  }, 5000);
 
   
+ 
+//  jQuery(document).ready(function(){
+//     jQuery('#overpaidModal').modal('show');
+//  });
+ 
+ 

@@ -48,10 +48,34 @@
 ?>
         <div id="wc-migpayments-primary"  >
             <main id="wc-migpayments-main" class="site-main" role="main">
-				
-				
-
-                <!-- Mughees -->
+			 	
+               <!--Overpaid  Modal -->
+                <div class="modal fade" id="overpaidModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">
+                            <b>Order Overpaid</b>
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                    <div class="text-center">
+                                            <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100" class="wc-migpayments-thefunded-trader-logo">
+                                        </div>
+                        <p>
+                            Our system has detected an <b>overpayment</b>, and your order has been set to be <b>manually processed</b>.  <br>    Please contact <a target="_blank" href="https://help.thefundedtraderprogram.com/">support</a> for further assistance. Thank you for your order, and we apologize for any inconvenience!</p>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                    </div>
+                </div>
+                </div>  
+                <!-- Main -->
                 <div id="mug-main">
                     <div class="container-no">
                         <div class="row">

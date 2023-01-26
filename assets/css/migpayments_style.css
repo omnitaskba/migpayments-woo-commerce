@@ -270,3 +270,12 @@ span.copy_clipbord {
     margin-top: 20px;
     margin-bottom: 20px;
 }
+#overpaidModal a{
+    color:#ff9800;
+    font-weight: bold;
+    text-decoration: none;
+}
+#overpaidModal .modal-title{
+    width: 100%;
+    text-align: center;
+}
