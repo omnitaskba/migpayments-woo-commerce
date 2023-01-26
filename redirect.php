@@ -10,71 +10,39 @@
     <body>
         <?php get_header(); ?>
         <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
-<?php
-    $order_id = $_GET['orderId'];
-    $order = new WC_Order( $order_id );
-    
-    $order_data = $order->get_data();
-    $expiresAt = $order->get_meta('_migpayments_worder_crypto_expires_at');
-	$get_subtotal_price = $order->get_subtotal();
-    $get_discount_total_price = $order->get_discount_total();
-    $orderCurrencySymbol = get_woocommerce_currency_symbol($order->get_currency());
-    $get_total_amount = $order->get_total();
-    $items = $order->get_items();
-
- 
-
-     // foreach ( $items as $item ) {
-	// 	/* echo"<pre>";
-	// 	print_r($item);
-	// 	echo"</pre>"; */
-    //     $product_name = $item->get_name();
-    //     $total = $item->get_total();
-    //     $sub_total = $item->get_subtotal();
-    //     $product_id = $item->get_product_id();
-    //     $getproduct_detail = wc_get_product( $product_id );
-    //     $product_variation_id = $item->get_variation_id();
-    //     $Item_quantity = $item['quantity'];
-    //     $get_itemImage = get_the_post_thumbnail_url($product_id);
-    //     $item_price  = $getproduct_detail->get_attribute('price');
-    //     $terms = get_the_terms($product_id, 'product_cat');
-    //     $item_url = get_permalink( $product_id );
-    //     $get_account_size = $item->get_meta( 'pa_account', true );
-    //     $get_account_pa_eightcap = $item->get_meta( 'pa_broker', true );
-    //     $get_account_pa_platform = $item->get_meta( 'pa_platform', true );
-    //     $categoryname = $terms['0']->name;
-    
-    // }
-?>
-        <div id="wc-migpayments-primary"  >
-            <main id="wc-migpayments-main" class="site-main" role="main">
-			 	
-               <!--Overpaid  Modal -->
-                <div class="modal fade" id="overpaidModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">
-                            <b>Order Overpaid</b>
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
+        <?php
+            $order_id = $_GET['orderId'];
+            $order = new WC_Order( $order_id );
+            
+            $order_data = $order->get_data();
+            $expiresAt = $order->get_meta('_migpayments_worder_crypto_expires_at');
+            $get_subtotal_price = $order->get_subtotal();
+            $get_discount_total_price = $order->get_discount_total();
+            $orderCurrencySymbol = get_woocommerce_currency_symbol($order->get_currency());
+            $get_total_amount = $order->get_total();
+            $items = $order->get_items();
+        
+        ?>
+            <div class="wc-overpaid-modal" id="wc-overpaid-modal" style="opacity:0;">
+               	
+                <div class="wc-overpaid-modal-content">
+                    <div class="wc-overpaid-modal-header">
+                            <h3>Order Overpaid</h3>
                     </div>
-                    <div class="modal-body">
-                    <div class="text-center">
-                                            <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100" class="wc-migpayments-thefunded-trader-logo">
-                                        </div>
-                        <p>
-                            Our system has detected an <b>overpayment</b>, and your order has been set to be <b>manually processed</b>.  <br>    Please contact <a target="_blank" href="https://help.thefundedtraderprogram.com/">support</a> for further assistance. Thank you for your order, and we apologize for any inconvenience!</p>
-                        </p>
+                    <div class="wc-overpaid-modal-body">
+                    <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100">
+                                                 
+                                    <p>
+                                        Our system has detected an <b>overpayment</b>, and your order has been set to be <b>manually processed</b>.  <br>    Please contact <a target="_blank" href="https://help.thefundedtraderprogram.com/">support</a> for further assistance. Thank you for your order, and we apologize for any inconvenience!</p>
+                                 
+                    	
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                    </div>
+                    <div class="wc-overpaid-modal-footer">
+                        <button class="wc-overpaid-modal-close" id="wc-overpaid-modal-close" onclick="hideOverpaidModal()" href="#">Close</button>
+                    </div>		
                 </div>
-                </div>  
+            
+            </div>
                 <!-- Main -->
                 <div id="mug-main">
                     <div class="container-no">

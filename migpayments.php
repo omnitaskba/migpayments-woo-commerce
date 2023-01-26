@@ -87,8 +87,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			wp_enqueue_script("jquery");
 			wp_enqueue_script( 'redirect-js' );
 
-			wp_register_script('wp-migpayments_bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js');
-			wp_enqueue_script('wp-migpayments_bootstrap-js');
+			// wp_register_script('wp-migpayments_bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js');
+			// wp_enqueue_script('wp-migpayments_bootstrap-js');
 			wp_register_style('wc-migpayments_bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css');
 			wp_enqueue_style('wc-migpayments_bootstrap');
 		} 

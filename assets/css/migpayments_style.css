@@ -115,12 +115,7 @@
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
 }
-#afg_maindiv{
-    border-radius: 10px;
-    background: #eeeeee;
-    padding-top: 20px;
-    padding-bottom: 15px;
-}
+
  
 .send-payment-top{
     text-align: left;
@@ -202,6 +197,10 @@ div#afg_maindiv {
     margin: 0px auto;
     background: #eeeeee;
     padding-top: 20px;
+    border-radius: 10px;
+    padding-top: 20px;
+    padding-bottom: 15px;
+    margin-bottom: 40px;
 }
 div#wc-migpayments-address-qr-code-wrapper {
     border-top: 1px solid #6d6d6d6d;
@@ -270,7 +269,7 @@ span.copy_clipbord {
     margin-top: 20px;
     margin-bottom: 20px;
 }
-#overpaidModal a{
+/* #overpaidModal a{
     color:#ff9800;
     font-weight: bold;
     text-decoration: none;
@@ -278,4 +277,77 @@ span.copy_clipbord {
 #overpaidModal .modal-title{
     width: 100%;
     text-align: center;
+} */
+
+.wc-overpaid-modal {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0;
+    z-index: 9999;	
+    overflow: auto;
+	position: fixed;
+    visibility: hidden;
+	margin-top: -250px;
+	background: rgba(0,0,0,.8);
+	
+	transition: all .3s ease-in;
+	-moz-transition: all .3s ease-in;
+	-webkit-transition: all .3s ease-in;
+}
+
+.wc-overpaid-modal.active {
+	opacity: 1 !important;
+	margin-top: 0px;
+	visibility: visible;	
+}
+
+.wc-overpaid-modal-content {
+	width: 70%;
+   
+	background: #FFF;
+	max-width: 600px;
+    margin: 70px auto;
+	position: relative;
+	border-radius: 8px;
+	box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+.wc-overpaid-modal-body{
+    padding: 20px;
+    text-align: justify;
+}
+
+.wc-overpaid-modal-body p{
+   margin-bottom: 0px;
+}
+.wc-overpaid-modal-body img{
+    margin: auto;
+    margin-bottom: 15px;
+}
+.wc-overpaid-modal-content a {
+    color:#ff9800;
+    font-weight: bold;
+    text-decoration: none;
+}
+.wc-overpaid-modal-footer{
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-top: 1px solid #eeeeee;
+
+}
+.wc-overpaid-modal-header{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eeeeee;
+}
+.wc-overpaid-modal-header h3{
+    margin: 0;
+}
+.wc-overpaid-modal-close{
+    color:#333333 !important;
+    background-color: transparent;
+    border: none;
 }
