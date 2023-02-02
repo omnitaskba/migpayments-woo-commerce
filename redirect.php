@@ -47,128 +47,128 @@
                 <div id="mug-main">
                     <div class="container-no">
                         <div class="row">
-                            <div class="col-md-5 col-sm-12" >
-                                <div class="order-details">
-                                    <!-- <div class="back-button">
-                                        <a href="/"><i class="fa-sharp fa-solid fa-arrow-left"></i></a>
-                                        <a href="<?php echo get_site_url(); //$_GET['success_url'];  ?>">Back to Payment Page</a>
-                                    </div> -->
-                                    <div class="order-title">
-                                        <p class="name">Your Order</p>
+                            <div class="col-md-5 col-sm-12" id="wc-migpayments-left-column">
+                                <div class="wc-migpayments-order-details">
+                                   
+                                    <div class="wc-migpayments-order-title">
+                                        <p class="label">Your Order</p>
                                         <p class="price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span> <?php echo wc_format_decimal($order->get_total(), 2); ?></p>
                                     </div>
-                                    <div class="outer-card">
-                                        <div class="order-card">
-                                            <?php foreach($items as $item): ?>
-                                            <div class="card-title">
-                                                <div class="product-title">
-                                                    <span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?> </span> 
-                                                    <a href="<?php echo get_permalink( $item->get_product_id());?>">
-                                                        <?php echo $item->get_name(); ?>
-                                                    </a>
-                                                </div>
-                                                <div class="product-price"><?php echo $orderCurrencySymbol; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
-                                            </div>
-                                            <?php endforeach;?>
-                                           
-                                            <div class="card-meta">
-                                                <?php if( $item->get_meta( 'pa_broker', true )) : ?>
-                                                    <div class="meta">Broker: <?php echo $item->get_meta( 'pa_broker', true ); ?></div>
-                                                <?php endif;?>
-                                                <?php if( $item->get_meta( 'pa_platform', true )) : ?>
-                                                    <div class="meta">Platform: <?php echo $item->get_meta( 'pa_platform', true ); ?></div>
-                                                <?php endif;?>
 
-                                                <?php if($item->get_meta('pa_account')) :?>
-
-                                                    <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
-                                                <?php endif; ?>
+                                  
+                                    <div class="wc-migpayments-order-card">
+                                        <?php foreach($items as $item): ?>
+                                        <div class="wc-migpayments-order-item">
+                                            <div class="wc-migpayments-order-item-title">
+                                                <span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?> </span> 
+                                                <a href="<?php echo get_permalink( $item->get_product_id());?>">
+                                                    <?php echo $item->get_name(); ?>
+                                                </a>
                                             </div>
-                                            <div class="card-title subtotal">
-                                                <div class="product-title">Subtotal</div>
-                                                <div class="product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
-                                            </div>
+                                            <div class="wc-migpayments-product-price"><?php echo $orderCurrencySymbol; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
                                         </div>
-                                        <div class="card-title total">
-                                            <div class="product-title">Total</div>
-                                            <div class="product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></div>
+                                        <?php endforeach;?>
+                                        
+                                        <div class="wc-migpayments-card-meta">
+                                            <?php if( $item->get_meta( 'pa_broker', true )) : ?>
+                                                <div class="wc-migpayments-meta">Broker: <?php echo $item->get_meta( 'pa_broker', true ); ?></div>
+                                            <?php endif;?>
+                                            <?php if( $item->get_meta( 'pa_platform', true )) : ?>
+                                                <div class="wc-migpayments-meta">Platform: <?php echo $item->get_meta( 'pa_platform', true ); ?></div>
+                                            <?php endif;?>
+
+                                            <?php if($item->get_meta('pa_account')) :?>
+
+                                                <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="wc-migpayments-order-item subtotal">
+                                            <div class="wc-migpayments- product-title">Subtotal</div>
+                                            <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
                                         </div>
                                     </div>
+                                    <div class="wc-migpayments-order-total">
+                                        <div class="wc-migpayments-order-item-title">Total</div>
+                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></div>
+                                    </div>
+                                    
                                 </div>
-                                <footer>
-                                    <div class="footer-links">
+                                <div class="wc-migpayments-footer">
+                                    <div class="wc-migpayments-footer-links">
                                         <a target="_blank" href="https://thefundedtraderprogram.com/privacy-policy/">Privacy Policy - </a>
                                         <a target="_blank" href="https://thefundedtraderprogram.com/terms-of-use/">Terms and Conditions - </a>
                                         <a target="_blank" href="https://thefundedtraderprogram.com/refund-policy/">Refunds Policy</a>
                                     </div>
-                                </footer>
                             </div>
-                            <div class="col-md-7  col-sm-12" >
-                                <div id="afg_maindiv">
-                                    <div id="wc-migpayments-page-content">
-                                        <div class="send-payment-top">
-                                            <p>Send Payment</p>
-                                            <div class="timer-main">
-                                                <p class="meta">To make a payment, send payment by using the QR code<br>or buttons below</p>
-                                                
-                                                <p class="time meta" id="expireTimer" data-expires_at="<?php echo $expiresAt;?>"></p>
-                                            </div>
-                                        </div>
-                                    </div> 
-                                    <div  id="wc-migpayments-address-qr-code-wrapper">  
-                                        <img id="wc-migpayments-address-qr-code" style="width:300px;" src="<?php echo (new QRCode())->render($_GET['address'])?>" alt="QR Code" /> 
-                                    </div>
-                                        <div id="wc-migpayments-payment-data">
-                                            <div class="wc-migpayments-crypto-address-wrapper">
-                                               <div class="afg_crypto_address"> <span class="wc-migpayments-crypto-address-label"><?php migpayments_wc_get_cryptoAddressLabelTxt();?></span></div> 
-                                                <div class="afg_cryptocode"> 
-                                                    <span class="wc-migpayments-crypto-address">
-                                                        
-                                                        <span  id="address" readonly><?php echo $_GET['address'];  ?></span>
-                                                    </span>
-                                                    <span class="copy_clipbord"><button class="afg_bntcopy" onclick="copyToClipboard('<?php echo $_GET['address'];  ?>')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>
-                                                </div>
-                                            </div>  
-                                            <div class="wc-migpayments-crypto-amount-wrapper" id="wc-migpayments-crypto-amount-wrapper">
-                                                <div class="afg_currency_text"> <span class="wc-migpayments-crypto-amount-label"><?php migpayments_wc_get_cryptoAmountLabelTxt();?></span></div>
-                                                    <div class="afg_amountdata">
-                                                    <span class="wc-migpayments-crypto-amount">
-                                                    <span id="amount"> <?php echo $_GET['amount'];  ?></span> <span class="currency_name font-italic"><?php echo  $_GET['currency'];?></span>
-                                                </span>
-                                                <span class="copy_clipbord"><button class="afg_bntcopy"  onclick="copyToClipboard('<?php echo $_GET['amount'];  ?>')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>
-                                                </div>
-                                            </div>
-                                        </div>
+                            </div>
+                            <div class="col-md-7  col-sm-12" id="wc-migpayments-right-column">
+                            
+                                <div class="wc-migpayments-payment-data-title">
+                                    <h4>Send Payment</h4>
+                                    <div class="wc-migpayments-description-timer-wrapper">
+                                        <p class="description">To make a payment, send payment by using the QR code<br>or buttons below</p>
                                         
-
-                                        <div  id="wc-migpayments-review-order-button-wrapper" class="afg_databtn">
-                                            <a id="wc-migpayments-cancel-order-button" class="button" href="<?php echo $order->get_cancel_order_url(); //$_GET['success_url'];?>">
-                                                <?php //migpayments_wc_get_redirectBtnText();?>
-                                                Cancel Payment
-                                            </a>
-                                            <a id="wc-migpayments-review-order-button" disabled style="background-color:#f7941e !important ;" class="button" >
-												
-                                                <?php migpayments_wc_get_redirectBtnText();?>
-                                            </a>
-                                        </div>
-                                        <div id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];?>"></div>
-                                        <div class="text-center">
-                                            <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100" class="wc-migpayments-thefunded-trader-logo">
-                                        </div>
-                                        <div id="wc-migpayments-info-box">
-                                      
-                                            <svg style="width:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /> </svg>
-
-                                            Note: If you have sent payment and have not received an order confirmation after 10 minutes or have sent partial payment and are unable to complete the entire transaction, please contact <a href="https://help.thefundedtraderprogram.com">support</a>.
-                                        </div>
-                                        <div id="wc-mipgpayments-partial-payments">
-                                        </div>
-
-                                    <?php else: ?>
-                                        <div id="wc-migpayments-payment-data-error" class="woocommerce-error"><?php migpayments_wc_get_paymentDataErrorTxt();?></div>
-                                    <?php endif; ?>
+                                        <p class="wc-migpayments-timer" id="expireTimer" data-expires_at="<?php echo $expiresAt;?>"></p>
+                                    </div>
                                 </div>
-                                      
+                               
+                                <div  id="wc-migpayments-address-qr-code-wrapper">  
+                                    <img id="wc-migpayments-address-qr-code" style="width:300px;" src="<?php echo (new QRCode())->render($_GET['address'])?>" alt="QR Code" /> 
+                                </div>
+                                    <div id="wc-migpayments-payment-data">
+                                        <div class="wc-migpayments-crypto-address-wrapper">
+                                            <div class="wc-migpayments-crypto-address-label">
+                                                <?php migpayments_wc_get_cryptoAddressLabelTxt();?>
+                                            </div> 
+                                            <div> 
+                                                <span class="wc-migpayments-crypto-address">
+                                                     <?php echo $_GET['address'];  ?>
+                                                </span>
+                                                <button class="wc-migpayments-copy-btn" onclick="copyToClipboard('<?php echo $_GET['address'];  ?>')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button>
+                                            </div>
+                                        </div>  
+                                        <div class="wc-migpayments-crypto-amount-wrapper" id="wc-migpayments-crypto-amount-wrapper">
+                                            <div class="wc-migpayments-crypto-amount-label">
+                                                <?php migpayments_wc_get_cryptoAmountLabelTxt();?>
+                                            </div>
+                                                
+                                                <span class="wc-migpayments-crypto-amount">
+                                                    <?php echo $_GET['amount'];  ?></span> <span class="currency_name font-italic"><?php echo  $_GET['currency'];?> 
+                                                </span>
+                                                
+                                             <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('<?php echo $_GET['amount'];  ?>')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button>
+                                            
+                                        </div>
+                                    </div>
+                                    
+
+                                    <div  id="wc-migpayments-review-order-button-wrapper">
+                                        <a id="wc-migpayments-cancel-order-button" class="button" href="<?php echo $order->get_cancel_order_url(); //$_GET['success_url'];?>">
+                                            <?php //migpayments_wc_get_redirectBtnText();?>
+                                            Cancel Payment
+                                        </a>
+                                        <a id="wc-migpayments-review-order-button" disabled style="background-color:#f7941e !important ;" class="button" >
+                                            
+                                            <?php migpayments_wc_get_redirectBtnText();?>
+                                        </a>
+                                    </div>
+                                    <div id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];?>"></div>
+                                    <div class="text-center">
+                                        <img src="<?php echo  plugin_dir_url(__FILE__) . '/assets/img/logo-wp.png';?>" alt="Logo" width="100" class="wc-migpayments-thefunded-trader-logo">
+                                    </div>
+                                    <div id="wc-migpayments-info-box">
+                                    
+                                        <svg style="width:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /> </svg>
+
+                                        Note: If you have sent payment and have not received an order confirmation after 10 minutes or have sent partial payment and are unable to complete the entire transaction, please contact <a href="https://help.thefundedtraderprogram.com">support</a>.
+                                    </div>
+                                    <div id="wc-mipgpayments-partial-payments">
+                                    </div>
+
+                                <?php else: ?>
+                                    <div id="wc-migpayments-payment-data-error" class="woocommerce-error"><?php migpayments_wc_get_paymentDataErrorTxt();?></div>
+                                <?php endif; ?>
+                               
 
                             </div>
                         </div>

@@ -78,7 +78,7 @@ class WC_Migpayments_Service
 			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
              if(!$response->error && isset($response->data['prices'])){
                  foreach($response->data['prices'] as $currencyCode => $price){
-                     $html .=  '<div><span class="wc-migpayments-crypto-total">'. $price . '</span> <span class="wc-migpayments-currency-symbol">' . $currencyCode. '</span></div>';
+                     $html .=  '<div class="wc-migpayments-crypto-estimate-item"><span class="wc-migpayments-crypto-total">'. $price . '</span> <span class="wc-migpayments-currency-symbol">' . $currencyCode. '</span></div>';
                  }
              }
              $html .= '</div>';

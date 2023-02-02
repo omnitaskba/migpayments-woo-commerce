@@ -1,6 +1,6 @@
  #wc-migpayments-address-qr-code {
-    margin-left:auto;
-    margin-right:auto;
+    margin-left:auto !important;
+    margin-right:auto !important;
     border: 1px solid #eeee;
  }
 
@@ -24,6 +24,7 @@
 #wc-migpayments-cancel-order-button{
     margin-right: 10px;
     background-color: #000000;
+    
 }
 #wc-migpayments-review-order-button, #wc-migpayments-cancel-order-button{
     padding: 0.6180469716em 1.41575em;
@@ -64,72 +65,70 @@
     padding:20px;
     position: relative;
 }
-/* .outer-card{
-    position: absolute;
-    top: 40%;
-    transform: translateY(-50%);
-    left: 18%;
-} */
-.order-card {
+ 
+.wc-migpayments-order-card {
+    font-weight: 600;
     background-color: #eaeaea;
     padding: 10px 20px;
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
-    /* width: 400px; */
 }
-.card-title {
+.wc-migpayments-order-card  .wc-migpayments-order-item {
     display: flex;
     justify-content: space-between;
+    
 }
-.order-title p.name{
+.wc-migpayments-order-item a{
+    text-decoration: none;
+    color:#6d6d6d6d;
+}
+.wc-migpayments-order-title p.label{
     margin: 0;
     font-weight: 600;
     color: #aaa;
     font-size: 20px;
 }
-.order-title .price{
+.wc-migpayments-order-title .price{
     font-weight: bold;
     font-size: 30px;
     position: relative;
     top: -10px;
 }
-.product-title,.product-price {
-    font-weight: 600;
-}
-.product-title a{
-    text-decoration: none;
-    color:#6d6d6d6d;
-}
-.card-meta{
+ 
+.wc-migpayments-card-meta{
     margin-bottom: 30px;
 }
-.meta {
+.wc-migpayments-meta {
     font-size: 12px;
     font-weight: 600;
     color: #aaa;
 }
-.card-title.total {
+.wc-migpayments-order-total{
     padding: 10px 20px;
     border-top: 1px solid #a8a8a8;
     background-color: #eaeaea;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
+    width: 100%;
+    display:flex;
+    justify-content: space-between;
+    font-weight: 600;
 }
 
  
-.send-payment-top{
+.wc-migpayments-payment-data-title{
     text-align: left;
     padding: 0 20px;
 }
-.send-payment-top > p{
+.wc-migpayments-payment-data-title > p{
     font-weight: bold;
     margin-bottom: 2px;
 }
-.timer-main{
+.wc-migpayments-description-timer-wrapper{
     display: flex;
     justify-content: space-between;
 }
-.time.meta{
+.wc-migpayments-timer{
     white-space: nowrap;
     border-radius: 50%;
     border: 1px solid #ff9800;
@@ -146,42 +145,38 @@
     background-color: black !important;
     color: white;
 }
-.back-button+.order-title{
+.back-button+.wc-migpayments-order-title{
     margin-top: 20px;
 }
-.order-details+footer{
+.wc-migpayments-order-details+.wc-migpayments-footer{
     background-color: #f4f4f4;
     margin-top: 20px;
     padding: 20px;
     text-align: center;
     border-radius: 10px;
 }
-.footer-links a{
+.wc-migpayments-footer-links a{
     color: #aaa;
     font-size: 14px;
 }
  
-.afg_databtn{
-    text-align:right !important;
-}
-button.afg_bntcopy {
+button.wc-migpayments-copy-btn {
     font-size: 12px !important;
     padding: unset;
     color: black !important; 
     /* background: #eeee !important; */
     text-transform: capitalize !important;
     padding: 4px !important;
+    float:right !important;
 }		
             
-.afg_crypto_address, .afg_currency_text, .afg_amountdata, .afg_cryptocode{
-    text-align: left;
-}
+ 
 
-span.copy_clipbord {
+.wc-migpayments-copy-to-clipboard {
     text-align: end !important;
     float: right;
 }
-span.copy_clipbord:hover {
+span.wc-migpayments-copy-to-clipboard:hover {
     cursor: pointer;
 }
 
@@ -193,7 +188,7 @@ span.wc-migpayments-crypto-address-label {
     font-size: 16px;
     font-weight: 600;
 }
-div#afg_maindiv {
+div#wc-migpayments-right-column {
     margin: 0px auto;
     background: #eeeeee;
     padding-top: 20px;
@@ -207,7 +202,7 @@ div#wc-migpayments-address-qr-code-wrapper {
     border-bottom: 1px solid #6d6d6d6d;
 }
 div#wc-migpayments-payment-data {
-    margin: unset;
+    margin: unset !important;
 }
 .wc-migpayments-crypto-address-wrapper {
     border-bottom: 1px solid #6d6d6d6d;
@@ -220,7 +215,7 @@ div#wc-migpayments-payment-data {
 i.afg_copyicon.fa.fa-clone {
     margin-right: 7px;
 }
-span.copy_clipbord {
+span.wc-migpayments-copy-to-clipboard {
     float: right;
 } 
 #total_crypto_amount{
@@ -252,7 +247,7 @@ span.copy_clipbord {
     text-align: justify;
     
 }
-.wc-migpayments-order-info-box .copy_clipbord{
+.wc-migpayments-order-info-box .wc-migpayments-copy-to-clipboard{
     font-size:12px;
 
 }
@@ -265,7 +260,8 @@ span.copy_clipbord {
 
 .wc-migpayments-thefunded-trader-logo{
     width: 100px;
-    margin: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-top: 20px;
     margin-bottom: 20px;
 }
@@ -322,7 +318,8 @@ span.copy_clipbord {
    margin-bottom: 0px;
 }
 .wc-overpaid-modal-body img{
-    margin: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-bottom: 15px;
 }
 .wc-overpaid-modal-content a {
@@ -344,10 +341,25 @@ span.copy_clipbord {
     border-bottom: 1px solid #eeeeee;
 }
 .wc-overpaid-modal-header h3{
-    margin: 0;
+    margin: 0 !important;;
 }
 .wc-overpaid-modal-close{
-    color:#333333 !important;
-    background-color: transparent;
-    border: none;
+    color: #fff !important;
+    background-color: #000000  !important; ;
+    border-color: #000000 !important; ;
+
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    border-radius: 0.25rem  !important;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }

@@ -57,7 +57,7 @@ setInterval(function(){
                     var totalPartialsAmount = 0;
                     var currencyCode = null;
                     if(data.partial_payments && data.partial_payments.length > 0){
-                        var html = '<h5 class="text-left">Partial Payments</h5><div class="wc-migpayments-order-info-box"> <span>Order ID: ' + data.order_number + '</span> <span class="copy_clipbord"><div onclick="copyToClipboard('+ data.order_number + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</div></span> </div> <table id="wc-migpayments-partial-payments-list" class="table">';
+                        var html = '<h5 class="text-left">Partial Payments</h5><div class="wc-migpayments-order-info-box"> <span>Order ID: ' + data.order_number + '</span> <span class="wc-migpayments-copy-to-clipboard"><div onclick="copyToClipboard('+ data.order_number + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</div></span> </div> <table id="wc-migpayments-partial-payments-list" class="table">';
                         html += '<thead><th>Amount</th><th>Received At</th></thead><tbody>'
 
                         let payments = data.partial_payments;
@@ -76,7 +76,7 @@ setInterval(function(){
                         html += '<div class="wc-migpayments-remaining-amount">';
                         
                         html += '<div class="text-left">';
-                        html += 'Remaining Payment Amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="copy_clipbord"><button class="afg_bntcopy"  onclick="copyToClipboard('+ remainingAmount + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>';
+                        html += 'Remaining Payment Amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>';
                         html += '</div>';
                         // each payments
                         partialPaymentsEl.innerHTML = html;
