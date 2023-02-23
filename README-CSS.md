@@ -21,9 +21,7 @@ Written in format #id/.class (html element) - description
     .wc-migpayments-order-title (div) - Order title & price wrapper
     .wc-migpayments-order-title p.label (p) - "Your order" text
     .wc-migpayments-order-title .price (p) - Order price text
-    .wc-migpayments-order-card (div) - Order items wrapper
     .wc-migpayments-order-item (div) - Single item row  or Subtotal row
-    .wc-migpayments-order-total(div) - Order total
     .wc-migpayments-footer - footer links wrapper
     .wc-migpayments-footer-links (div) - footer links
     

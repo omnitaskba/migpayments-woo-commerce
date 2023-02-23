@@ -1,15 +1,18 @@
 setInterval(function(){ 
-    
+   
     const data = new FormData();
     var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
     var infoBoxEl =  document.getElementById('wc-migpayments-info-box')
-    var cancelBtn = document.getElementById('wc-migpayments-cancel-order-button');
+    var paymentDataEl =  document.getElementById('wc-payment-data-container')
+    
     var reviewBtn = document.getElementById('wc-migpayments-review-order-button');
     var amountEl = document.getElementById('wc-migpayments-crypto-amount-wrapper');
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
+    var cancelBtn = document.getElementsByClassName('wc-migpayments-cancel-btn');
+    var ajaxUrl  = overpaidModal.dataset.url;
 
     data.append( 'action', 'migpayments_wc_check_payment_status' );
-    data.append( 'order_id', ajaxObj.orderId);
+    data.append( 'order_id' , overpaidModal.dataset.order_id);
     const params = new URLSearchParams(data);
     const settings = {
         method: 'POST',
@@ -21,7 +24,7 @@ setInterval(function(){
         credentials: 'same-origin',
     };
 
-    const fetchResponse = fetch(ajaxObj.ajaxurl, settings).then(response => response.json()).then(data => {
+    const fetchResponse = fetch(ajaxUrl, settings).then(response => response.json()).then(data => {
         // console.log(data);
         //Payment confirmed
         if(data.redirect == true){
@@ -30,21 +33,12 @@ setInterval(function(){
              
             if(data.status == 'Overpaid'){
                 if(overpaidModal)
-                overpaidModal.classList.add('active');
+                    overpaidModal.classList.add('active');
                 
-                var partialAmountEl = document.getElementById('wc-migpayments-remaining-amount');
-                if(partialAmountEl){
-                    partialAmountEl.remove();
-                }
-              
-                infoBoxEl.innerHTML = '';
-                if(cancelBtn)
-                     cancelBtn.remove();
-                if(reviewBtn)
-                    reviewBtn.remove();
-                if(amountEl)
-                amountEl.remove();
-             
+                    console.log(data.pending_reason);
+                    var paymentDataContainer = document.getElementById('wc-payment-data-container');
+                    paymentDataContainer.classList.add('hide');
+                 
             } else{
 
                 if(data.status != 'Pending'){
@@ -57,7 +51,7 @@ setInterval(function(){
                     var totalPartialsAmount = 0;
                     var currencyCode = null;
                     if(data.partial_payments && data.partial_payments.length > 0){
-                        var html = '<h5 class="text-left">Partial Payments</h5><div class="wc-migpayments-order-info-box"> <span>Order ID: ' + data.order_number + '</span> <span class="wc-migpayments-copy-to-clipboard"><div onclick="copyToClipboard('+ data.order_number + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</div></span> </div> <table id="wc-migpayments-partial-payments-list" class="table">';
+                        var html = '<hr><h5 class="text-left">Partial Payments</h5> <table id="wc-migpayments-partial-payments-list" class="table">';
                         html += '<thead><th>Amount</th><th>Received At</th></thead><tbody>'
 
                         let payments = data.partial_payments;
@@ -76,17 +70,13 @@ setInterval(function(){
                         html += '<div class="wc-migpayments-remaining-amount">';
                         
                         html += '<div class="text-left">';
-                        html += 'Remaining Payment Amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')"><i class="afg_copyicon fa fa-clone" aria-hidden="true"></i>Copy</button></span>';
+                        html += 'Remaining Payment Amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')">Copy</button></span>';
                         html += '</div>';
                         // each payments
                         partialPaymentsEl.innerHTML = html;
                     
                     }
-
-                    if(cancelBtn)
-                        cancelBtn.remove();
-                    if(reviewBtn)
-                        reviewBtn.remove();
+ 
                 
                 }
                 
@@ -109,5 +99,9 @@ setInterval(function(){
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
     overpaidModal.classList.remove('active');
     overpaidModal.remove();
+
+    var paymentDataContainer = document.getElementById('wc-payment-data-container');
+    paymentDataContainer.classList.remove('hide');
+    
    
  }

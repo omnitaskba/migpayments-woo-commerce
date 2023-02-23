@@ -84,13 +84,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					'redirectUrl' => $_GET['success_url']
 				)
 			);
-			wp_enqueue_script("jquery");
-			wp_enqueue_script( 'redirect-js' );
+			 
+			// wp_enqueue_script("jquery");
+			// wp_enqueue_script( 'redirect-js' );
 
 			// wp_register_script('wp-migpayments_bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js');
 			// wp_enqueue_script('wp-migpayments_bootstrap-js');
-			wp_register_style('wc-migpayments_bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css');
-			wp_enqueue_style('wc-migpayments_bootstrap');
+			 
 		} 
  
 	}
@@ -113,7 +113,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			break;
 			case 'Overpaid':
 				$data['overpaid_amount'] =  get_post_meta( $_POST['order_id'], '_migpayments_worder_overpaid_payment_amount', true );
-			break;
+ 			break;
 			case 'Partially paid':
 				$data['partial_payments'] =  get_post_meta($_POST['order_id'], '_migpayments_worder_partial_payments', true);
 
@@ -262,7 +262,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			private $apiWhitelistedIpAddresses = ['165.22.81.95'];
 			private $isRefreshing = false;
 			public $redirectBtnText = 'I have sent the payment';
-			public $cryptoAddressLabelTxt = 'Send transaction to this address: ';
+			public $cryptoAddressLabelTxt = 'address';
 			public $cryptoAmountLabelTxt = 'Send this exact amount:';
 			public $paymentDataErrorTxt = 'Failed to get crypto payment data.';
 			
