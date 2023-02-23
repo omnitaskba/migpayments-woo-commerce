@@ -70,7 +70,7 @@ setInterval(function(){
                         html += '<div class="wc-migpayments-remaining-amount">';
                         
                         html += '<div class="text-left">';
-                        html += 'Remaining Payment Amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')">Copy</button></span>';
+                        html += 'Remaining payment amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')">Copy</button></span>';
                         html += '</div>';
                         // each payments
                         partialPaymentsEl.innerHTML = html;
