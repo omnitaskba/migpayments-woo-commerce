@@ -318,6 +318,7 @@ span.wc-migpayments-copy-to-clipboard {
     justify-content: space-between;
     background-color: #FFFFFF;
      align-items: center;
+     margin-top: 10px;
 }
  
 #wc-payment-data-container{

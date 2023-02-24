@@ -8,7 +8,7 @@ setInterval(function(){
     var reviewBtn = document.getElementById('wc-migpayments-review-order-button');
     var amountEl = document.getElementById('wc-migpayments-crypto-amount-wrapper');
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
-    var cancelBtn = document.getElementsByClassName('wc-migpayments-cancel-btn');
+    var cancelBtn = document.getElementById('wc-migpayments-cancel-btn');
     var ajaxUrl  = overpaidModal.dataset.url;
 
     data.append( 'action', 'migpayments_wc_check_payment_status' );
@@ -35,13 +35,19 @@ setInterval(function(){
                 if(overpaidModal)
                     overpaidModal.classList.add('active');
                 
-                    console.log(data.pending_reason);
-                    var paymentDataContainer = document.getElementById('wc-payment-data-container');
-                    paymentDataContainer.classList.add('hide');
                  
+                var paymentDataContainer = document.getElementById('wc-payment-data-container');
+                paymentDataContainer.classList.add('hide');
+                
+                if(cancelBtn)
+                    cancelBtn.remove();
             } else{
 
                 if(data.status != 'Pending'){
+
+                    if(cancelBtn)
+                    cancelBtn.remove();
+
                     if(amountEl)
                     amountEl.remove();
                     if(infoBoxEl)
@@ -51,13 +57,13 @@ setInterval(function(){
                     var totalPartialsAmount = 0;
                     var currencyCode = null;
                     if(data.partial_payments && data.partial_payments.length > 0){
-                        var html = '<hr><h5 class="text-left">Partial Payments</h5> <table id="wc-migpayments-partial-payments-list" class="table">';
-                        html += '<thead><th>Amount</th><th>Received At</th></thead><tbody>'
+                        var html = '<hr><h5 class="text-left">Partial Payments</h5> <table id="wc-migpayments-partial-payments-list" class="table" style="font-size:14px;">';
+                        html += '<thead><th style="text-align:left;padding-left:0px;">Amount</th><th style="text-align:right;padding-right:0px;">Received At</th></thead><tbody>'
 
                         let payments = data.partial_payments;
                         for (let i = 0; i < payments.length; i++) {
                             currencyCode = payments[i].currency_code;
-                            html += '<tr><td> <span class="text-success">'+ payments[i].amount  + '</span> ' +  payments[i].currency_code + '</td><td> ' + payments[i].received_at + '</b></tr>'
+                            html += '<tr style="border-bottom:none;"><td style="border:none;text-align:left;padding-left:0px;"> <h6 class="text-success">'+ payments[i].amount  + ' <span style="color:#000000" >' +  payments[i].currency_code + '</span></h6> </td><td style="border:none;text-align:right;padding-right:0px;"> ' + payments[i].received_at + '</b></tr>'
                             totalPartialsAmount = parseFloat(payments[i].amount) + parseFloat(totalPartialsAmount);
                             
                         }
