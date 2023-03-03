@@ -17,11 +17,17 @@
             font-family: 'Montserrat', sans-serif;
             }
         </style>
+        <style>
+            .full-width-bg::before{
+                background: url('<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/bg-image.jpg';?>') no-repeat center center;
+                background-size: cover;
+            }
+        </style>
     <body>
        
       
             <!-- Main -->
-            <div id="wc-payment-wrapper" style="background-image: url('<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/bg-image.jpg';?> ?>');">
+            <div id="wc-payment-wrapper" class="full-width-bg" >
             <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?> ?>" alt="The funded trader logo">
 
                 <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
