@@ -28,7 +28,7 @@ setInterval(function(){
         // console.log(data);
         //Payment confirmed
         if(data.redirect == true){
-            window.location.href = ajaxObj.redirectUrl;
+            window.location.href = data.redirectUrl;
         } else{ 
              
             if(data.status == 'Overpaid'){

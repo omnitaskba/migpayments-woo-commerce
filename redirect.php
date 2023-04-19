@@ -28,7 +28,7 @@
       
             <!-- Main -->
             <div id="wc-payment-wrapper" class="full-width-bg" >
-            <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?> ?>" alt="The funded trader logo">
+            <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?>" alt="The funded trader logo">
 
                 <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
                     <?php

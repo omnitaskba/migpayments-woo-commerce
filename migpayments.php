@@ -86,7 +86,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			);
 			 
 			// wp_enqueue_script("jquery");
-			// wp_enqueue_script( 'redirect-js' );
+			wp_enqueue_script( 'redirect-js' );
 
 			// wp_register_script('wp-migpayments_bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js');
 			// wp_enqueue_script('wp-migpayments_bootstrap-js');
@@ -101,6 +101,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	 
 		$status      = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_payment_status', true );
 		$currencyCode = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_currency_code', true );
+	
+		$order = wc_get_order( $_POST['order_id'] );
 		$data  = [
 			'status' => $status,
 			'currency_code' => $currencyCode,
@@ -110,6 +112,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		switch($status){
 			case 'Completed':
 				$data['redirect'] = true;
+				$returnUrl      = get_post_meta( $_POST['order_id'], '_return_url', true );
+
+				$data['redirectUrl'] = $returnUrl;
 			break;
 			case 'Overpaid':
 				$data['overpaid_amount'] =  get_post_meta( $_POST['order_id'], '_migpayments_worder_overpaid_payment_amount', true );
@@ -610,6 +615,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $cryptoAmount );
 				update_post_meta( $orderId, '_migpayments_worder_crypto_address', $cryptoAddress );
 				update_post_meta( $orderId, '_migpayments_worder_crypto_expires_at', $expiresAt );
+				update_post_meta( $orderId, '_return_url', $payment_link );
 
 				return array(
 					'result' => 'success',
