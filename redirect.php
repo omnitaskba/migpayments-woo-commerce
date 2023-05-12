@@ -122,7 +122,7 @@
                                     <div class="wc-migpayments-payment-items">
                                             <div class="wc-migpayments-payment-item" >
                                                 <div class="wc-payment-data-item">
-                                                    <?php echo  $_GET['currency'];?> <?php migpayments_wc_get_cryptoAddressLabelTxt();?> 
+                                                    <label for="addresss"><?php migpayments_wc_get_cryptoAddressLabelTxt();?> </label>
                                                     <p> <?php echo $_GET['address'];  ?></p>
                                                 </div>
                                                 
@@ -132,9 +132,9 @@
                                             </div>
                                             <div class="wc-migpayments-payment-item">
                                                 <div class="wc-payment-data-item" >
-                                                    <?php migpayments_wc_get_cryptoAmountLabelTxt();?>
+                                                    <label for="total_crypto_amount"><?php migpayments_wc_get_cryptoAmountLabelTxt();?></label>
                                                     <p id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];  ?>">
-                                                    <?php echo $_GET['amount'];  ?>
+                                                    <?php echo $_GET['amount'];  ?> <?php echo  $_GET['currency'];?> 
                                                     </p> 
                                                 </div>
                                                 <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('<?php echo $_GET['amount'];  ?>')">Copy</button>

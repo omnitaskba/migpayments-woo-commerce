@@ -537,8 +537,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 							echo $this->cryptoPricesHtmlResponse->data;
 					
 					echo '<div class="form-row ">
-							<label id="wc-migpayments-crypto-currency-select-label">Choose Crypto Currency<span class="required">*</span></label>
-							<select id="wc-migpayments-crypto-currency-select" name="crypto_currency">';
+							<label id="wc-migpayments-crypto-currency-select-label">Crypto Currency<span class="required">*</span></label>
+							<select id="wc-migpayments-crypto-currency-select" name="crypto_currency"><option value="">Choose crypto currency';
 					
 						foreach($this->cryptoCurrencies as $k => $v)
 						{
@@ -559,6 +559,25 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			public function process_payment( $orderId )
 			{
 			
+				$data = $_POST;
+ 
+				if ( empty($data['crypto_currency']) || $data['crypto_currency'] == ''  ) {
+					  
+
+					$error_message = '<ul class="woocommerce-error" role="alert"> <li data-id="crypto_address"> <strong>Please choose crypto currency. </li> </ul>';
+
+						// Create the response array
+						$response = array(
+							'result' => 'failure',
+							'messages' => $error_message,
+							'refresh' => false,
+							'reload' => false,
+						);
+ 
+						return wp_send_json($response);
+				}
+
+				
 				// New Order
 				$order = new WC_Order( $orderId );
 
@@ -567,7 +586,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 					
 				$order->update_status('Pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
 
-			
+		 
 				// Payment Page
 				$payment_link = $this->get_return_url($order);
 		
