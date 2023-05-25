@@ -259,12 +259,12 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			private $isSandbox  = true;
 			private $showCryptoPrices = true;
 			private $apiToken = null;
+			private $sharedSecret = null;
 			private $fiatCurrencies         = ['EUR', 'USD'];
 			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
 			private $fiatCurrency = null;
 			private $url3               = '';
 			private $cryptoPricesHtmlResponse = null;
-			private $apiWhitelistedIpAddresses = ['165.22.81.95'];
 			private $isRefreshing = false;
 			public $redirectBtnText = 'I have sent the payment';
 			public $cryptoAddressLabelTxt = 'address';
@@ -302,14 +302,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$this->init_form_fields();
 				$this->init_settings();
 				$this->migpayments_settings();
-				
-				$apiWhitelistedIps = $this->get_option('api_whitelisted_ips');
-				if($apiWhitelistedIps){
-					$apiWhitelistedIps = explode(',', trim($apiWhitelistedIps));
-					if(count($apiWhitelistedIps))
-						$this->apiWhitelistedIpAddresses = array_merge($this->apiWhitelistedIpAddresses, $apiWhitelistedIps);
-				}
-		 
+			 
 				$availableCurrenciesSetting = $this->get_option('available_currencies');
 			
 				if($availableCurrenciesSetting && is_array($availableCurrenciesSetting)){
@@ -343,10 +336,23 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			 
 			public function paymentConfirmedWebhook(){
 			 
-				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
-					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
-				}
+				$body = file_get_contents('php://input');
+
+				// Get HMAC from headers
+				$headers = getallheaders();
+				$received_hmac = $headers['X-Webhook-Signature'];
 				
+				// Compute our HMAC of the body
+				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
+				 
+				// Check if our computed HMAC matches the one we received
+				if ($received_hmac !== $computed_hmac) {
+						// HMACs do not match, reject request
+					 
+						wp_send_json_error('Forbidden');
+						exit();
+				} 
+			 
 				$order = wc_get_order( $_GET['id'] );
 				$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
 				$order->payment_complete();
@@ -359,11 +365,21 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 			public function partialPaymentWebhook(){
 			  	
-				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
-					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
-				}
+				$body = file_get_contents('php://input');
+				// Get HMAC from headers
+				$headers = getallheaders();
+				$received_hmac = $headers['X-Webhook-Signature'];
 
-				$data = json_decode(file_get_contents('php://input'), true);
+				// Compute our HMAC of the body
+				$computed_hmac = hash_hmac('sha256', $body,  $this->sharedSecret);
+
+				// Check if our computed HMAC matches the one we received
+				if ($received_hmac !== $computed_hmac) {
+						// HMACs do not match, reject request
+						wp_send_json_error('Forbidden');
+						exit();
+				}  
+				$data = json_decode($body, true);
 
 				$order = wc_get_order( $_GET['id'] );
 				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
@@ -391,11 +407,21 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 			public function overpaidPaymentWebhook(){
 			  	
-				if(!in_array($_SERVER['REMOTE_ADDR'], $this->apiWhitelistedIpAddresses)){
-					wp_send_json_error( [ 'messages' => ['Forbidden' ]]);
-				}
+				$body = file_get_contents('php://input');
+				// Get HMAC from headers
+				$headers = getallheaders();
+				$received_hmac = $headers['X-Webhook-Signature'];
 
-				$data = json_decode(file_get_contents('php://input'), true);
+				// Compute our HMAC of the body
+				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
+
+				// Check if our computed HMAC matches the one we received
+				if ($received_hmac !== $computed_hmac) {
+						// HMACs do not match, reject request
+						wp_send_json_error('Forbidden');
+						exit();
+				}  
+				$data = json_decode($body, true);
 
 				$order = wc_get_order( $_GET['id'] );
 				$order->add_order_note('Overpaid crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
@@ -416,6 +442,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
 				$this->showCryptoPrices          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('show_crypto_prices')==='') || $this->get_option('show_crypto_prices') == 'yes' || $this->get_option('show_crypto_prices') == '1' || $this->get_option('show_crypto_prices') === true) ? true : false;
 				$this->apiToken          = $this->get_option( 'api_token' );
+				$this->sharedSecret          = $this->get_option( 'shared_secret' );
+			 
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
 				$this->redirectBtnText      =$this->get_option( 'redirect_button_txt' ) && $this->get_option( 'redirect_button_txt' ) != '' ? $this->get_option( 'redirect_button_txt' ) : $this->redirectBtnText;
@@ -482,6 +510,12 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
 					),
+					'shared_secret' 	=> array(
+						'title'       	=> __( 'Migpayments API Secret', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'description' 	=> __( '', MIGPAYMENTSWC )
+					),
 			 
 					'show_crypto_prices'		=> array(
 						'title'   	  	=> __( 'Crypto Totals Box', MIGPAYMENTSWC ),
@@ -503,13 +537,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 							'data-placeholder' => __( 'Select crypto currencies', MIGPAYMENTSWC ),
 						  ),
 					),
-					'api_whitelisted_ips' 	=> array(
-						'title'       	=> __( 'Webhook Whitelisted IPs', MIGPAYMENTSWC ),
-						'type'        	=> 'text',
-						'default'     	=> null,
-						'description' 	=> __( 'Enter comma separated IP addresses whilisted for payment webhook notifications.', MIGPAYMENTSWC )
-					),
-					
+				 
 				);
 
 				return true;
