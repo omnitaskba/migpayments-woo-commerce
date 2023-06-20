@@ -101,13 +101,18 @@ setInterval(function(){
   
    
  function hideOverpaidModal(){
-    
+    //redirect to base URL
+    window.location = window.location.origin;
+    /**
+     * @dev Obsolete, remove in future iterations
+     */
+    /*
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
     overpaidModal.classList.remove('active');
     overpaidModal.remove();
 
     var paymentDataContainer = document.getElementById('wc-payment-data-container');
     paymentDataContainer.classList.remove('hide');
+    */
     
-   
  }
