@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.4.2
+Version: 			1.4.3
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.4.2');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.4.3');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
 
 
@@ -66,7 +66,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	  }
 	}
 	function migpayments_wc_style() {
-		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4.2');
+		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4.3');
 
 	}
 	
@@ -344,7 +344,14 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
-				 
+
+				error_log(print_r([
+					'headers' => $headers,
+					'body' => $body,
+					'signature' => $received_hmac,
+					'computed_signature' => $computed_hmac
+				], true));
+
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
@@ -373,6 +380,12 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body,  $this->sharedSecret);
 
+				error_log(print_r([
+					'headers' => $headers,
+					'body' => $body,
+					'signature' => $received_hmac,
+					'computed_signature' => $computed_hmac
+				], true));
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
@@ -414,6 +427,13 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
+
+				error_log(print_r([
+					'headers' => $headers,
+					'body' => $body,
+					'signature' => $received_hmac,
+					'computed_signature' => $computed_hmac
+				], true));
 
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
