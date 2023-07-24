@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.4.3
+Version: 			1.4.4
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.4.3');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.4.4');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
 
 
@@ -66,7 +66,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	  }
 	}
 	function migpayments_wc_style() {
-		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4.3');
+		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4.4');
 
 	}
 	
@@ -319,7 +319,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				}
  
 				if((WC()->cart && ((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || $this->showCryptoPrices)))
-					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_total(false), $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
+					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->total, $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
 				
 
 				//update payment options(woocmmerce settings - payments)
