@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.4.4
+Version: 			1.5
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.4.4');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.5');
 	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
 
 
@@ -66,7 +66,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	  }
 	}
 	function migpayments_wc_style() {
-		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.4.4');
+		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.5');
 
 	}
 	
@@ -98,11 +98,11 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 	function migpayments_wc_asyncCheckPaymentStatus() {
 		global $migpayments;  
-	 
-		$status      = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_payment_status', true );
-		$currencyCode = get_post_meta( $_POST['order_id'], '_migpayments_worder_crypto_currency_code', true );
-	
 		$order = wc_get_order( $_POST['order_id'] );
+
+		$status      = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
+		$currencyCode = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
+	 
 		$data  = [
 			'status' => $status,
 			'currency_code' => $currencyCode,
@@ -112,15 +112,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		switch($status){
 			case 'Completed':
 				$data['redirect'] = true;
-				$returnUrl      = get_post_meta( $_POST['order_id'], '_return_url', true );
+				$returnUrl      =  $order->get_meta('_return_url', true );
 
 				$data['redirectUrl'] = $returnUrl;
 			break;
 			case 'Overpaid':
-				$data['overpaid_amount'] =  get_post_meta( $_POST['order_id'], '_migpayments_worder_overpaid_payment_amount', true );
+				$data['overpaid_amount'] =  $order->get_meta('_migpayments_worder_overpaid_payment_amount', true );
  			break;
 			case 'Partially paid':
-				$data['partial_payments'] =  get_post_meta($_POST['order_id'], '_migpayments_worder_partial_payments', true);
+				$data['partial_payments'] =  $order->get_meta('_migpayments_worder_partial_payments', true);
 
 			break;
 		}
@@ -208,13 +208,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	function migpayments_wc_admin_order_stats( $order )
 	{
  
-		$orderId     = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
-		
+ 		
 
-		$status      = get_post_meta( $orderId, '_migpayments_worder_crypto_payment_status', true );
-		$cryptoCurrencyCode      = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
-		$cryptoAmount      = get_post_meta( $orderId, '_migpayments_worder_crypto_amount', true );
-		$cryptoAddress      = get_post_meta( $orderId, '_migpayments_worder_crypto_address', true );
+		$status      = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
+		$cryptoCurrencyCode      = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
+		$cryptoAmount      = $order->get_meta('_migpayments_worder_crypto_amount', true );
+		$cryptoAddress      = $order->get_meta('_migpayments_worder_crypto_address', true );
 		
 		   
 		$htmlResponse = '<h3>Crypto Payment Info</h3>';
@@ -250,7 +249,11 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 		add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
  		add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_available_payment_gateways' );
-		
+		 add_action( 'before_woocommerce_init', function() {
+			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			}
+		} );
  		/*
 		*	Payment Gateway WC Class
 		*/
@@ -356,7 +359,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
 					 
-						wp_send_json_error('Forbidden');
+						wp_send_json_error('Invalid secret key');
 						exit();
 				} 
 			 
@@ -364,8 +367,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
 				$order->payment_complete();
 
-				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Completed');
- 
+				$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Completed');
+				$order->save();
 			
 				wp_send_json('success');
 			}
@@ -389,7 +392,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
-						wp_send_json_error('Forbidden');
+						wp_send_json_error('Invalid secret key');
 						exit();
 				}  
 				$data = json_decode($body, true);
@@ -397,9 +400,9 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$order = wc_get_order( $_GET['id'] );
 				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
 
-				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Partially paid');
-
-				$partialPayments = 	get_post_meta( $order->get_id(), '_migpayments_worder_partial_payments', true);
+				$order->update_meta_data( '_migpayments_worder_crypto_payment_status', 'Partially paid');
+				
+				$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
 				if(!$partialPayments){
 					$partialPayments = [];
 				}
@@ -413,8 +416,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$partialPayments[] = $payment;
 				 
 
-				update_post_meta( $order->get_id(), '_migpayments_worder_partial_payments', $partialPayments);
-
+				$order->update_meta_data('_migpayments_worder_partial_payments', $partialPayments);
+				$order->save(); 
  				wp_send_json('success');
 			}
 
@@ -438,7 +441,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
-						wp_send_json_error('Forbidden');
+						wp_send_json_error('Invalid secret key');
 						exit();
 				}  
 				$data = json_decode($body, true);
@@ -446,11 +449,11 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$order = wc_get_order( $_GET['id'] );
 				$order->add_order_note('Overpaid crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
 
-				update_post_meta( $order->get_id(), '_migpayments_worder_crypto_payment_status', 'Overpaid');
+				$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Overpaid');
 
 				 
-				update_post_meta( $order->get_id(), '_migpayments_worder_overpaid_payment_amount', $data['amount']);
-
+				$order->update_meta_data('_migpayments_worder_overpaid_payment_amount', $data['amount']);
+				$order->save();
  				wp_send_json('success');
 			}
 
@@ -640,18 +643,18 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 		
 				$orderpage = $order->get_checkout_order_received_url()."&prvw=1";
 
-				if (!get_post_meta( $orderId, '_migpayments_worder_orderid', true ))
+				if (!$order->get_meta('_migpayments_worder_orderid', true ))
 				{
  	
-					update_post_meta( $orderId, '_migpayments_worder_crypto_payment_status', 'Pending');
-					update_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', 	    $_POST['crypto_currency'] );
-					update_post_meta( $orderId, '_migpayments_worder_orderid', 	    $orderId );
-					update_post_meta( $orderId, '_migpayments_worder_userid', 	    $userID );
-					update_post_meta( $orderId, '_migpayments_worder_createtime',   gmdate("c") );
+					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Pending');
+					$order->update_meta_data('_migpayments_worder_crypto_currency_code', 	    $_POST['crypto_currency'] );
+					$order->update_meta_data('_migpayments_worder_orderid', 	    $orderId );
+					$order->update_meta_data('_migpayments_worder_userid', 	    $userID );
+					$order->update_meta_data('_migpayments_worder_createtime',   gmdate("c") );
 
-					update_post_meta( $orderId, '_migpayments_worder_orderpage',     $orderpage );
-					update_post_meta( $orderId, '_migpayments_worder_created',      gmdate("d M Y, H:i") );
-		
+					$order->update_meta_data('_migpayments_worder_orderpage',     $orderpage );
+					$order->update_meta_data('_migpayments_worder_created',      gmdate("d M Y, H:i") );
+					$order->save(); 
 				}
 			 
 				// Empty cart
@@ -677,23 +680,20 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 					}
 
 					$expiresAt = $response->data['expires_at'];
+				} else{
+					error_log(print_r($response->error), true);
 				}
 
-				update_post_meta( $orderId, '_migpayments_worder_crypto_amount', $cryptoAmount );
-				update_post_meta( $orderId, '_migpayments_worder_crypto_address', $cryptoAddress );
-				update_post_meta( $orderId, '_migpayments_worder_crypto_expires_at', $expiresAt );
-				update_post_meta( $orderId, '_return_url', $payment_link );
-
+				$order->update_meta_data('_migpayments_worder_crypto_amount', $cryptoAmount );
+				$order->update_meta_data('_migpayments_worder_crypto_address', $cryptoAddress );
+				$order->update_meta_data('_migpayments_worder_crypto_expires_at', $expiresAt );
+				$order->update_meta_data('_return_url', $payment_link );
+				$order->save(); 
 				return array(
 					'result' => 'success',
 					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&expires_at=' . $expiresAt . '&success_url='. $this->get_return_url($order))
 				);
-				
-				// Return redirect
-				return array(
-					'result' 	=> 'success',
-					'redirect'	=> $payment_link
-				);
+			 
 			}
 		
 			public function getPaymentData( $orderId )
@@ -704,7 +704,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				$orderId       = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id             : $order->get_id();
 				$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
 				$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
-				$cryptoCurrencyCode = get_post_meta( $orderId, '_migpayments_worder_crypto_currency_code', true );
+				$cryptoCurrencyCode = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
 					 
 				$user = $order->get_user();
 
@@ -714,7 +714,7 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				 
 					
 				];
-
+ 
 				$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken, $this->isSandbox , $orderData );
 
 				return  $response;

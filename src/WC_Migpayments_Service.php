@@ -28,7 +28,7 @@ class WC_Migpayments_Service
 		 
 			if(!$response['success']){
                 $error = 'Failed to get payment data.';
-                error_log($error);
+                error_log(print_r($response, true));
             }
             if(isset($response['data']) && !empty($response['data']));
                 $data = $response['data'];

@@ -74,8 +74,8 @@ class WC_Migpayments_Library {
                 'success' => 'false',
                 'status' => 500
             ];
+           
         }
-
         $data  = is_array($response) &&  isset($response['body']) ? json_decode($response['body'], true) : [];
 
         if(isset($data['data'] ) && !empty($data['data'])){
