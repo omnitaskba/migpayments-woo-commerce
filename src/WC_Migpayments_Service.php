@@ -20,15 +20,25 @@ class WC_Migpayments_Service
     public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
         $error = null;
         $data = null;
+        $logger = null;
         $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
-    
+        
+        if(function_exists('wc_get_logger')){
+            $logger = wc_get_logger();
+        }
         //now the logic
         try{
 			$response  = $migpaymentsLibrary->getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData);
 		 
 			if(!$response['success']){
-                $error = 'Failed to get payment data.';
-                error_log(print_r($response, true));
+               
+                if($logger){
+                  
+                    $logger->info('Failed to get payment data.' . json_encode($response), ['source' => 'migpayments']);
+                } else {
+                    error_log(json_encode($response));
+                }
+               
             }
             if(isset($response['data']) && !empty($response['data']));
                 $data = $response['data'];
@@ -36,6 +46,12 @@ class WC_Migpayments_Service
 
         }catch(Exception $e){
          
+            if($logger){
+                  
+                $logger->info('Failed to get payment data.' . json_encode($e), ['source' => 'migpayments']);
+            } else {
+                error_log(json_encode($e));
+            }
             $error = 'Failed to get payment datae.';
         }
          

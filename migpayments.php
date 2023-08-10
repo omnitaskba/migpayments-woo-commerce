@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.5
+Version: 			1.5.1
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,12 +20,10 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.5');
-	DEFINE('MIGPAYMENTSWC_2WAY', json_encode(array("ETH", "BTC", "USDT")));
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.1');
 
-
-	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY'))
-	{
+	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
+		
 		DEFINE('MIGPAYMENTSWC_AFFILIATE_KEY', 	'migpayments');
 		add_action( 'plugins_loaded', 		'migpayments_wc_gateway_load', 20 );
 		add_filter( 'plugin_action_links', 	'migpayments_wc_action_links', 10, 2 );
@@ -34,16 +32,17 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_filter( 'page_template', 'migpayments_wc_page_template');
 		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
+		
 		add_action( 'before_woocommerce_init', function() {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 		 
 			}
 		} );
-		register_activation_hook(__FILE__, 'myplugin_activate'); 
+		register_activation_hook(__FILE__, 'activatePlugin'); 
 	}
 	
-	function myplugin_activate () {
+	function activatePlugin () {
 	  create_custom_page('migpayments-payment-instructions');
 	}
 	
@@ -70,9 +69,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		]);
 	  }
 	}
-	function migpayments_wc_style() {
-		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v=1.5');
 
+	function migpayments_wc_style() {
+		wp_enqueue_style('migpayments_wc_style', plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v='. MIGPAYMENTSWC_VERSION);
 	}
 	
 	function migpayments_wc_scripts(){
@@ -90,19 +89,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				)
 			);
 			 
-			// wp_enqueue_script("jquery");
 			wp_enqueue_script( 'redirect-js' );
-
-			// wp_register_script('wp-migpayments_bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js');
-			// wp_enqueue_script('wp-migpayments_bootstrap-js');
-			 
+  
 		} 
  
 	}
 	
 
 	function migpayments_wc_asyncCheckPaymentStatus() {
-		global $migpayments;  
+		 
 		$order = wc_get_order( $_POST['order_id'] );
 
 		$status      = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
@@ -133,15 +128,14 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		wp_send_json($data);
 	}
 	
-	 function migpayments_wc_page_template( $page_template )
-	 {
-		 if ( is_page( 'migpayments-payment-instructions' ) ) {
-		 
-			$page_template = dirname( __FILE__ ) . '/redirect.php';
-		 }
+	function migpayments_wc_page_template( $pageTemplate )
+	{
+		if ( is_page( 'migpayments-payment-instructions' ) ) {
+			$pageTemplate = dirname( __FILE__ ) . '/redirect.php';
+		}
 	 
-		 return $page_template;
-	 }
+		return $pageTemplate;
+	}
 
 	function migpayments_wc_action_links($links, $file)
 	{
@@ -197,10 +191,6 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 	}
 
-
-	
-	
-
 	function migpayments_wc_gateway_add( $methods )
 	{
 		if (!in_array('WC_Gateway_Migpayments', $methods)) {
@@ -213,8 +203,6 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	function migpayments_wc_admin_order_stats( $order )
 	{
  
- 		
-
 		$status      = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
 		$cryptoCurrencyCode      = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
 		$cryptoAmount      = $order->get_meta('_migpayments_worder_crypto_amount', true );
@@ -233,21 +221,19 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	}
 
 
-function woocommerce_available_payment_gateways( $available_gateways ) {
-    if (! is_checkout() ) return $available_gateways;  // stop doing anything if we're not on checkout page.
-     if (array_key_exists('migpaymentspayments',$available_gateways)) {
-        // Gateway ID for Paypal is 'paypal'. 
+	function woocommerce_available_payment_gateways( $available_gateways ) {
+    	if (! is_checkout() ) return $available_gateways;   
 		
-         $available_gateways['migpaymentspayments']->order_button_text = __( 'Proceed to Migpayments', 'woocommerce' );
-    }
-    return $available_gateways;
-}
+		if (array_key_exists('migpaymentspayments',$available_gateways)) {
+			
+			$available_gateways['migpaymentspayments']->order_button_text = __( 'Proceed to Migpayments', 'woocommerce' );
+		}
+		return $available_gateways;
+	}
 
  
 	function migpayments_wc_gateway_load()
 	{
-		
-	
 		// WooCommerce required
 		if (!class_exists('WC_Payment_Gateway') || class_exists('WC_Gateway_MigPayments')) return;
 
@@ -275,12 +261,16 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 			public $cryptoAddressLabelTxt = 'address';
 			public $cryptoAmountLabelTxt = 'Send this exact amount:';
 			public $paymentDataErrorTxt = 'Failed to get crypto payment data.';
-			
+			public $logger;
+			public $context = ['source' => 'migpayments']; 
+
 			public function __construct()
 			{
 				global $migpayments;
-			
-			 
+				if(function_exists('wc_get_logger')){
+					$this->logger = wc_get_logger();
+				}
+ 
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainplugin_url 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
@@ -350,19 +340,22 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
 
-				error_log(print_r([
-					'headers' => $headers,
-					'body' => $body,
-					'signature' => $received_hmac,
-					'computed_signature' => $computed_hmac
-				], true));
+				if($this->logger)
+				{
+					$this->logger->info('Payment confirmed received:' . json_encode([
+						'headers' => $headers,
+						'body' => $body,
+						'signature' => $received_hmac,
+						'computed_signature' => $computed_hmac
+					]),  $this->context);
+				}
 
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
-						// HMACs do not match, reject request
-					 
-						wp_send_json_error('Invalid secret key');
-						exit();
+					// HMACs do not match, reject request
+					
+					wp_send_json_error('Invalid secret key');
+					exit();
 				} 
 			 
 				$order = wc_get_order( $_GET['id'] );
@@ -385,17 +378,20 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body,  $this->sharedSecret);
 
-				error_log(print_r([
-					'headers' => $headers,
-					'body' => $body,
-					'signature' => $received_hmac,
-					'computed_signature' => $computed_hmac
-				], true));
+				if($this->logger){
+					$this->logger->info( 'Partial payment received:' .json_encode([
+						'headers' => $headers,
+						'body' => $body,
+						'signature' => $received_hmac,
+						'computed_signature' => $computed_hmac
+					]),  $this->context);
+				}
+					
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
-						// HMACs do not match, reject request
-						wp_send_json_error('Invalid secret key');
-						exit();
+					// HMACs do not match, reject request
+					wp_send_json_error('Invalid secret key');
+					exit();
 				}  
 				$data = json_decode($body, true);
 
@@ -433,13 +429,15 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				// Compute our HMAC of the body
 				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
 
-				error_log(print_r([
-					'headers' => $headers,
-					'body' => $body,
-					'signature' => $received_hmac,
-					'computed_signature' => $computed_hmac
-				], true));
-
+				if($this->logger){
+					$this->logger->info('Overpaid order notification received:' . json_encode([
+						'headers' => $headers,
+						'body' => $body,
+						'signature' => $received_hmac,
+						'computed_signature' => $computed_hmac
+					]),  $this->context);
+				}
+				
 				// Check if our computed HMAC matches the one we received
 				if ($received_hmac !== $computed_hmac) {
 						// HMACs do not match, reject request
@@ -663,13 +661,14 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 				WC()->cart->empty_cart();
 				
 			 
+				
 				$response = $this->getPaymentData($orderId);
 				
 				$cryptoAddress = null;
 				$cryptoAmount = null;
 				$currencyCode = null;
 				$expiresAt = null;
-
+				 
 				if(!$response->error){
 					if(isset($response->data['cryptoAddress'])){
 						$cryptoAddress = $response->data['cryptoAddress'];
@@ -682,9 +681,11 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 					}
 
 					$expiresAt = $response->data['expires_at'];
-				} else{
-					error_log(print_r($response->error), true);
-				}
+				} 
+
+				if($this->logger)
+					$this->logger->info('Get Payment Data: ' . json_encode($response->error ? $response->error : $response->data ), $this->context);
+				
 
 				$order->update_meta_data('_migpayments_worder_crypto_amount', $cryptoAmount );
 				$order->update_meta_data('_migpayments_worder_crypto_address', $cryptoAddress );
