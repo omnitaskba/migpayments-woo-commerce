@@ -34,7 +34,12 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_filter( 'page_template', 'migpayments_wc_page_template');
 		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
-
+		add_action( 'before_woocommerce_init', function() {
+			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		 
+			}
+		} );
 		register_activation_hook(__FILE__, 'myplugin_activate'); 
 	}
 	
@@ -249,11 +254,8 @@ function woocommerce_available_payment_gateways( $available_gateways ) {
 		add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
  		add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_available_payment_gateways' );
-		 add_action( 'before_woocommerce_init', function() {
-			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-			}
-		} );
+		
+		
  		/*
 		*	Payment Gateway WC Class
 		*/

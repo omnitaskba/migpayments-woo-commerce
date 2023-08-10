@@ -17,7 +17,7 @@ class WC_Migpayments_Library {
     
     public static function create($isSandbox = false)
     {
-        return new self(_wp_http_get_object(), $isSandbox);
+        return new self(new WP_Http(), $isSandbox);
     }
  
 
