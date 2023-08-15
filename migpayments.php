@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.5.1
+Version: 			1.5.2
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.1');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.2');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -231,6 +231,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		return $available_gateways;
 	}
 
+	 
  
 	function migpayments_wc_gateway_load()
 	{
@@ -240,7 +241,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_filter( 'woocommerce_payment_gateways', 		'migpayments_wc_gateway_add' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
  		add_filter( 'woocommerce_available_payment_gateways', 'woocommerce_available_payment_gateways' );
-		
+ 
 		
  		/*
 		*	Payment Gateway WC Class
@@ -313,9 +314,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						$this->cryptoCurrencies = $availableCurrencies;
 				}
  
-				if((WC()->cart && ((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || $this->showCryptoPrices)))
-					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->total, $this->cryptoCurrencies, 'EUR', $this->get_option('api_token'), $this->isSandbox );
-				
+			
 
 				//update payment options(woocmmerce settings - payments)
 				add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -323,12 +322,11 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
 				add_action( 'woocommerce_api_crypto-partial-payment', array( $this, 'partialPaymentWebhook' ) );
 				add_action( 'woocommerce_api_crypto-overpaid-payment', array( $this, 'overpaidPaymentWebhook' ) );
-
+				
 				return true;
 			}
 			 
-
-			 
+		
 			public function paymentConfirmedWebhook(){
 			 
 				$body = file_get_contents('php://input');
@@ -568,8 +566,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 			//default WC method
 			public function payment_fields() {
-				global $migpayments;
-			
+			 
 				if ( $this->description ) 
 					echo '<div id="wc-migpayments-payment-method-description">'. $this->description .'</div>';
 				 
@@ -584,6 +581,10 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						return;
 					}  
 					
+					if((WC()->cart && ((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || $this->showCryptoPrices)))
+					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_cart_contents_total(), $this->cryptoCurrencies, get_woocommerce_currency(), $this->get_option('api_token'), $this->isSandbox );
+				
+
 					if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error && $this->cryptoPricesHtmlResponse->data)
 							echo $this->cryptoPricesHtmlResponse->data;
 					
