@@ -1,4 +1,7 @@
-<?php use chillerlan\QRCode\QRCode;  ?>
+<?php 
+  
+    global $cryptoCurrencies;
+?>
    
  <!DOCTYPE html>
  <html>
@@ -23,27 +26,29 @@
                 background-size: cover;
             }
         </style>
+
+<?php
+        $order_id = $_GET['orderId'];
+        $order = new WC_Order( $order_id );
+        
+        $order_data = $order->get_data();
+      
+        $subtotal = $order->get_subtotal();
+        $discountPrice = $order->get_discount_total();
+        $currencyCode = get_woocommerce_currency_symbol($order->get_currency());
+        $total = $order->get_total();
+        $items = $order->get_items();
+    
+    ?>
     <body>
        
       
             <!-- Main -->
             <div id="wc-payment-wrapper" class="full-width-bg" >
-            <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?>" alt="The funded trader logo">
+                <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?>" alt="The funded trader logo">
 
-                <?php if(isset($_GET['address']) && $_GET['address'] && isset($_GET['amount']) && $_GET['amount'] && isset($_GET['currency'])  && $_GET['currency']): ?>
-                    <?php
-                        $order_id = $_GET['orderId'];
-                        $order = new WC_Order( $order_id );
-                        
-                        $order_data = $order->get_data();
-                        $expiresAt = $order->get_meta('_migpayments_worder_crypto_expires_at');
-                        $get_subtotal_price = $order->get_subtotal();
-                        $get_discount_total_price = $order->get_discount_total();
-                        $orderCurrencySymbol = get_woocommerce_currency_symbol($order->get_currency());
-                        $get_total_amount = $order->get_total();
-                        $items = $order->get_items();
+              
                     
-                    ?>
                 
 
                     <div  id="wc-overpaid-modal" data-url="<?php echo admin_url( 'admin-ajax.php' );?>" data-order_id="<?php echo $order_id;?>" class="wc-overpaid-modal" >
@@ -66,13 +71,13 @@
                     
                     </div>
 
-
-                    <div id="wc-payment-data-container"   >
+                   
+                    <div id="wc-payment-data-container"    >
                         <div class="wc-main">
                             <div class="wc-card">
                                 <div class="wc-migpayments-order-title">
                                     <h5>Your Order</h5>
-                                    <p class="price"><?php echo $orderCurrencySymbol;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
+                                    <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
                                 </div>
                                 <hr class="wc-migpayments-hr">
                                 
@@ -85,7 +90,7 @@
                                                 <?php echo $item->get_name(); ?>
                                             </a>
                                         </div>
-                                        <div class="wc-migpayments-product-price"><?php echo $orderCurrencySymbol; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
+                                        <div class="wc-migpayments-product-price"><?php echo $currencyCode; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
                                     </div>
                                     <?php endforeach;?>
                                     
@@ -104,43 +109,46 @@
                                     </div>
                                     <div id="wc-migpayments-subtotal" class="wc-migpayments-order-item subtotal">
                                         <div class="wc-migpayments- product-title">Subtotal</div>
-                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
+                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
                                     </div>
                                     <hr class="wc-migpayments-hr">
                                     <div class="wc-migpayments-order-item subtotal">
-                                        <div class="wc-migpayments- product-title">Total</div>
-                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $orderCurrencySymbol;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></div>
+                                        <div class="wc-migpayments- product-title"><b>Total</b></div>
+                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></div>
                                     </div>
                                         
                                 </div>
-                                <h5 style="text-align: left;">Send Payment</h5>
+                                
+                               <div class="flex" id="wc-migpayments-payment-options">
+                                    <div class="wc-migpayments-estimate">
+                                        <h6>Crypto Estimate</h6>
+                                        <div id="wc-migpayments-estimate">
+                                            <div id="wc-migpayments-loading"></div>
+                                        </div>
+                                    </div>
+                                    <div class="wc-migpayments-currency-select">
+                                        <h6 for="currency_code">Choose Crypto Currency</h6>
+                                        <div>
+                                            <select name="currency_code" id="wc-migpayments-currency-code">
+                                                <option value="">Please choose currency</option>
+                                               
+                                                <?php foreach($cryptoCurrencies as $key => $val): ?>
+                                                <option value=" <?php echo $val;?>"> <?php echo $val;?></option>
+                                                <?php endforeach;?>
+                                            </select>
+                                        </div>
+                                        <button class="wc-migpayments-primary-btn" onclick="getPaymentData()">
+                                            Get Payment Data
+                                        </button>
+                                    </div>
+                               </div>
+                               
                                 
                                 <div id="wc-migpayments-payment-data">
-                                    <div>  
-                                        <img id="wc-migpayments-address-qr-code" style="width:130px;" src="<?php echo (new QRCode())->render($_GET['address'])?>" alt="QR Code" /> 
-                                    </div>
-                                    <div class="wc-migpayments-payment-items">
-                                            <div class="wc-migpayments-payment-item" >
-                                                <div class="wc-payment-data-item">
-                                                    <label for="addresss"><?php migpayments_wc_get_cryptoAddressLabelTxt();?> </label>
-                                                    <p> <?php echo $_GET['address'];  ?></p>
-                                                </div>
-                                                
-                                                
-                                                <button class="wc-migpayments-copy-btn" onclick="copyToClipboard('<?php echo $_GET['address'];  ?>')">Copy</button>
-
-                                            </div>
-                                            <div class="wc-migpayments-payment-item">
-                                                <div class="wc-payment-data-item" >
-                                                    <label for="total_crypto_amount"><?php migpayments_wc_get_cryptoAmountLabelTxt();?></label>
-                                                    <p id="total_crypto_amount" data-amount="<?php echo $_GET['amount'];  ?>">
-                                                    <?php echo $_GET['amount'];  ?> <?php echo  $_GET['currency'];?> 
-                                                    </p> 
-                                                </div>
-                                                <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('<?php echo $_GET['amount'];  ?>')">Copy</button>
-
-                                            </div>
-                                    </div>
+                                    
+                                   
+                                     
+                                   
                                     
                                 </div>
                                 
@@ -161,21 +169,7 @@
                             
                         
                     </div>
-                    <?php else: ?>
-
-                        <div id="wc-payment-data-container"   >
-                            <div class="wc-main">
-                                <div class="wc-card">
-                                <div id="wc-migpayments-payment-data-error" class="woocommerce-error"><?php migpayments_wc_get_paymentDataErrorTxt();?></div>
-                                </div>
-                                    <hr class="wc-migpayments-hr">
-                                    <a class="wc-migpayments-cancel-btn" href="<?php echo esc_url(wp_get_referer());?>">
-                                        Back
-                                    </a>
-
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                     
             </div>
           
         

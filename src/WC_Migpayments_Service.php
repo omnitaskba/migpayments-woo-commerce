@@ -1,6 +1,6 @@
 <?php
 require_once('WC_Migpayments_Library.php');
-
+use chillerlan\QRCode\QRCode; 
 class WC_Migpayments_ServiceResponse
 {
     public $data;
@@ -52,7 +52,47 @@ class WC_Migpayments_Service
             } else {
                 error_log(json_encode($e));
             }
-            $error = 'Failed to get payment datae.';
+            $error = 'Failed to get payment data.';
+        }
+         
+        return new WC_Migpayments_ServiceResponse($error, $data);
+    }
+
+    public static function getPaymentDataHtml($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
+        $error = null;
+        $data = null;
+        
+        try{
+            $response = self::getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData);
+            if(function_exists('wc_get_logger')){
+                $logger = wc_get_logger();
+                $logger->info('Get payment data response:'. json_encode($response));
+            }
+            
+            if(!$response->error && isset($response->data['cryptoAddress'])){
+                  
+                $migpayments = new WC_Gateway_MigPayments();
+               
+                $addressLbl = $migpayments->cryptoAddressLabelTxt;
+                $amountLbl =   $migpayments->cryptoAmountLabelTxt;
+                $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
+                $qrCode =  (new QRCode())->render($response->data['cryptoAddress']);
+                
+                $html .= '<img id="wc-migpayments-address-qr-code"  src="'. $qrCode .'" alt="QR Code" /> ';
+                $html .= '<div class="wc-migpayments-payment-items"> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="addresss">'.  $addressLbl  . '</label> <p> ' . $response->data['cryptoAddress'] . ' </p> </div> <button class="wc-migpayments-copy-btn" onclick="copyToClipboard("\''.  $response->data['cryptoAddress'] . '\')">Copy</button> </div> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item" > <label for="total_crypto_amount">' . $amountLbl.'</label> <p id="total_crypto_amount" data-amount="'. $response->data['calculatedAmount'] .'">  ' . $response->data['calculatedAmount'] . ' ' . $response->data['currency'] .' </p> </div> <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('. "\' $response->data['cryptoAddress'] \'" . ')">Copy</button> </div> </div>';
+                $html .= '</div></div>';
+              } else {
+          
+                $html= '<div class="woocommerce-error">Failed to get payment data. Please try again later.</div>';
+            }
+            $html .= '</div>';
+            $data = $html;
+             
+
+        }catch(Exception $e){
+             
+            $error = 'Failed  to get payment data html.';
+           
         }
          
         return new WC_Migpayments_ServiceResponse($error, $data);
@@ -62,7 +102,7 @@ class WC_Migpayments_Service
         $error = null;
         $data = null;
         $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
-    
+       
         //now the logic
         try{
 			$response  = $migpaymentsLibrary->getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token);
@@ -88,6 +128,11 @@ class WC_Migpayments_Service
     public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
+
+        if(function_exists('wc_get_logger')){
+            $logger = wc_get_logger();
+        }
+
         $html = '<div id="wc-migpayments-crypto-estimate-wrapper">';
         //now the logic
         try{
@@ -100,11 +145,18 @@ class WC_Migpayments_Service
              $html .= '</div>';
              $data = $html;
         }catch(Exception $e){
-          
-            $error = 'Failed  to get crypto prices html.';
+            if($logger){
+                  
+                $logger->info('Failed to get crypto estimate.' . json_encode($e), ['source' => 'migpayments']);
+            } else {
+                error_log(json_encode($e));
+            }
+            $error = 'Failed  to get crypto estimate.';
         }
         
         return new WC_Migpayments_ServiceResponse($error, $data);
     }
+
+   
  
 }

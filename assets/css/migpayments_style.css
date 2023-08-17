@@ -10,6 +10,7 @@ body{
 }
 #wc-migpayments-address-qr-code{
     margin-left: -15px;
+    flex-shrink: 0;
 }
 #wc-migyments-review-order-button a, #wc-migyments-review-order-button a:hover, #wc-migyments-cancel-order-button a, #wc-migyments-cancel-order-button a:hover{
     text-decoration: none !important;
@@ -177,7 +178,19 @@ border-top: 1px solid #CED3D7;
     color: #aaa;
     
 }
- 
+.wc-migpayments-primary-btn {
+   
+    color: white !important; 
+    background-color: #f7981d;
+    border:1px solid #f7981d;
+    text-transform: capitalize !important;
+    outline: none;
+    padding: 0.5rem 1.25rem;
+   box-shadow:none;
+   font-size: 1rem;
+    border-radius: 10px;
+    font-weight: bold;
+}	
 button.wc-migpayments-copy-btn {
     font-size: 12px !important;
     padding: unset;
@@ -190,6 +203,7 @@ button.wc-migpayments-copy-btn {
     border:none;
     border-radius: 10px;
 }	
+
 button.wc-migpayments-copy-btn:active {
     background-color: orange;
 }
@@ -241,7 +255,6 @@ div#wc-migpayments-right-column {
 #wc-payment-wrapper{
     height: 100vh;
     position: relative;
-    text-align: center;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -261,7 +274,9 @@ div#wc-migpayments-right-column {
   display: none;
 }
 .wc-migpayments-payment-items{
-    margin-left:30px;;padding-top:10px;
+    margin-left:30px;;
+    text-align: left;
+    padding-top:10px;
 }
 .wc-migpayments-payment-item{
 
@@ -270,10 +285,11 @@ div#wc-migpayments-right-column {
     flex-wrap: wrap;
     align-items: center;
 }
-div#wc-migpayments-payment-data {
+div.wc-migpayments-payment-data {
     margin: unset !important;
     text-align: left;
     color:#3A4E5E;
+    text-align: center;
     display:flex;justify-content:space-between;
 }
 .wc-migpayments-crypto-address-wrapper {
@@ -331,22 +347,28 @@ span.wc-migpayments-copy-to-clipboard {
      margin-top: 10px;
 }
  
-#wc-payment-data-container{
+#wc-get-payment-data-form, #wc-payment-data-container{
     display: flex;
     justify-content: center;
    
 }
-#wc-payment-data-container .wc-main{
+#wc-get-payment-data-form .wc-main, #wc-payment-data-container .wc-main{
     max-width: 50%;
     margin-top: 30px;;
     margin-bottom: 30px;;
     background-color: #FFFFFF;
     border-radius: 10px;
     padding:2em 2.2em;
-    height: fit-content;
+   
  }
 #wc-migpayments-logo{
-    margin-top: 30px;;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+.wc-migpayments-estimate{
+    margin-right: 2rem;
 }
 .wc-overpaid-modal {
     display:none;
@@ -448,6 +470,9 @@ span.wc-migpayments-copy-to-clipboard {
     }
     div#wc-migpayments-payment-data img{
         width: 300px !important;
+        flex-shrink: 0;
+        max-width: 100%;
+        height: auto;
     }
     .wc-migpayments-payment-item{
       width: 100%;
@@ -462,17 +487,21 @@ span.wc-migpayments-copy-to-clipboard {
     /* .wc-migpayments-payment-item{
         flex-direction: c;
     } */
-
+    #wc-migpayments-payment-options{
+        flex-direction: column;
+    }
     .wc-migpayments-payment-items{
         width: 100%;
         margin:0;
     }
 }
 
-@media screen and (min-width: 1200px) {
-    
+#wc-migpayments-currency-code{
+    margin-top: 1rem;
+    padding:10px;
+    margin-bottom: 1rem;
+    border-radius: 10px;
 }
-
 .full-width-bg::before{
       -webkit-backface-visibility:visible;
   backface-visibility:visible;	
@@ -487,4 +516,39 @@ span.wc-migpayments-copy-to-clipboard {
       will-change: transform;  
       z-index: -1;
     
+  }
+.wc-migpayments-currency-select{
+    text-align: left;
+  
+}
+#wc-migpayments-currency-code.error{
+    border: 2px solid red;
+  
+}
+  #wc-migpayments-payment-options{
+    display: flex;
+    justify-content: space-between;
+  
+    border: 1px solid #f7981d;
+    padding: 2rem;
+    border-radius: 16px;
+  }
+
+  #wc-migpayments-loading {
+    margin-top: 1rem;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f7991d81;
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spinWCMig 1s ease-in-out infinite;
+    -webkit-animation: spinWCMig 1s ease-in-out infinite;
+  }
+  
+  @keyframes spinWCMig {
+    to { -webkit-transform: rotate(360deg); }
+  }
+  @-webkit-keyframes spinWCMig {
+    to { -webkit-transform: rotate(360deg); }
   }

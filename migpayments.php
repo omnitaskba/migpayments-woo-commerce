@@ -15,10 +15,11 @@ if (!defined( 'ABSPATH' )) exit; // Exit if accessed directly
 
 if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpayments_wc_action_links')) // Exit if duplicate
 {
-	global $paymentDataPageTitle;
+ 
 	global $redirectBtnText;
 	global $migpayments;
-	
+	global $cryptoCurrencies;
+
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
 	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.2');
 
@@ -30,6 +31,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		add_action( 'wp_head', 'migpayments_wc_style' );
 		add_action('wp_enqueue_scripts','migpayments_wc_scripts');
 		add_filter( 'page_template', 'migpayments_wc_page_template');
+		add_action( 'wp_ajax_migpayments_wc_get_crypto_estimate', 'migpayments_wc_asyncGetCryptoEstimate' );
+		add_action( 'wp_ajax_migpayments_wc_get_payment_data', 'migpayments_wc_asyncGetPaymentData' );
 		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpayments_wc_asyncCheckPaymentStatus' );
 		
@@ -94,7 +97,54 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		} 
  
 	}
-	
+
+	function migpayments_wc_asyncGetPaymentData()
+	{
+		$migpayments = new WC_Gateway_MigPayments();
+		
+		$order = wc_get_order( $_POST['order_id'] );
+
+		$orderId       = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id             : $order->get_id();
+		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
+		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
+		$cryptoCurrencyCode =  $_POST['currency_code'];
+			 
+		$user = $order->get_user();
+
+		$orderData = [
+			'customer_email_address' =>  $user ? $user->user_email : null,
+			'customer_username' =>  $user ? $user->user_login . '('. $user->display_name . ')' : null,
+		 
+			
+		];
+
+		$response  = WC_Migpayments_Service::getPaymentDataHtml($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $migpayments->apiToken, $migpayments->isSandbox , $orderData );
+		if(!$response->error)
+			echo $response->data;
+		wp_die();
+	}
+
+
+	function migpayments_wc_asyncGetCryptoEstimate()
+	{
+			 
+		 
+		$migpayments = new WC_Gateway_MigPayments();
+		
+		$order = wc_get_order( $_POST['order_id'] );
+
+ 
+		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
+		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
+		 	 
+		$migpayments->logger->info(json_encode($migpayments->cryptoCurrencies), $migpayments->context);
+		$response  = WC_Migpayments_Service::getCryptoPricesHtml($orderTotal, $migpayments->cryptoCurrencies, $fiatCurrencyCode, $migpayments->apiToken, $migpayments->isSandbox );
+		
+		if(!$response->error)
+			echo $response->data;
+		wp_die();
+	}
+
 
 	function migpayments_wc_asyncCheckPaymentStatus() {
 		 
@@ -130,11 +180,18 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	
 	function migpayments_wc_page_template( $pageTemplate )
 	{
+		$migpayments = new WC_Gateway_MigPayments();
+		
 		if ( is_page( 'migpayments-payment-instructions' ) ) {
 			$pageTemplate = dirname( __FILE__ ) . '/redirect.php';
+			global $cryptoCurrencies;
+		 	$cryptoCurrencies = $migpayments->cryptoCurrencies;
+			
 		}
-	 
+		
 		return $pageTemplate;
+	 
+		
 	}
 
 	function migpayments_wc_action_links($links, $file)
@@ -248,16 +305,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		*/
 		class WC_Gateway_MigPayments extends WC_Payment_Gateway
 		{
-			private $isSandbox  = true;
+			public $isSandbox  = true;
 			private $showCryptoPrices = true;
-			private $apiToken = null;
+			public $apiToken = null;
 			private $sharedSecret = null;
 			private $fiatCurrencies         = ['EUR', 'USD'];
-			private $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
+			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
 			private $fiatCurrency = null;
 			private $url3               = '';
-			private $cryptoPricesHtmlResponse = null;
-			private $isRefreshing = false;
+			 
 			public $redirectBtnText = 'I have sent the payment';
 			public $cryptoAddressLabelTxt = 'address';
 			public $cryptoAmountLabelTxt = 'Send this exact amount:';
@@ -314,7 +370,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						$this->cryptoCurrencies = $availableCurrencies;
 				}
  
-			
+				$cryptoCurrencies = $this->cryptoCurrencies;
 
 				//update payment options(woocmmerce settings - payments)
 				add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -580,26 +636,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						echo '<div class="woocommerce-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
 						return;
 					}  
-					
-					if((WC()->cart && ((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || $this->showCryptoPrices)))
-					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_cart_contents_total(), $this->cryptoCurrencies, get_woocommerce_currency(), $this->get_option('api_token'), $this->isSandbox );
-				
-
-					if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error && $this->cryptoPricesHtmlResponse->data)
-							echo $this->cryptoPricesHtmlResponse->data;
-					
-					echo '<div class="form-row ">
-							<label id="wc-migpayments-crypto-currency-select-label">Crypto Currency<span class="required">*</span></label>
-							<select id="wc-migpayments-crypto-currency-select" name="crypto_currency"><option value="">Choose crypto currency';
-					
-						foreach($this->cryptoCurrencies as $k => $v)
-						{
-							echo '<option value="'. $k .'"> '. $v.' </option>';
-						}
-		
-					echo '	</select>
-							</div>
-						<div class="clear"></div>';
+				 
+					 
 			
 				do_action( 'woocommerce_crypto_payment_form_end', $this->id );
 			
@@ -612,31 +650,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			{
 			
 				$data = $_POST;
- 
-				if ( empty($data['crypto_currency']) || $data['crypto_currency'] == ''  ) {
-					  
-
-					$error_message = '<ul class="woocommerce-error" role="alert"> <li data-id="crypto_address"> <strong>Please choose crypto currency. </li> </ul>';
-
-						// Create the response array
-						$response = array(
-							'result' => 'failure',
-							'messages' => $error_message,
-							'refresh' => false,
-							'reload' => false,
-						);
- 
-						return wp_send_json($response);
-				}
-
-				
-				// New Order
-				$order = new WC_Order( $orderId );
+  
+				$order = wc_get_order($orderId);
 
 				$orderId    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
 				$userID      = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->user_id     : $order->get_user_id();
 					
-				$order->update_status('Pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
+				// $order->update_status('Pending', __('Awaiting payment notification from MigPayments', MIGPAYMENTSWC));
 
 		 
 				// Payment Page
@@ -652,7 +672,6 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order->update_meta_data('_migpayments_worder_orderid', 	    $orderId );
 					$order->update_meta_data('_migpayments_worder_userid', 	    $userID );
 					$order->update_meta_data('_migpayments_worder_createtime',   gmdate("c") );
-
 					$order->update_meta_data('_migpayments_worder_orderpage',     $orderpage );
 					$order->update_meta_data('_migpayments_worder_created',      gmdate("d M Y, H:i") );
 					$order->save(); 
@@ -663,66 +682,43 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				
 			 
 				
-				$response = $this->getPaymentData($orderId);
+				// $response = $this->getPaymentData($orderId);
 				
-				$cryptoAddress = null;
-				$cryptoAmount = null;
-				$currencyCode = null;
-				$expiresAt = null;
+				// $cryptoAddress = null;
+				// $cryptoAmount = null;
+				// $currencyCode = null;
+				// $expiresAt = null;
 				 
-				if(!$response->error){
-					if(isset($response->data['cryptoAddress'])){
-						$cryptoAddress = $response->data['cryptoAddress'];
-					}
-					if(isset($response->data['calculatedAmount'])){
-						$cryptoAmount = $response->data['calculatedAmount'];
-					}
-					if(isset($response->data['currency'])){
-						$currencyCode = $response->data['currency'];
-					}
+				// if(!$response->error){
+				// 	if(isset($response->data['cryptoAddress'])){
+				// 		$cryptoAddress = $response->data['cryptoAddress'];
+				// 	}
+				// 	if(isset($response->data['calculatedAmount'])){
+				// 		$cryptoAmount = $response->data['calculatedAmount'];
+				// 	}
+				// 	if(isset($response->data['currency'])){
+				// 		$currencyCode = $response->data['currency'];
+				// 	}
 
-					$expiresAt = $response->data['expires_at'];
-				} 
+				// 	$expiresAt = $response->data['expires_at'];
+				// } 
 
-				if($this->logger)
-					$this->logger->info('Get Payment Data: ' . json_encode($response->error ? $response->error : $response->data ), $this->context);
+				// if($this->logger)
+				// 	$this->logger->info('Get Payment Data: ' . json_encode($response->error ? $response->error : $response->data ), $this->context);
 				
 
-				$order->update_meta_data('_migpayments_worder_crypto_amount', $cryptoAmount );
-				$order->update_meta_data('_migpayments_worder_crypto_address', $cryptoAddress );
-				$order->update_meta_data('_migpayments_worder_crypto_expires_at', $expiresAt );
-				$order->update_meta_data('_return_url', $payment_link );
-				$order->save(); 
+				// $order->update_meta_data('_migpayments_worder_crypto_amount', $cryptoAmount );
+				// $order->update_meta_data('_migpayments_worder_crypto_address', $cryptoAddress );
+				// $order->update_meta_data('_migpayments_worder_crypto_expires_at', $expiresAt );
+				// $order->update_meta_data('_return_url', $payment_link );
+				// $order->save(); 
 				return array(
 					'result' => 'success',
-					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&address='.$cryptoAddress.'&currency='. $currencyCode .'&amount='.$cryptoAmount.'&expires_at=' . $expiresAt . '&success_url='. $this->get_return_url($order))
+					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&success_url='. $this->get_return_url($order))
 				);
 			 
 			}
 		
-			public function getPaymentData( $orderId )
-			{
-				
-				$order = new WC_Order( $orderId );
-
-				$orderId       = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id             : $order->get_id();
-				$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
-				$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
-				$cryptoCurrencyCode = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
-					 
-				$user = $order->get_user();
-
-				$orderData = [
-					'customer_email_address' =>  $user ? $user->user_email : null,
-					'customer_username' =>  $user ? $user->user_login . '('. $user->display_name . ')' : null,
-				 
-					
-				];
- 
-				$response  = WC_Migpayments_Service::getPaymentData($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode, $orderId, $this->apiToken, $this->isSandbox , $orderData );
-
-				return  $response;
-			}
 			
 			
 		}

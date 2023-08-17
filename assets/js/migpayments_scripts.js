@@ -98,7 +98,89 @@ setInterval(function(){
   
  }, 5000);
 
-  
+function getCryptoEstimate(){
+     
+    const data = new FormData();
+    
+    var overpaidModal =  document.getElementById('wc-overpaid-modal');
+    var estimateEl =  document.getElementById('wc-migpayments-estimate');
+
+    var ajaxUrl  = overpaidModal.dataset.url;
+
+    data.append( 'action', 'migpayments_wc_get_crypto_estimate' );
+    data.append( 'order_id' , overpaidModal.dataset.order_id);
+    const params = new URLSearchParams(data);
+    const settings = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Cache-Control': 'no-cache',
+           },
+        body: params,
+        credentials: 'same-origin',
+    };
+
+    const fetchResponse = fetch(ajaxUrl, settings).then(function (response) {
+        // The API call was successful!
+        return response.text();
+    }).then(function (html) {
+        console.log(html);
+        estimateEl.innerHTML = html;
+           
+    }).catch(e => {
+        console.log(e)
+    });
+       
+}
+
+
+function getPaymentData(){
+     
+    const data = new FormData();
+    
+    var paymentOptionsEl =  document.getElementById('wc-migpayments-payment-options');
+    var overpaidModal =  document.getElementById('wc-overpaid-modal');
+    var paymentDataEl =  document.getElementById('wc-migpayments-payment-data');
+    var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
+    if(currencyCode == '' || currencyCode == ' '){
+        currencyCodeEl.classList.add('error');
+        return;
+
+    }
+    
+    var currencyCode =  currencyCodeEl.value;
+    paymentOptionsEl.style.display = 'none';
+     paymentDataEl.innerHTML = ' <div id="wc-migpayments-loading"></div>';
+console.log(currencyCode)
+    
+    var ajaxUrl  = overpaidModal.dataset.url;
+
+    data.append('action', 'migpayments_wc_get_payment_data' );
+    data.append('order_id' , overpaidModal.dataset.order_id);
+    data.append('currency_code' , currencyCode);
+    const params = new URLSearchParams(data);
+    const settings = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Cache-Control': 'no-cache',
+           },
+        body: params,
+        credentials: 'same-origin',
+    };
+
+    const fetchResponse = fetch(ajaxUrl, settings).then(function (response) {
+        // The API call was successful!
+        return response.text();
+    }).then(function (html) {
+       
+        paymentDataEl.innerHTML = html;
+           
+    }).catch(e => {
+        console.log(e)
+    });
+       
+}
    
  function hideOverpaidModal(){
     //redirect to base URL
@@ -116,3 +198,5 @@ setInterval(function(){
     */
     
  }
+
+ getCryptoEstimate();
