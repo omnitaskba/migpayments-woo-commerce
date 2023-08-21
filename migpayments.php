@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.5.2
+Version: 			1.5.3
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -20,7 +20,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
  	global $migpayments;
 	
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.2');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.3');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -317,12 +317,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			 
 			private function decryptData($methodName = ''){
 				$body = file_get_contents('php://input');
+				$headers = getallheaders();
+
 				parse_str($body, $parsedData);
 				
 				$encryptedData = isset($parsedData['encryptedData']) ? $parsedData['encryptedData'] : '';
 					
-				if($this->log)
-					$this->log->info($methodName .' - Trying to decrypt data.', $this->context);
+				if($this->log){
+					$this->log->info($methodName .' - Trying to decrypt data. Headers:' . json_encode($headers), $this->context);
+				}
 
 				$decryptResponse = WC_Migpayments_Decrypt::decryptData($encryptedData, $this->publicKey);
 				if($decryptResponse->error)
@@ -347,8 +350,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order = wc_get_order( $_GET['id'] );
 					if(!$order){
 						if($this->log)
-							$this->log->error('Confirmed Payment Webhook: Failed to get order.'. isset($_GET['id']) ? $_GET['id'] : null, $this->context);
-						throw new Exception("Failed to get order.");
+							$this->log->error('Confirmed Payment Webhook: Failed to get order #'. ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
 					}
 
 					$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
@@ -358,7 +361,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order->save();
 				} catch(\Exception $e){
 					if($this->log)
-						$this->log->error('Failed to confirm payment: ' .  esc_html($e->getMessage()));
+						$this->log->error('Failed to confirm payment: ' .  esc_html($e->getMessage()), $this->context);
 					wp_send_json('Failed to confirm payment.', 406);
 				}
 				wp_send_json('success');
@@ -375,8 +378,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order = wc_get_order( $_GET['id'] );
 					if(!$order){
 						if($this->log)
-							$this->log->error('Partial Payment Webhook: Failed to get order.'. isset($_GET['id']) ? $_GET['id'] : null, $this->context);
-						throw new Exception("Failed to get order.");
+							$this->log->error('Partial Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
 					}
 						 
 						
@@ -403,7 +406,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order->save(); 
 				} catch(\Exception $e){
 					if($this->log)
-						$this->log->error('Failed to store partial payment: ' .  esc_html($e->getMessage()));
+						$this->log->error('Failed to store partial payment: ' .  esc_html($e->getMessage()), $this->context);
 					wp_send_json('Failed to store partial payment notification.', 406);
 				}
  				wp_send_json('success');
@@ -419,8 +422,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					$order = wc_get_order( $_GET['id'] );
 					if(!$order){
 						if($this->log)
-							$this->log->error('Overpaid Payment Webhook: Failed to get order.'. isset($_GET['id']) ? $_GET['id'] : null, $this->context);
-						throw new Exception("Failed to get order.");
+							$this->log->error('Overpaid Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
 					}
 
 					$order->add_order_note('Overpaid crypto payment received with amount of '.$data->amount . ' ' . $data->crypto_currency. '.', true);
@@ -433,7 +436,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 
 				} catch(\Exception $e){
 					if($this->log)
-						$this->log->error('Failed to receive overpaid notification: '.  esc_html($e->getMessage()));
+						$this->log->error('Failed to receive overpaid notification: '.  esc_html($e->getMessage()), $this->context);
 					wp_send_json('Failed to store overpaid payment notification.', 406);
 				}
 				 
@@ -476,7 +479,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					'title'			=> array(
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
-						'default'     	=> __( 'Crypto Payment', MIGPAYMENTSWC ),
+						'default'     	=> __( 'PayByCrypto', MIGPAYMENTSWC ),
 						'description' 	=> __( 'Payment method title that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'description' 	=> array(
@@ -511,7 +514,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					),
 					
 					'api_token' 	=> array(
-						'title'       	=> __( 'Migpayments API Token', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
@@ -565,9 +568,13 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 						echo '<div class="woocommerce-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
 						return;
 					}  
+
+					global $order;
+
+					$total = $order && is_object($order) ? $order->get_total() : WC()->cart->get_cart_contents_total();
 					
 					if((WC()->cart && ((bool)!$this->isRefreshing && !$this->cryptoPricesHtmlResponse  || $this->showCryptoPrices)))
-					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml(WC()->cart->get_cart_contents_total(), $this->cryptoCurrencies, get_woocommerce_currency(), $this->get_option('api_token'), $this->isSandbox );
+					$this->cryptoPricesHtmlResponse  = WC_Migpayments_Service::getCryptoPricesHtml($total, $this->cryptoCurrencies, get_woocommerce_currency(), $this->get_option('api_token'), $this->isSandbox );
 				
 
 					if($this->cryptoPricesHtmlResponse && !$this->cryptoPricesHtmlResponse->error && $this->cryptoPricesHtmlResponse->data)
@@ -599,19 +606,8 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$data = $_POST;
  
 				if ( empty($data['crypto_currency']) || $data['crypto_currency'] == ''  ) {
-					  
-
-					$error_message = '<ul class="woocommerce-error" role="alert"> <li data-id="crypto_address"> <strong>Please choose crypto currency. </li> </ul>';
-
-						// Create the response array
-						$response = array(
-							'result' => 'failure',
-							'messages' => $error_message,
-							'refresh' => false,
-							'reload' => false,
-						);
- 
-						return wp_send_json($response);
+ 					wc_add_notice(__('Please choose crypto currency.'), 'error');
+					return false;
 				}
 
 				

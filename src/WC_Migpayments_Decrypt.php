@@ -30,8 +30,7 @@ class WC_Migpayments_Decrypt
             openssl_public_decrypt($encryptedData, $decryptedData, $publicKey, OPENSSL_PKCS1_PADDING);
 
             if (is_null($decryptedData)) {
-                if($log)
-                    $log->error('Failed to decrypt data.', $context);
+               
                 return new WC_Migpayments_Response($defaultErroMsg);
             }
             
@@ -39,9 +38,10 @@ class WC_Migpayments_Decrypt
              
 
         }catch(Exception $e){
+           
+            $error =  esc_html($e->getMessage());
             if($log)
-                $log->error('Failed to decrypt data.', $context);
-            $error = $defaultErroMsg;
+                $log->error('Failed to decrypt data: '. $error, $context);
         }
          
         return new WC_Migpayments_Response($error, $data);
