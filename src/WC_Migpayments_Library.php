@@ -25,16 +25,17 @@ class WC_Migpayments_Library {
     {
         $method = 'rest/get-payment-data';
         $url = $this->getFullUrl($method);
-       
+        $siteUrl = get_site_url();
+        
         $data = [
             'shop_currency' => $fiatCurrencyCode,
             'selected_currency' => $currencyCode,
             'token' => $token,
             'amount' => $total,
-            'payment_confirmed' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
-            'notification_url' => get_site_url().'/wc-api/crypto-payment-confirmed?id='. $orderNumber,
-            'partial_payment_url' => get_site_url().'/wc-api/crypto-partial-payment?id='. $orderNumber,
-            'overpaid_payment_url' => get_site_url().'/wc-api/crypto-overpaid-payment?id='. $orderNumber,
+            'payment_confirmed' => $siteUrl . '/wc-api/crypto-payment-confirmed?id='. $orderNumber,
+            'notification_url' => $siteUrl . '/wc-api/crypto-payment-confirmed?id='. $orderNumber,
+            'partial_payment_url' => $siteUrl . '/wc-api/crypto-partial-payment?id='. $orderNumber,
+            'overpaid_payment_url' => $siteUrl . '/wc-api/crypto-overpaid-payment?id='. $orderNumber,
             'order_number' => $orderNumber,
             'plugin' => 'wordpress',
             'order_data' => $orderData
