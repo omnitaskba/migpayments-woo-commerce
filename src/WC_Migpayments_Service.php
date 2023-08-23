@@ -20,11 +20,11 @@ class WC_Migpayments_Service
     public static function getPaymentData($total, $cryptoCurrencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
         $error = null;
         $data = null;
-        $logger = null;
+        $log = null;
         $migpaymentsLibrary = WC_Migpayments_Library::create($isSandbox);
         
-        if(function_exists('wc_get_logger')){
-            $logger = wc_get_logger();
+        if(function_exists('wc_get_log')){
+            $log = wc_get_logger();
         }
         //now the logic
         try{
@@ -32,23 +32,27 @@ class WC_Migpayments_Service
 		 
 			if(!$response['success']){
                
-                if($logger){
+                if($log){
                   
-                    $logger->info('Failed to get payment data.' . json_encode($response), ['source' => 'migpayments']);
+                    $log->info('Failed to get payment data.' . json_encode($response), ['source' => 'migpayments']);
                 } else {
                     error_log(json_encode($response));
                 }
                
             }
-            if(isset($response['data']) && !empty($response['data']));
+            if(isset($response['data']) && !empty($response['data'])){
                 $data = $response['data'];
+            } else {
+                $error = 'Failed to get payment data.';
+            }
+              
              
 
         }catch(Exception $e){
          
-            if($logger){
+            if($log){
                   
-                $logger->info('Failed to get payment data.' . json_encode($e), ['source' => 'migpayments']);
+                $log->info('Failed to get payment data.' . json_encode($e), ['source' => 'migpayments']);
             } else {
                 error_log(json_encode($e));
             }
@@ -95,7 +99,7 @@ class WC_Migpayments_Service
            
         }
          
-        return new WC_Migpayments_ServiceResponse($error, $data);
+        return new WC_Migpayments_Response($error, $data);
     }
 
     public static function getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
@@ -122,7 +126,7 @@ class WC_Migpayments_Service
         }
         
        
-        return new WC_Migpayments_ServiceResponse($error, $data);
+        return new WC_Migpayments_Response($error, $data);
     }
 
     public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
@@ -154,7 +158,7 @@ class WC_Migpayments_Service
             $error = 'Failed  to get crypto estimate.';
         }
         
-        return new WC_Migpayments_ServiceResponse($error, $data);
+        return new WC_Migpayments_Response($error, $data);
     }
 
    

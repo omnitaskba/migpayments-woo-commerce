@@ -142,16 +142,21 @@ function getPaymentData(){
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
     var paymentDataEl =  document.getElementById('wc-migpayments-payment-data');
     var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
-    if(currencyCode == '' || currencyCode == ' '){
-        currencyCodeEl.classList.add('error');
-        return;
+    var errorElement =  document.getElementById('wc-migpayments-error');
+    var currencyCode =  currencyCodeEl.value;
+    errorElement.innerHTML = '';
+    
+    if(!currencyCode || currencyCode == '' || currencyCode == ' '){
+        
+        errorElement.innerHTML = '<div class="wc-migpayments-error">Please choose crypto currency.</div>';
+        return false;
 
     }
     
-    var currencyCode =  currencyCodeEl.value;
+   
     paymentOptionsEl.style.display = 'none';
-     paymentDataEl.innerHTML = ' <div id="wc-migpayments-loading"></div>';
-console.log(currencyCode)
+    paymentDataEl.innerHTML = ' <div class="wc-migpayments-loading"></div>';
+
     
     var ajaxUrl  = overpaidModal.dataset.url;
 

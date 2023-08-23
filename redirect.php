@@ -121,13 +121,13 @@
                                 
                                <div class="flex" id="wc-migpayments-payment-options">
                                     <div class="wc-migpayments-estimate">
-                                        <h6>Crypto Estimate</h6>
+                                        <h5>Crypto Estimate</h5>
                                         <div id="wc-migpayments-estimate">
-                                            <div id="wc-migpayments-loading"></div>
+                                            <div class="wc-migpayments-loading"></div>
                                         </div>
                                     </div>
                                     <div class="wc-migpayments-currency-select">
-                                        <h6 for="currency_code">Choose Crypto Currency</h6>
+                                        <h5 for="currency_code">Choose Crypto Currency</h5>
                                         <div>
                                             <select name="currency_code" id="wc-migpayments-currency-code">
                                                 <option value="">Please choose currency</option>
@@ -137,6 +137,9 @@
                                                 <?php endforeach;?>
                                             </select>
                                         </div>
+                                        <div id="wc-migpayments-error">
+
+                                        </div>   
                                         <button class="wc-migpayments-primary-btn" onclick="getPaymentData()">
                                             Get Payment Data
                                         </button>

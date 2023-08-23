@@ -3,14 +3,16 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.5.2
+Version: 			1.5.3
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
+
 require_once('src/WC_Migpayments_Service.php');
+require_once('src/WC_Migpayments_Decrypt.php');
 require_once __DIR__.'/vendor/autoload.php';
 use chillerlan\QRCode\{QRCode, QROptions};
-
+ 
 if (!defined( 'ABSPATH' )) exit; // Exit if accessed directly
 
 if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpayments_wc_action_links')) // Exit if duplicate
@@ -21,7 +23,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $cryptoCurrencies;
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.2');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.5.3');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -50,27 +52,27 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	}
 	
 	function create_custom_page($page_name) {
-	  $pageExists = false;
-	  $pages = get_pages();     
-	  foreach ($pages as $page) { 
-		if ($page->post_name == $page_name) {
-		  $pageExists = true;
-		  break;
+		$pageExists = false;
+		$pages = get_pages();     
+		foreach ($pages as $page) { 
+			if ($page->post_name == $page_name) {
+				$pageExists = true;
+				break;
+			}
 		}
-	  }
-	  if (!$pageExists) {
-		wp_insert_post ([
-			'post_type' =>'page',
-			'post_status' => 'private',
-			'post_title' => 'Migpayments Payment Instructions' ,  
-			'post_content' => '<strong>Please send whole amount in ONE transaction.</strong></br> <strong>Please add the mining fee on top of the displayed amount.</strong></br><hr>',     
-			'post_name' => $page_name,
-			'post_status' => 'publish',
-			'post_type' => 'page',
-			'meta_input' => ['visibility' => 'private'],
-			
-		]);
-	  }
+		if (!$pageExists) {
+			wp_insert_post ([
+				'post_type' =>	'page',
+				'post_status' => 'private',
+				'post_title' => 'Migpayments Payment Instructions' ,  
+				'post_content' => '<strong>Please send whole amount in ONE transaction.</strong></br> <strong>Please add the mining fee on top of the displayed amount.</strong></br><hr>',     
+				'post_name' => $page_name,
+				'post_status' => 'publish',
+				'post_type' => 'page',
+				'meta_input' => ['visibility' => 'private'],
+				
+			]);
+		}
 	}
 
 	function migpayments_wc_style() {
@@ -136,7 +138,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
  
 		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
 		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
-		 	 
+		if($migpayments && $migpayments->logger)
 		$migpayments->logger->info(json_encode($migpayments->cryptoCurrencies), $migpayments->context);
 		$response  = WC_Migpayments_Service::getCryptoPricesHtml($orderTotal, $migpayments->cryptoCurrencies, $fiatCurrencyCode, $migpayments->apiToken, $migpayments->isSandbox );
 		
@@ -162,9 +164,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		switch($status){
 			case 'Completed':
 				$data['redirect'] = true;
-				$returnUrl      =  $order->get_meta('_return_url', true );
-
-				$data['redirectUrl'] = $returnUrl;
+				$data['redirectUrl'] = $order->get_meta('_return_url', true );
 			break;
 			case 'Overpaid':
 				$data['overpaid_amount'] =  $order->get_meta('_migpayments_worder_overpaid_payment_amount', true );
@@ -306,26 +306,26 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 		class WC_Gateway_MigPayments extends WC_Payment_Gateway
 		{
 			public $isSandbox  = true;
-			private $showCryptoPrices = true;
+			public $showCryptoPrices = true;
 			public $apiToken = null;
-			private $sharedSecret = null;
-			private $fiatCurrencies         = ['EUR', 'USD'];
+			private $publicKey = null;
+			public $fiatCurrencies         = ['EUR', 'USD'];
 			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
-			private $fiatCurrency = null;
+			public $fiatCurrency = null;
 			private $url3               = '';
 			 
 			public $redirectBtnText = 'I have sent the payment';
 			public $cryptoAddressLabelTxt = 'address';
 			public $cryptoAmountLabelTxt = 'Send this exact amount:';
 			public $paymentDataErrorTxt = 'Failed to get crypto payment data.';
-			public $logger;
+			public $log;
 			public $context = ['source' => 'migpayments']; 
 
 			public function __construct()
 			{
 				global $migpayments;
 				if(function_exists('wc_get_logger')){
-					$this->logger = wc_get_logger();
+					$this->log = wc_get_logger();
 				}
  
 				$this->id                 	= 'migpaymentspayments';
@@ -357,24 +357,15 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 			 
 				$availableCurrenciesSetting = $this->get_option('available_currencies');
 			
-				if($availableCurrenciesSetting && is_array($availableCurrenciesSetting)){
-					$availableCurrencies = []; 
-				
-					foreach($availableCurrenciesSetting as $key => $currencyCode){
-					 
-						if(isset($this->cryptoCurrencies[$currencyCode]))
-							$availableCurrencies[$currencyCode] = $this->cryptoCurrencies[$currencyCode];
-					}
-					
-					if(count($availableCurrencies))
-						$this->cryptoCurrencies = $availableCurrencies;
+				if ($availableCurrenciesSetting && is_array($availableCurrenciesSetting)) {
+					$availableCurrencies = array_intersect_key($this->cryptoCurrencies, array_flip($availableCurrenciesSetting));
+					$this->cryptoCurrencies = $availableCurrencies;
 				}
  
-				$cryptoCurrencies = $this->cryptoCurrencies;
-
+		
 				//update payment options(woocmmerce settings - payments)
 				add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-
+				//Webhooks
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
 				add_action( 'woocommerce_api_crypto-partial-payment', array( $this, 'partialPaymentWebhook' ) );
 				add_action( 'woocommerce_api_crypto-overpaid-payment', array( $this, 'overpaidPaymentWebhook' ) );
@@ -382,132 +373,131 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				return true;
 			}
 			 
+			private function decryptData($methodName = ''){
+				$body = file_get_contents('php://input');
+				$headers = getallheaders();
+
+				parse_str($body, $parsedData);
+				
+				$encryptedData = isset($parsedData['encryptedData']) ? $parsedData['encryptedData'] : '';
+					
+				if($this->log){
+					$this->log->info($methodName .' - Trying to decrypt data. Headers:' . json_encode($headers), $this->context);
+				}
+
+				$decryptResponse = WC_Migpayments_Decrypt::decryptData($encryptedData, $this->publicKey);
+				if($decryptResponse->error)
+				{
+					if($this->log)
+						$this->log->error($methodName .' error. Failed to decrypt data: ' .$decryptResponse->error, $this->context);
+					return wp_send_json_error($decryptResponse->error, 403);
+				}
+				
+
+				return $decryptResponse->data;
+				 
+			}
+
 		
 			public function paymentConfirmedWebhook(){
 			 
-				$body = file_get_contents('php://input');
+				$data = $this->decryptData('Payment Confirmed Webhook');
+				$this->log->info( 'Confirmed Payment Data Received:'. json_encode($data) ,  $this->context);
 
-				// Get HMAC from headers
-				$headers = getallheaders();
-				$received_hmac = $headers['X-Webhook-Signature'];
-				
-				// Compute our HMAC of the body
-				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
+				try{
+					$order = wc_get_order( $_GET['id'] );
+					if(!$order){
+						if($this->log)
+							$this->log->error('Confirmed Payment Webhook: Failed to get order #'. ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
+					}
 
-				if($this->logger)
-				{
-					$this->logger->info('Payment confirmed received:' . json_encode([
-						'headers' => $headers,
-						'body' => $body,
-						'signature' => $received_hmac,
-						'computed_signature' => $computed_hmac
-					]),  $this->context);
+					$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
+					$order->payment_complete();
+
+					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Completed');
+					$order->save();
+				} catch(\Exception $e){
+					if($this->log)
+						$this->log->error('Failed to confirm payment: ' .  esc_html($e->getMessage()), $this->context);
+					wp_send_json('Failed to confirm payment.', 406);
 				}
-
-				// Check if our computed HMAC matches the one we received
-				if ($received_hmac !== $computed_hmac) {
-					// HMACs do not match, reject request
-					
-					wp_send_json_error('Invalid secret key');
-					exit();
-				} 
-			 
-				$order = wc_get_order( $_GET['id'] );
-				$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
-				$order->payment_complete();
-
-				$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Completed');
-				$order->save();
-			
 				wp_send_json('success');
 			}
 
+			
 			public function partialPaymentWebhook(){
 			  	
-				$body = file_get_contents('php://input');
-				// Get HMAC from headers
-				$headers = getallheaders();
-				$received_hmac = $headers['X-Webhook-Signature'];
-
-				// Compute our HMAC of the body
-				$computed_hmac = hash_hmac('sha256', $body,  $this->sharedSecret);
-
-				if($this->logger){
-					$this->logger->info( 'Partial payment received:' .json_encode([
-						'headers' => $headers,
-						'body' => $body,
-						'signature' => $received_hmac,
-						'computed_signature' => $computed_hmac
-					]),  $this->context);
-				}
-					
-				// Check if our computed HMAC matches the one we received
-				if ($received_hmac !== $computed_hmac) {
-					// HMACs do not match, reject request
-					wp_send_json_error('Invalid secret key');
-					exit();
-				}  
-				$data = json_decode($body, true);
-
-				$order = wc_get_order( $_GET['id'] );
-				$order->add_order_note('Partial crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
-
-				$order->update_meta_data( '_migpayments_worder_crypto_payment_status', 'Partially paid');
-				
-				$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
-				if(!$partialPayments){
-					$partialPayments = [];
-				}
-
-				$payment =  [
-					'amount' => $data['amount'],
-					'received_at' => current_time('d.m.Y H:i'),
-					'currency_code' => $data['crypto_currency']
-				];
-
-				$partialPayments[] = $payment;
+				$data = $this->decryptData('Partial Payment Webhook');
+				$this->log->info( 'Partial Payment Data Received:'. json_encode($data) ,  $this->context);
 				 
 
-				$order->update_meta_data('_migpayments_worder_partial_payments', $partialPayments);
-				$order->save(); 
+				try{
+					$order = wc_get_order( $_GET['id'] );
+					if(!$order){
+						if($this->log)
+							$this->log->error('Partial Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
+					}
+						 
+						
+					
+					$order->add_order_note('Partial crypto payment received with amount of '.$data->amount . ' ' . $data->crypto_currency. '.', true);
+
+					$order->update_meta_data( '_migpayments_worder_crypto_payment_status', 'Partially paid');
+					
+					$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
+					if(!$partialPayments){
+						$partialPayments = [];
+					}
+
+					$payment =  [
+						'amount' => $data->amount,
+						'received_at' => current_time('d.m.Y H:i'),
+						'currency_code' => $data->crypto_currency
+					];
+
+					$partialPayments[] = $payment;
+					
+
+					$order->update_meta_data('_migpayments_worder_partial_payments', $partialPayments);
+					$order->save(); 
+				} catch(\Exception $e){
+					if($this->log)
+						$this->log->error('Failed to store partial payment: ' .  esc_html($e->getMessage()), $this->context);
+					wp_send_json('Failed to store partial payment notification.', 406);
+				}
  				wp_send_json('success');
 			}
 
 			public function overpaidPaymentWebhook(){
 			  	
-				$body = file_get_contents('php://input');
-				// Get HMAC from headers
-				$headers = getallheaders();
-				$received_hmac = $headers['X-Webhook-Signature'];
+				$data = $this->decryptData('Overpaid Payment Webhook');
+				$this->log->info( 'Overpaid Payment Data Received:'. json_encode($data) ,  $this->context);
 
-				// Compute our HMAC of the body
-				$computed_hmac = hash_hmac('sha256', $body, $this->sharedSecret);
+				try{
 
-				if($this->logger){
-					$this->logger->info('Overpaid order notification received:' . json_encode([
-						'headers' => $headers,
-						'body' => $body,
-						'signature' => $received_hmac,
-						'computed_signature' => $computed_hmac
-					]),  $this->context);
+					$order = wc_get_order( $_GET['id'] );
+					if(!$order){
+						if($this->log)
+							$this->log->error('Overpaid Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						throw new \Exception("Failed to get order.");
+					}
+
+					$order->add_order_note('Overpaid crypto payment received with amount of '.$data->amount . ' ' . $data->crypto_currency. '.', true);
+
+					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Overpaid');
+
+					
+					$order->update_meta_data('_migpayments_worder_overpaid_payment_amount', $data->amount);
+					$order->save();
+
+				} catch(\Exception $e){
+					if($this->log)
+						$this->log->error('Failed to receive overpaid notification: '.  esc_html($e->getMessage()), $this->context);
+					wp_send_json('Failed to store overpaid payment notification.', 406);
 				}
-				
-				// Check if our computed HMAC matches the one we received
-				if ($received_hmac !== $computed_hmac) {
-						// HMACs do not match, reject request
-						wp_send_json_error('Invalid secret key');
-						exit();
-				}  
-				$data = json_decode($body, true);
-
-				$order = wc_get_order( $_GET['id'] );
-				$order->add_order_note('Overpaid crypto payment received with amount of '.$data['amount'] . ' ' . $data['crypto_currency']. '.', true);
-
-				$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Overpaid');
-
 				 
-				$order->update_meta_data('_migpayments_worder_overpaid_payment_amount', $data['amount']);
-				$order->save();
  				wp_send_json('success');
 			}
 
@@ -519,7 +509,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
 				$this->showCryptoPrices          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('show_crypto_prices')==='') || $this->get_option('show_crypto_prices') == 'yes' || $this->get_option('show_crypto_prices') == '1' || $this->get_option('show_crypto_prices') === true) ? true : false;
 				$this->apiToken          = $this->get_option( 'api_token' );
-				$this->sharedSecret          = $this->get_option( 'shared_secret' );
+				$this->publicKey          = ltrim(rtrim($this->get_option( 'public_key' )));
 			 
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
@@ -547,7 +537,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					'title'			=> array(
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
-						'default'     	=> __( 'Crypto Payment', MIGPAYMENTSWC ),
+						'default'     	=> __( 'PayByCrypto', MIGPAYMENTSWC ),
 						'description' 	=> __( 'Payment method title that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'description' 	=> array(
@@ -582,14 +572,14 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 					),
 					
 					'api_token' 	=> array(
-						'title'       	=> __( 'Migpayments API Token', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
 					),
-					'shared_secret' 	=> array(
-						'title'       	=> __( 'Migpayments API Secret', MIGPAYMENTSWC ),
-						'type'        	=> 'text',
+					'public_key' 	=> array(
+						'title'       	=> __( 'Migpayments Public Key', MIGPAYMENTSWC ),
+						'type'        	=> 'textarea',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
 					),
@@ -626,22 +616,7 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				if ( $this->description ) 
 					echo '<div id="wc-migpayments-payment-method-description">'. $this->description .'</div>';
 				 
-				echo '<fieldset id="wc-' . esc_attr( $this->id ) . '-crypto-payment-form"  style="background:transparent;">';
-			
-				// Add this action hook if you want your custom payment gateway to support it
-				do_action( 'woocommerce_crypto_payment_form_start', $this->id );
-					
-			
-					if(!in_array($this->fiatCurrency, $this->fiatCurrencies)){
-						echo '<div class="woocommerce-error"> Crypto payment method is not available for '. $this->fiatCurrency .' shop currency.</div>';
-						return;
-					}  
 				 
-					 
-			
-				do_action( 'woocommerce_crypto_payment_form_end', $this->id );
-			
-				echo '<div class="clear"></div></fieldset>';
 			
 			}
 
