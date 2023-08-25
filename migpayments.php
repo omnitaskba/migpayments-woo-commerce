@@ -660,38 +660,9 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 				// Empty cart
 				WC()->cart->empty_cart();
 				
-			 
-				
-				// $response = $this->getPaymentData($orderId);
-				
-				// $cryptoAddress = null;
-				// $cryptoAmount = null;
-				// $currencyCode = null;
-				// $expiresAt = null;
-				 
-				// if(!$response->error){
-				// 	if(isset($response->data['cryptoAddress'])){
-				// 		$cryptoAddress = $response->data['cryptoAddress'];
-				// 	}
-				// 	if(isset($response->data['calculatedAmount'])){
-				// 		$cryptoAmount = $response->data['calculatedAmount'];
-				// 	}
-				// 	if(isset($response->data['currency'])){
-				// 		$currencyCode = $response->data['currency'];
-				// 	}
-
-				// 	$expiresAt = $response->data['expires_at'];
-				// } 
-
-				// if($this->logger)
-				// 	$this->logger->info('Get Payment Data: ' . json_encode($response->error ? $response->error : $response->data ), $this->context);
-				
-
-				// $order->update_meta_data('_migpayments_worder_crypto_amount', $cryptoAmount );
-				// $order->update_meta_data('_migpayments_worder_crypto_address', $cryptoAddress );
-				// $order->update_meta_data('_migpayments_worder_crypto_expires_at', $expiresAt );
-				// $order->update_meta_data('_return_url', $payment_link );
-				// $order->save(); 
+			  
+				$order->update_meta_data('_return_url', $payment_link );
+				$order->save(); 
 				return array(
 					'result' => 'success',
 					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&success_url='. $this->get_return_url($order))
