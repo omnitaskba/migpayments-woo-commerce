@@ -142,8 +142,24 @@ class WC_Migpayments_Service
         try{
 			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
              if(!$response->error && isset($response->data['prices'])){
+                
                  foreach($response->data['prices'] as $currencyCode => $price){
-                     $html .=  '<div class="wc-migpayments-crypto-estimate-item"><span class="wc-migpayments-crypto-total">'. $price . '</span> <span class="wc-migpayments-currency-symbol">' . $currencyCode. '</span></div>';
+                    switch($currencyCode){
+                        case 'ETH':
+                            $currencyName = 'Ethereum';
+                        break;
+                        case 'BTC':
+                            $currencyName = 'Bitcoin';
+                        break;
+                        case 'USDT':
+                            $currencyName = 'USD Tether';
+                        break;
+                        default:
+                        $currencyName = '';
+                        break;
+
+                    }
+                     $html .=  '<div class="wc-migpayments-crypto-estimate-item"> <div class="wc-migpayments-estimate-currency"> '. $currencyName . '<span class="wc-migpayments-estimate-symbol"> (' . $currencyCode. ')</span></div> <div class="wc-migpayments-estimate-currency"> ' . $price .'</div>  </div>';
                  }
              }
              $html .= '</div>';

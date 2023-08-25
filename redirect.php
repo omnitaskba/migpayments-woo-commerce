@@ -76,11 +76,10 @@
                         <div class="wc-main">
                             <div class="wc-card">
                                 <div class="wc-migpayments-order-title">
-                                    <h5>Your Order</h5>
+                                    <h5>Order Summary</h5>
                                     <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
                                 </div>
-                                <hr class="wc-migpayments-hr">
-                                
+                                 
                                 <div class="wc-migpayments-order-card ">
                                     <?php foreach($items as $item): ?>
                                     <div class="wc-migpayments-order-item">
@@ -107,39 +106,43 @@
                                             <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
                                         <?php endif; ?>
                                     </div>
+                                    <div class="wc-migpayments-hr"></div>
                                     <div id="wc-migpayments-subtotal" class="wc-migpayments-order-item subtotal">
                                         <div class="wc-migpayments- product-title">Subtotal</div>
                                         <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
                                     </div>
-                                    <hr class="wc-migpayments-hr">
+                                    
                                     <div class="wc-migpayments-order-item subtotal">
                                         <div class="wc-migpayments- product-title"><b>Total</b></div>
-                                        <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></div>
+                                        <div class="wc-migpayments-product-price"><b><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></b></div>
                                     </div>
                                         
                                 </div>
                                 
-                               <div class="flex" id="wc-migpayments-payment-options">
+                               <div  id="wc-migpayments-payment-options">
+                                    <h5>Payment Options</h5>
                                     <div class="wc-migpayments-estimate">
-                                        <h5>Crypto Estimate</h5>
+                                        <p><b>Estimated Amounts</b></p>
                                         <div id="wc-migpayments-estimate">
                                             <div class="wc-migpayments-loading"></div>
                                         </div>
                                     </div>
                                     <div class="wc-migpayments-currency-select">
-                                        <h5 for="currency_code">Choose Crypto Currency</h5>
-                                        <div>
-                                            <select name="currency_code" id="wc-migpayments-currency-code">
-                                                <option value="">Please choose currency</option>
-                                               
-                                                <?php foreach($cryptoCurrencies as $key => $val): ?>
-                                                <option value=" <?php echo $val;?>"> <?php echo $val;?></option>
-                                                <?php endforeach;?>
-                                            </select>
+                                        <div class="wc-migpayments-payment-currency">
+                                            <p>Payment Currency</p>
+                                            <div>
+                                                <select name="currency_code" id="wc-migpayments-currency-code">
+                                                    <option value="">Please select currency</option>
+                                                
+                                                    <?php foreach($cryptoCurrencies as $key => $val): ?>
+                                                    <option value=" <?php echo $val;?>"> <?php echo $val;?></option>
+                                                    <?php endforeach;?>
+                                                </select>
+                                            </div>
+                                           
                                         </div>
-                                        <div id="wc-migpayments-error">
-
-                                        </div>   
+                                        <div id="wc-migpayments-error"> </div>   
+                                       
                                         <button class="wc-migpayments-primary-btn" onclick="getPaymentData()">
                                             Get Payment Data
                                         </button>

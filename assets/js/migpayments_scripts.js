@@ -125,7 +125,8 @@ function getCryptoEstimate(){
         return response.text();
     }).then(function (html) {
         console.log(html);
-        estimateEl.innerHTML = html;
+        if(html)
+            estimateEl.innerHTML = html;
            
     }).catch(e => {
         console.log(e)
