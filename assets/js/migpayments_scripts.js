@@ -28,7 +28,9 @@ setInterval(function(){
         // console.log(data);
         //Payment confirmed
         if(data.redirect == true){
-            window.location.href = data.redirectUrl;
+            
+            if(data.redirectUrl)
+                 window.location.href = data.redirectUrl;
         } else{ 
              
             if(data.status == 'Overpaid'){
@@ -190,7 +192,7 @@ function getPaymentData(){
    
  function hideOverpaidModal(){
     //redirect to base URL
-    window.location = window.location.origin;
+    window.location = window.location.base;
     /**
      * @dev Obsolete, remove in future iterations
      */

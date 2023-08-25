@@ -89,6 +89,7 @@ body{
 }
 .wc-migpayments-payment-currency p{
     margin-bottom: 0px;
+    text-align: justify;
 }
 .wc-payment-data-item{
     margin-bottom: 10px;
@@ -477,8 +478,19 @@ span.wc-migpayments-copy-to-clipboard {
         height: 100vh;
         font-size: 18px;
     }
-    
+    .wc-migpayments-payment-currency{
+        flex-direction: column;
+     
+    }
+    .wc-migpayments-payment-currency p {
+        text-align: left;
+    }
+    div.wc-migpayments-payment-data{
+        flex-direction: column;
+    }
 }
+
+
 
 @media screen and (max-width: 768px) {
     

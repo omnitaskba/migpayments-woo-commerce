@@ -137,10 +137,16 @@ class WC_Migpayments_Service
             $logger = wc_get_logger();
         }
 
-        $html = '<div id="wc-migpayments-crypto-estimate-wrapper">';
+       
         //now the logic
         try{
+            $html = '<div id="wc-migpayments-crypto-estimate-wrapper">';
+
+          
 			 $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
+             if($logger){
+                $logger->info('Get crypto prices for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response));
+            }
              if(!$response->error && isset($response->data['prices'])){
                 
                  foreach($response->data['prices'] as $currencyCode => $price){
@@ -161,6 +167,8 @@ class WC_Migpayments_Service
                     }
                      $html .=  '<div class="wc-migpayments-crypto-estimate-item"> <div class="wc-migpayments-estimate-currency"> '. $currencyName . '<span class="wc-migpayments-estimate-symbol"> (' . $currencyCode. ')</span></div> <div class="wc-migpayments-estimate-currency"> ' . $price .'</div>  </div>';
                  }
+             } else {
+                $html .= '<p><small>Failed to fetch crypto estimate.</small></p>';
              }
              $html .= '</div>';
              $data = $html;
