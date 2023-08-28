@@ -1,0 +1,13 @@
+{
+	"name": "Migpayments WooCommerce",
+	"version": "1.6.1",
+	"download_url": "https://migpayments.tech/updates/example-plugin.zip",
+
+	"homepage": "https://migpayments.tech/",
+	 
+	"last_updated": "2023-08-28 16:17:00",
+	"upgrade_notice": "Auto update checker installed.",
+
+	"author": "Omnitask"
+	 
+}

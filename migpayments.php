@@ -12,6 +12,20 @@ require_once('src/WC_Migpayments_Service.php');
 require_once('src/WC_Migpayments_Decrypt.php');
 require_once __DIR__.'/vendor/autoload.php';
 use chillerlan\QRCode\{QRCode, QROptions};
+require 'plugin-update-checker/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+	'https://github.com/omnitaskba/migpayments-woo-commerce/',
+	__FILE__,
+	'migpayments-woocommerce'
+);
+
+//Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('stable-branch-name');
+
+//Optional: If you're using a private repository, specify the access token like this:
+$myUpdateChecker->setAuthentication('your-token-here');
  
 if (!defined( 'ABSPATH' )) exit; // Exit if accessed directly
 
