@@ -15,17 +15,7 @@ use chillerlan\QRCode\{QRCode, QROptions};
 require 'plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
-$myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://github.com/omnitaskba/migpayments-woo-commerce/',
-	__FILE__,
-	'migpayments-woocommerce'
-);
 
-//Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('stable-branch-name');
-
-//Optional: If you're using a private repository, specify the access token like this:
-$myUpdateChecker->setAuthentication('your-token-here');
  
 if (!defined( 'ABSPATH' )) exit; // Exit if accessed directly
 
@@ -36,6 +26,17 @@ if (!function_exists('migpayments_wc_gateway_load') && !function_exists('migpaym
 	global $migpayments;
 	global $cryptoCurrencies;
 
+	$myUpdateChecker = PucFactory::buildUpdateChecker(
+		'https://github.com/omnitaskba/migpayments-woo-commerce/',
+		__FILE__,
+		'migpayments-woo-commerce'
+	);
+	
+	//Set the branch that contains the stable release.
+	// $myUpdateChecker->setBranch('easton-wp-redirect');
+	
+	
+	// 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
 	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.1');
 
