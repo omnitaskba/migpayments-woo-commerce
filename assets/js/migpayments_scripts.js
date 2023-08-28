@@ -3,9 +3,7 @@ setInterval(function(){
     const data = new FormData();
     var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
     var infoBoxEl =  document.getElementById('wc-migpayments-info-box')
-    var paymentDataEl =  document.getElementById('wc-payment-data-container')
-    
-    var reviewBtn = document.getElementById('wc-migpayments-review-order-button');
+  
     var amountEl = document.getElementById('wc-migpayments-crypto-amount-wrapper');
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
     var cancelBtn = document.getElementById('wc-migpayments-cancel-btn');

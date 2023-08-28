@@ -2,56 +2,28 @@ body{
     font-size:14px;
     height:100%;
 } 
- #wc-migpayments-review-order-button-wrapper {
- text-align: center;
- margin:1em;
- display: flex;
- justify-content: space-between;
-}
+ 
 #wc-migpayments-address-qr-code{
     margin-left: -15px;
     flex-shrink: 0;
 }
-#wc-migyments-review-order-button a, #wc-migyments-review-order-button a:hover, #wc-migyments-cancel-order-button a, #wc-migyments-cancel-order-button a:hover{
-    text-decoration: none !important;
-    font-size:1rem;;
-}
+ 
 #wc-migpayments-crypto-estimate-wrapper{
     margin-top: 1rem;
     margin-bottom:2rem;
    
 }
+#wc-migpayments-crypto-estimate-wrapper .wc-migpayments-currency-symbol{
+    font-weight: bold;
+}
+
 .wc-migpayments-crypto-estimate-item{
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-#wc-migpayments-crypto-estimate-wrapper .wc-migpayments-currency-symbol{
-   font-weight: bold;
-}
-#wc-migpayments-cancel-order-button{
-    margin-right: 10px;
-    background-color: #000000;
-    
-}
-#wc-migpayments-review-order-button, #wc-migpayments-cancel-order-button{
-    padding: 0.6180469716em 1.41575em;
-    border-radius: 8px !important;
-    color:#FFFFFF;
-}
-#wc-migpayments-review-order-button{
-    background-color: #F7941E;
-}
-#wc-migpayments-primary{
-    text-align: center;
-}
- 
-#wc-migpayments-payment-data-title{
-    font-size: 2.617924em;
-    line-height: 1.214;
-    text-align: center;
-    letter-spacing: -1px;
-}
+
+   
 .wc-migpayments-crypto-address-wrapper, .wc-migpayments-crypto-amount-wrapper{
     padding-left: 15px;;
     padding-right: 15px;;
@@ -63,25 +35,12 @@ body{
     margin-top: 15px;;
 }
 
-.back-button a{
-    font-size: 13px;
-    font-weight: 600;
-}
-.order-details {
-    background-color: #f4f4f4;
-    text-align: left;
-    border-radius: 10px;
-    padding:15px;;
-    position: relative;
-}
-.wc-migpayments-order-card {
-    
-     
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    
  
+.wc-migpayments-order-card {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem; 
 }
+
 .wc-migpayments-payment-currency{
     display: flex;
     justify-content: space-between;
@@ -300,7 +259,6 @@ div#wc-migpayments-right-column {
 }
 div.wc-migpayments-payment-data {
     margin: unset !important;
-    text-align: left;
     color:#3A4E5E;
     text-align: center;
     display:flex;justify-content:space-between;
@@ -488,10 +446,14 @@ span.wc-migpayments-copy-to-clipboard {
     div.wc-migpayments-payment-data{
         flex-direction: column;
     }
+    #wc-get-payment-data-form .wc-main, #wc-payment-data-container .wc-main{
+        min-width: 60%;
+    }
 }
 
 
 
+ 
 @media screen and (max-width: 768px) {
     
     
@@ -501,7 +463,9 @@ span.wc-migpayments-copy-to-clipboard {
     #wc-payment-data-container .wc-main{
         height: auto;
         height: fit-content;
-        
+        min-width: 80%;
+
+
     }
 }
 
@@ -519,17 +483,14 @@ span.wc-migpayments-copy-to-clipboard {
     }
     .wc-migpayments-payment-item{
       width: 100%;
-        /* justify-content: end; */
     }
     #wc-payment-data-container .wc-main{
+        max-width: 50%;
         height: auto;
         height: fit-content;
         
     }
-    /* .wc-migpayments-payment-item{
-        flex-direction: c;
-    } */
-    
+ 
     .wc-migpayments-payment-items{
         width: 100%;
         margin:0;
@@ -537,34 +498,32 @@ span.wc-migpayments-copy-to-clipboard {
 }
 
 #wc-migpayments-currency-code{
-    
     padding:10px;
     border-radius: 8px;
 }
+
 .full-width-bg::before{
-      -webkit-backface-visibility:visible;
-  backface-visibility:visible;	
-      content: ' ';
-      position: fixed;  
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      background-color: white;
-     
-      will-change: transform;  
-      z-index: -1;
+    -webkit-backface-visibility:visible;
+    backface-visibility:visible;	
+    content: ' ';
+    position: fixed;  
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: white;
     
-  }
+    will-change: transform;  
+    z-index: -1;
+    
+} 
 .wc-migpayments-currency-select{
     text-align: center;
-     
-  
 }
+
 .wc-migpayments-error{
-color:red;
-margin-top: 0.5rem;
-  
+    color:red;
+    margin-top: 0.5rem;
 }
  
 
