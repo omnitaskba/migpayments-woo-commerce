@@ -1,8 +1,8 @@
 <?php
-require_once('WC_Migpayments_Library.php');
-require_once('WC_Migpayments_Response.php');
+require_once 'MigpaymentsLibrary.php';
+require_once 'MigpaymentsResponse.php';
 
-class WC_Migpayments_Decrypt
+class MigpaymentsDecrypt
 {
  
     public static function decryptData($encryptedData, $publicKey){
@@ -13,7 +13,9 @@ class WC_Migpayments_Decrypt
         $context = ['source' => 'migpayments'];
 
         if(function_exists('wc_get_logger'))
+        {
             $log = wc_get_logger();
+        }
        
         try{
            
@@ -22,8 +24,10 @@ class WC_Migpayments_Decrypt
             if($publicKey === false)
             {
                 if($log)
+                {
                     $log->error('Invalid public key.', $context );
-                return new WC_Migpayments_Response($defaultErroMsg);
+                }
+                return new MigpaymentsResponse($defaultErroMsg);
             }
             
             
@@ -31,7 +35,7 @@ class WC_Migpayments_Decrypt
 
             if (is_null($decryptedData)) {
                
-                return new WC_Migpayments_Response($defaultErroMsg);
+                return new MigpaymentsResponse($defaultErroMsg);
             }
             
             $data = json_decode($decryptedData);
@@ -41,10 +45,12 @@ class WC_Migpayments_Decrypt
            
             $error =  esc_html($e->getMessage());
             if($log)
+            {
                 $log->error('Failed to decrypt data: '. $error, $context);
+            }
         }
          
-        return new WC_Migpayments_Response($error, $data);
+        return new MigpaymentsResponse($error, $data);
     }
  
  

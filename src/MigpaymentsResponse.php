@@ -1,5 +1,5 @@
 <?php
-class WC_Migpayments_Response
+class MigpaymentsResponse
 {
     public $data;
     public $error;
