@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.6.5
+Version: 			1.6.6
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.5');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.6');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
