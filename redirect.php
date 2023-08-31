@@ -64,8 +64,11 @@
                     <div class="wc-card">
                         <div class="wc-migpayments-order-title">
                             <h5>Order Summary</h5>
+                            
                             <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
+                            <p>Order #<b><?php echo $order_id;?></b></p>
                         </div>
+                       
                             
                         <div class="wc-migpayments-order-card ">
                             <?php foreach($items as $item): ?>

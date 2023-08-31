@@ -190,7 +190,7 @@ function getPaymentData(){
    
  function hideOverpaidModal(){
     //redirect to base URL
-    window.location = window.location.base;
+    window.location = 'https://thefundedtraderprogram.com/';
     /**
      * @dev Obsolete, remove in future iterations
      */
