@@ -2,7 +2,7 @@
 
 class MigpaymentsLibrary {
 
-    private $sandboxUrl = 'https://sandbox.migpayments.tech/api/v1/';
+    private $sandboxUrl = 'http://mig.test/api/v1/';
     private $baseUrl = 'https://migpayments.tech/api/v1/';
 
     private $http;

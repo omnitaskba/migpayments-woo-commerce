@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.6.3
+Version: 			1.6.4
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.3');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.4');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -44,7 +44,11 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_action('wp_enqueue_scripts','migpaymentsWcScripts');
 		add_filter( 'page_template', 'migpaymentsWcPageTemplate');
 		add_action( 'wp_ajax_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
+		add_action( 'wp_ajax_no_priv_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
+
 		add_action( 'wp_ajax_migpayments_wc_get_payment_data', 'migpaymentsWcAsyncGetPaymentData' );
+		add_action( 'wp_ajax_no_priv_migpayments_wc_get_payment_data', 'migpaymentsWcAsyncGetPaymentData' );
+		
 		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpaymentsWcCheckAsyncStatus' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpaymentsWcCheckAsyncStatus' );
 		
