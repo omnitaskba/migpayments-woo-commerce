@@ -173,7 +173,7 @@
                 
             </div>
             <div class="wc-migpayments-footer">
-                            <small>Powered By</small> <br> <a href="https://cryptoorange.com"><img src="https://cryptoorange.com/img/logo.svg" alt=""></a>
+                            <small>Powered By</small> <br> <a target="_blank" href="https://cryptoorange.com"><img src="https://cryptoorange.com/img/logo.svg" alt=""></a>
                         </div>
         </div>
 
