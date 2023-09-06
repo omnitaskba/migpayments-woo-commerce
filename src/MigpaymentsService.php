@@ -130,7 +130,7 @@ class MigpaymentsService
             $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
 
             if($log){
-                $log->info('Get crypto prices for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response));
+                $log->info('Get crypto prices for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response), ['source' => 'migpayments']);
             }
 
             if(!$response->error && isset($response->data['prices'])){

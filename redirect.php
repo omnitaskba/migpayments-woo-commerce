@@ -1,6 +1,7 @@
 <?php
   
     global $cryptoCurrencies;
+    global $migpayments;
 ?>
    
  <!DOCTYPE html>
@@ -17,13 +18,15 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
-      
-        <style>
-            .full-width-bg::before{
-                background: url('<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/bg-image.jpg';?>') no-repeat center center;
-                background-size: cover;
-            }
-        </style>
+       
+            <style>
+            
+                .full-width-bg::before{
+                    background: url('<?php  echo $migpayments && $migpayments->redirectBackgroundUrl ?  $migpayments->redirectBackgroundUrl :  plugin_dir_url(__FILE__) . '/assets/img/bg-landing.png'; ?>') no-repeat center center;
+                    background-size: cover;
+                }
+            </style>
+       
     </head>
     
     <?php
@@ -40,8 +43,11 @@
     ?>
     <body>
         <!-- Main -->
-        <div id="wc-payment-wrapper" class="full-width-bg" >
-            <img id="wc-migpayments-logo" width="150" src="<?php  echo  plugin_dir_url(__FILE__) . '/assets/img/logo.svg';?>" alt="The funded trader logo">
+        <div id="wc-payment-wrapper" class="full-width-bg"  >
+                <?php if($migpayments && $migpayments->redirectLogoUrl) : ?>
+                    <img id="wc-migpayments-logo" width="120" src="<?php echo  $migpayments->redirectLogoUrl; ?>" alt="Merchant Logo">
+                <?php endif;?>
+             
             <div  id="wc-overpaid-modal" data-url="<?php echo admin_url( 'admin-ajax.php' );?>" data-order_id="<?php echo $order_id;?>" class="wc-overpaid-modal" >
                 
                 <div class="wc-overpaid-modal-content">
@@ -66,7 +72,7 @@
                             <h5>Order Summary</h5>
                             
                             <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
-                            <p>Order #<b><?php echo $order_id;?></b></p>
+                            <p>Order <span class="text-muted">#</span><b><?php echo $order_id;?></b></p>
                         </div>
                        
                             
@@ -95,7 +101,10 @@
 
                                     <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
                                 <?php endif; ?>
+                                
                             </div>
+                          
+                            
                             <div class="wc-migpayments-hr"></div>
                             <div id="wc-migpayments-subtotal" class="wc-migpayments-order-item subtotal">
                                 <div class="wc-migpayments- product-title">Subtotal</div>
@@ -112,14 +121,14 @@
                         <div  id="wc-migpayments-payment-options">
                             <h5>Payment Options</h5>
                             <div class="wc-migpayments-estimate">
-                                <p><b>Estimated Amounts</b></p>
+                                <p class="text-dark"><b>Estimated Amounts</b></p>
                                 <div id="wc-migpayments-estimate">
                                     <div class="wc-migpayments-loading"></div>
                                 </div>
                             </div>
                             <div class="wc-migpayments-currency-select">
                                 <div class="wc-migpayments-payment-currency">
-                                    <p>Payment Currency</p>
+                                    <h6>Payment Currency</h6>
                                     <div>
                                         <select name="currency_code" id="wc-migpayments-currency-code">
                                             <option value="">Please select currency</option>
@@ -158,8 +167,14 @@
                             
                         </div>
                     </div>
+                  
+                    
                 </div>
+                
             </div>
+            <div class="wc-migpayments-footer">
+                            <small>Powered By</small> <br> <a href="https://cryptoorange.com"><img src="https://cryptoorange.com/img/logo.svg" alt=""></a>
+                        </div>
         </div>
 
         <script src="<?php echo  plugin_dir_url(__FILE__) . '/assets/js/migpayments_scripts.js';?>"></script>

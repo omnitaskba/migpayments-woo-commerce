@@ -154,11 +154,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<'))
 								? $order->orderTotal    : $order->get_total();
 
-		if($migpayments && $migpayments->log)
-		{
-			$migpayments->log->info(json_encode($migpayments->cryptoCurrencies), $migpayments->context);
-		}
-
+		 
 		$response  = MigpaymentsService::getCryptoPricesHtml($orderTotal, $migpayments->cryptoCurrencies,
 																$fiatCurrencyCode, $migpayments->apiToken, $migpayments->isSandbox);
 		
@@ -207,11 +203,13 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	
 	function migpaymentsWcPageTemplate( $pageTemplate )
 	{
+		global $migpayments;
 		$migpayments = new WcMigpaymentsGateway();
 		
 		if ( is_page( 'migpayments-payment-instructions' ) ) {
 			$pageTemplate = dirname( __FILE__ ) . '/redirect.php';
 			global $cryptoCurrencies;
+			
 		 	$cryptoCurrencies = $migpayments->cryptoCurrencies;
 			
 		}
@@ -306,7 +304,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		class WcMigpaymentsGateway extends WC_Payment_Gateway
 		{
 			public $isSandbox  = true;
-			public $showCryptoPrices = true;
 			public $apiToken = null;
 			private $publicKey = null;
 			public $fiatCurrencies         = ['EUR', 'USD'];
@@ -321,6 +318,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $icon;
 			public $description;
 			public $context = ['source' => 'migpayments'];
+			public $redirectLogoUrl;
+			public $redirectBackgroundUrl;
 
 			public function __construct()
 			{
@@ -332,7 +331,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainPluginUrl 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
-				$this->method_description  	= __( "Supports BTC,ETH, USDT", MIGPAYMENTSWC ) . '</b><br>';
+				$this->method_description  	= __( "Cryptocurrency Payment Gateway: Accept BTC, ETH, and USDT with ease.", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
 				$this->has_fields = true;
 				$this->icon = apply_filters('woocommerce'. $this->id.'icon', plugins_url("/assets/img/currencies.png", __FILE__));
@@ -508,13 +507,13 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 				// Define user set variables
 				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
-				$this->showCryptoPrices          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('show_crypto_prices')==='') || $this->get_option('show_crypto_prices') == 'yes' || $this->get_option('show_crypto_prices') == '1' || $this->get_option('show_crypto_prices') === true) ? true : false;
 				$this->apiToken          = ltrim(rtrim($this->get_option( 'api_token' )));
 				$this->publicKey          = ltrim(rtrim($this->get_option( 'public_key' )));
-			 
+				$this->redirectLogoUrl =  $this->get_option( 'redirect_page_logo' ) && $this->get_option( 'redirect_page_logo' ) != '' ? $this->get_option( 'redirect_page_logo' ) : $this->redirectLogoUrl; 
+				$this->redirectBackgroundUrl =  $this->get_option( 'redirect_page_background' ) && $this->get_option( 'redirect_page_background' ) != '' ? $this->get_option( 'redirect_page_background' ) : $this->redirectBackgroundUrl; 
 				$this->title            = $this->get_option( 'title' );
 				$this->description      = $this->get_option( 'description' );
-				$this->cryptoAddressLabelTxt      =$this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
+			$this->cryptoAddressLabelTxt      = $this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
 				$this->cryptoAmountLabelTxt      =$this->get_option( 'crypto_amount_label_txt' ) && $this->get_option( 'crypto_amount_label_txt' ) != '' ? $this->get_option( 'crypto_amount_label_txt' ) : $this->cryptoAmountLabelTxt;
 				$this->paymentDataErrorTxt      =$this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
 				
@@ -530,7 +529,35 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'   	  	=> __( 'Sandbox Mode', MIGPAYMENTSWC ),
 						'type'    	  	=> 'checkbox',
 						'default'	  	=> (MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments'?'yes':'no'),
-						'label'   	  	=> sprintf(__( "Choose to use sandbox or production enviroment", MIGPAYMENTSWC ), $this->url3)
+						'label'   	  	=> sprintf(__( "Choose to use sandbox or production enviroment", MIGPAYMENTSWC ), $this->url3),
+					),
+
+					'api_token' 	=> array(
+						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'description' 	=> __( '', MIGPAYMENTSWC )
+					),
+					'public_key' 	=> array(
+						'title'       	=> __( 'Migpayments Public Key', MIGPAYMENTSWC ),
+						'type'        	=> 'textarea',
+						'default'     	=> null,
+						'description' 	=> __( '', MIGPAYMENTSWC )
+					),
+			  
+					'available_currencies' => array(
+						'title'       	=> __( 'Available Crypto Currencies', MIGPAYMENTSWC ),
+						'type' => 'multiselect',
+						'label'      => __( 'Available Currencies', MIGPAYMENTSWC),
+						'description'      => __( 'Check currency to make it visibile on checkout page. All currencies are visible by deafult.', MIGPAYMENTSWC ),
+						'required'  => false,
+						'default' => $this->cryptoCurrencies,
+						'class'             => 'wc-enhanced-select',
+						'css'               => 'width: 400px;',
+						'options' => $this->cryptoCurrencies,
+						'custom_attributes' => array(
+							'data-placeholder' => __( 'Select crypto currencies', MIGPAYMENTSWC ),
+						  ),
 					),
 					'title'			=> array(
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
@@ -545,56 +572,36 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'description' 	=> __( 'Payment method description that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'crypto_address_label_txt'			=> array(
-						'title'       	=> __( 'Crypto Address Label Text', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Crypto Address Label', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> __( 'Send transaction to this address:', MIGPAYMENTSWC ),
 						'description' 	=> __( 'Crypto address label text placed on payment instructions page.', MIGPAYMENTSWC )
 					),
 					'crypto_amount_label_txt'			=> array(
-						'title'       	=> __( 'Crypto Amount Label Text', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Crypto Amount Label', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> __( 'Send this exact amount: ', MIGPAYMENTSWC ),
 						'description' 	=> __( 'Crypto amount label text placed on payment instructions page.', MIGPAYMENTSWC )
 					),
 					'payment_data_error_txt' 	=> array(
-						'title'       	=> __( 'Payment Data Error Text', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Payment Error Message', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> __( 'Failed to get crypto payment data.', MIGPAYMENTSWC),
 						'description' 	=> __( 'Error text show on payment instructions pages', MIGPAYMENTSWC )
 					),
 					
-					'api_token' 	=> array(
-						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
+					'redirect_page_logo' 	=> array(
+						'title'       	=> __( 'Logo URL', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
-						'description' 	=> __( '', MIGPAYMENTSWC )
+						'description' 	=> __( 'Minimum Image Width: 120px', MIGPAYMENTSWC )
 					),
-					'public_key' 	=> array(
-						'title'       	=> __( 'Migpayments Public Key', MIGPAYMENTSWC ),
-						'type'        	=> 'textarea',
+					'redirect_page_background' 	=> array(
+						'title'       	=> __( 'Background URL', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
 						'default'     	=> null,
-						'description' 	=> __( '', MIGPAYMENTSWC )
-					),
-			 
-					'show_crypto_prices'		=> array(
-						'title'   	  	=> __( 'Crypto Totals Box', MIGPAYMENTSWC ),
-						'type'    	  	=> 'checkbox',
-						'default'	  	=> (MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments'?'yes':'no'),
-						'label'   	  	=> sprintf(__( "Show cart total converted to available crypto currencies on checkout page.", MIGPAYMENTSWC ), $this->url3)
-					),
-					'available_currencies' => array(
-						'title'       	=> __( 'Available Crypto Currencies', MIGPAYMENTSWC ),
-						'type' => 'multiselect',
-						'label'      => __( 'Available Currencies', MIGPAYMENTSWC),
-						'description'      => __( 'Check currency to make it visibile on checkout page. All currencies are visible by deafult.', MIGPAYMENTSWC ),
-						'required'  => false,
-						'default' => $this->cryptoCurrencies,
-						'class'             => 'wc-enhanced-select',
-						'css'               => 'width: 400px;',
-						'options' => $this->cryptoCurrencies,
-						'custom_attributes' => array(
-							'data-placeholder' => __( 'Select crypto currencies', MIGPAYMENTSWC ),
-						  ),
+						'description' 	=> __( 'Minimum Image Width: 1400px', MIGPAYMENTSWC )
+						
 					),
 				 
 				);

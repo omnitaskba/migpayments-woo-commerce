@@ -2,14 +2,22 @@ body{
     font-size:14px;
     height:100%;
 } 
- 
+.payment_method_migpaymentspayments img{
+    margin-top: 10px;
+    
+    max-height: 55px;
+}
+.payment_method_migpaymentspayments{
+    display: flex;
+    align-items: center;
+}
 #wc-migpayments-address-qr-code{
     margin-left: -15px;
     flex-shrink: 0;
 }
  
 #wc-migpayments-crypto-estimate-wrapper{
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     margin-bottom:2rem;
    
 }
@@ -49,6 +57,9 @@ body{
 .wc-migpayments-payment-currency p{
     margin-bottom: 0px;
     text-align: justify;
+}
+.wc-migpayments-payment-currency h6{
+    color: #f7981d;
 }
 .wc-payment-data-item{
     margin-bottom: 10px;
@@ -332,15 +343,19 @@ span.wc-migpayments-copy-to-clipboard {
     border-radius: 10px;
     padding:2em 2.2em;
    
- }
+}
+#wc-payment-data-container .wc-main {
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+}
 #wc-migpayments-logo{
-    margin-top: 30px;
+    margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
     display: block;
 }
 .wc-migpayments-estimate{
     margin-top: 1rem;
+    
     
 }
 .wc-migpayments-estimate p{
@@ -540,6 +555,7 @@ span.wc-migpayments-copy-to-clipboard {
     -webkit-animation: spinWCMig 1s ease-in-out infinite;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 3rem;
   }
   
   @keyframes spinWCMig {
@@ -547,4 +563,10 @@ span.wc-migpayments-copy-to-clipboard {
   }
   @-webkit-keyframes spinWCMig {
     to { -webkit-transform: rotate(360deg); }
+  }
+
+  .wc-migpayments-footer{
+    text-align: center;
+    width: 100%;
+    padding-bottom:2rem;
   }

@@ -153,11 +153,9 @@ function getPaymentData(){
         return false;
 
     }
-    
    
     paymentOptionsEl.style.display = 'none';
     paymentDataEl.innerHTML = ' <div class="wc-migpayments-loading"></div>';
-
     
     var ajaxUrl  = overpaidModal.dataset.url;
 
@@ -176,7 +174,6 @@ function getPaymentData(){
     };
 
     const fetchResponse = fetch(ajaxUrl, settings).then(function (response) {
-        // The API call was successful!
         return response.text();
     }).then(function (html) {
        
@@ -190,18 +187,8 @@ function getPaymentData(){
    
  function hideOverpaidModal(){
     //redirect to base URL
-    window.location = 'https://thefundedtraderprogram.com/';
-    /**
-     * @dev Obsolete, remove in future iterations
-     */
-    /*
-    var overpaidModal =  document.getElementById('wc-overpaid-modal');
-    overpaidModal.classList.remove('active');
-    overpaidModal.remove();
-
-    var paymentDataContainer = document.getElementById('wc-payment-data-container');
-    paymentDataContainer.classList.remove('hide');
-    */
+    window.location.href = '/';
+    
     
  }
 
