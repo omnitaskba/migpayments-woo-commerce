@@ -3,7 +3,7 @@
 Plugin Name: 		MigPayments WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway
-Version: 			1.6.6
+Version: 			1.7.0
 Author: 			Omnitask
 Author URI: 		https://migpayments.tech
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.6.6');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.0');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -415,7 +415,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					$order->save();
 				} catch(\Exception $e){
 					if($this->log)
+					{
 						$this->log->error('Failed to confirm payment: ' .  esc_html($e->getMessage()), $this->context);
+					}
 					wp_send_json('Failed to confirm payment.', 406);
 				}
 				wp_send_json('success');
@@ -432,14 +434,13 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					$order = wc_get_order( $_GET['id'] );
 					if(!$order){
 						if($this->log)
+						{
 							$this->log->error('Partial Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						}
 						throw new \Exception("Failed to get order.");
 					}
-						 
-						
-					
+							
 					$order->add_order_note('Partial crypto payment received with amount of '.$data->amount . ' ' . $data->crypto_currency. '.', true);
-
 					$order->update_meta_data( '_migpayments_worder_crypto_payment_status', 'Partially paid');
 					
 					$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
@@ -455,9 +456,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 					$partialPayments[] = $payment;
 					
-
 					$order->update_meta_data('_migpayments_worder_partial_payments', $partialPayments);
 					$order->save();
+
 				} catch(\Exception $e){
 					if($this->log)
 						$this->log->error('Failed to store partial payment: ' .  esc_html($e->getMessage()), $this->context);
@@ -483,10 +484,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					}
 
 					$order->add_order_note('Overpaid crypto payment received with amount of '.$data->amount . ' ' . $data->crypto_currency. '.', true);
-
 					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Overpaid');
-
-					
 					$order->update_meta_data('_migpayments_worder_overpaid_payment_amount', $data->amount);
 					$order->save();
 
