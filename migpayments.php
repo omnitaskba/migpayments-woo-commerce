@@ -77,7 +77,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		if (!$pageExists) {
 			wp_insert_post ([
 				'post_type' =>	'page',
-				'post_status' => 'private',
 				'post_title' => 'Migpayments Payment Instructions',
 				'post_content' => '<strong>Please send whole amount in ONE transaction.</strong></br><strong>
 									Please add the mining fee on top of the displayed amount.</strong></br><hr>',
@@ -588,7 +587,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'       	=> __( 'Payment Error Message', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> __( 'Failed to get crypto payment data.', MIGPAYMENTSWC),
-						'desc_tip' 	=> __( 'Error text show on payment instructions pages', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Payment instructions error text.', MIGPAYMENTSWC )
 					),
 					
 					'redirect_page_logo' 	=> array(
