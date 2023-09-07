@@ -59,7 +59,7 @@ class MigpaymentsService
         
         if(function_exists('wc_get_logger')){
             $log = wc_get_logger();
-            $log->info('Get payment data response:'. json_encode($response));
+            $log->info('Get payment data response:'. json_encode($response), ['source' => 'migpayments']);
         }
 
         $migpayments = new WcMigpaymentsGateway();
@@ -102,7 +102,7 @@ class MigpaymentsService
             $response  = $migpaymentsLibrary->getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token);
                 
             if(!$response['success']){
-                $error = 'Failed to get crypto prices.';
+                $error = 'Failed to get crypto estimate.';
                 return new MigpaymentsResponse($error);
             }
         
@@ -112,7 +112,7 @@ class MigpaymentsService
             }
         
         } catch (Exception $e){
-            $error = 'Failed  to get crypto prices.';
+            $error = 'Failed  to get crypto estimate.';
         }
         return new MigpaymentsResponse($error, $data);
     }
@@ -130,7 +130,7 @@ class MigpaymentsService
             $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
 
             if($log){
-                $log->info('Get crypto prices for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response), ['source' => 'migpayments']);
+                $log->info('Get crypto estimate for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response), ['source' => 'migpayments']);
             }
 
             if(!$response->error && isset($response->data['prices'])){

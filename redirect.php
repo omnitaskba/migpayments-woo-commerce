@@ -18,15 +18,27 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
-       
+
+        <style>
+            
+            .full-width-bg::before{
+                background: url('<?php  echo $migpayments && $migpayments->redirectBackgroundUrl ?  $migpayments->redirectBackgroundUrl : ($migpayments->redirectBackgroundColor ? 'none' : plugin_dir_url(__FILE__) . '/assets/img/bg-landing.png'); ?>') no-repeat center center;
+                background-size: cover;
+            }
+        </style>
+   
+
+        <?php if($migpayments && $migpayments->redirectBackgroundColor &&   !$migpayments->redirectBackgroundUrl ) : ?>
             <style>
             
                 .full-width-bg::before{
-                    background: url('<?php  echo $migpayments && $migpayments->redirectBackgroundUrl ?  $migpayments->redirectBackgroundUrl :  plugin_dir_url(__FILE__) . '/assets/img/bg-landing.png'; ?>') no-repeat center center;
-                    background-size: cover;
+                    background-color: <?php echo  $migpayments->redirectBackgroundColor; ?> !important;
                 }
             </style>
-       
+        <?php endif; ?>
+        
+        
+          
     </head>
     
     <?php
@@ -65,7 +77,7 @@
                 </div>
             
             </div>
-            <div id="wc-payment-data-container"    >
+            <div id="wc-payment-data-container">
                 <div class="wc-main">
                     <div class="wc-card">
                         <div class="wc-migpayments-order-title">
@@ -149,13 +161,7 @@
                         </div>
                         
                         
-                        <div id="wc-migpayments-payment-data">
-                            
-                            
-                                
-                            
-                            
-                        </div>
+                        <div id="wc-migpayments-payment-data"> <!-- JS --> </div>
                         
                         <div id="wc-mipgpayments-partial-payments">
                             <div id="wc-actions">

@@ -67,8 +67,7 @@ setInterval(function(){
                             totalPartialsAmount = parseFloat(payments[i].amount) + parseFloat(totalPartialsAmount);
                             
                         }
-
-                        console.log(totalPartialsAmount);
+ 
                         html += '</tbody></table>';
                         amountDifference = parseFloat(totalAmount) - parseFloat(totalPartialsAmount);
                         var decimals = currencyCode == 'USDT' ? 6 : 8;
@@ -124,7 +123,6 @@ function getCryptoEstimate(){
         // The API call was successful!
         return response.text();
     }).then(function (html) {
-        console.log(html);
         if(html)
             estimateEl.innerHTML = html;
            

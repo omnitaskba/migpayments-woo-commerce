@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: 		MigPayments WooCommerce
+Plugin Name: 		PayByCrypto WooCommerce
 Plugin URI: 		https://migpayments.tech
-Description: 		A crypto payment gateway
+Description: 		A crypto payment gateway.
 Version: 			1.7.0
-Author: 			Omnitask
-Author URI: 		https://migpayments.tech
+Author: 			CryptoOrange
+Author URI: 		https://cryptoorange.com
 */
  
 require_once 'src/MigpaymentsService.php';
@@ -95,6 +95,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v='. MIGPAYMENTSWC_VERSION);
 	}
 	
+ 
 	function migpaymentsWcScripts(){
 		if ( is_page( 'migpayments-payment-instructions' ) ) {
 
@@ -109,7 +110,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					'redirectUrl' => $_GET['success_url']
 				)
 			);
-			 
+			
+		 
 			wp_enqueue_script( 'redirect-js' );
   
 		}
@@ -283,7 +285,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		
 		if (array_key_exists('migpaymentspayments',$availableGateways)) {
 			
-			$availableGateways['migpaymentspayments']->order_button_text = __( 'Proceed to Migpayments', 'woocommerce' );
+			$availableGateways['migpaymentspayments']->order_button_text = __( 'Proceed with PayByCrypto', 'woocommerce' );
 		}
 		return $availableGateways;
 	}
@@ -320,6 +322,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $context = ['source' => 'migpayments'];
 			public $redirectLogoUrl;
 			public $redirectBackgroundUrl;
+			public $redirectBackgroundColor;
 
 			public function __construct()
 			{
@@ -330,7 +333,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
  
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainPluginUrl 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
-				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
+				$this->method_title       	= __( 'PayByCrypto', MIGPAYMENTSWC );
 				$this->method_description  	= __( "Cryptocurrency Payment Gateway: Accept BTC, ETH, and USDT with ease.", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
 				$this->has_fields = true;
@@ -504,17 +507,17 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			{
 
 				// Define user set variables
-				$this->isSandbox          = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
-				$this->apiToken          = ltrim(rtrim($this->get_option( 'api_token' )));
-				$this->publicKey          = ltrim(rtrim($this->get_option( 'public_key' )));
+				$this->isSandbox = ((MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments' && $this->get_option('is_sandbox')==='') || $this->get_option('is_sandbox') == 'yes' || $this->get_option('is_sandbox') == '1' || $this->get_option('is_sandbox') === true) ? true : false;
+				$this->apiToken = ltrim(rtrim($this->get_option( 'api_token' )));
+				$this->publicKey = ltrim(rtrim($this->get_option( 'public_key' )));
 				$this->redirectLogoUrl =  $this->get_option( 'redirect_page_logo' ) && $this->get_option( 'redirect_page_logo' ) != '' ? $this->get_option( 'redirect_page_logo' ) : $this->redirectLogoUrl; 
-				$this->redirectBackgroundUrl =  $this->get_option( 'redirect_page_background' ) && $this->get_option( 'redirect_page_background' ) != '' ? $this->get_option( 'redirect_page_background' ) : $this->redirectBackgroundUrl; 
-				$this->title            = $this->get_option( 'title' );
-				$this->description      = $this->get_option( 'description' );
-			$this->cryptoAddressLabelTxt      = $this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
-				$this->cryptoAmountLabelTxt      =$this->get_option( 'crypto_amount_label_txt' ) && $this->get_option( 'crypto_amount_label_txt' ) != '' ? $this->get_option( 'crypto_amount_label_txt' ) : $this->cryptoAmountLabelTxt;
-				$this->paymentDataErrorTxt      =$this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
-				
+				$this->redirectBackgroundUrl =  $this->get_option( 'redirect_page_background' ) && $this->get_option( 'redirect_page_background' ) != '' ? $this->get_option( 'redirect_page_background' ) : $this->redirectBackgroundUrl;
+				$this->title = $this->get_option( 'title' );
+				$this->description = $this->get_option( 'description' );
+				$this->cryptoAddressLabelTxt = $this->get_option( 'crypto_address_label_txt' ) && $this->get_option( 'crypto_address_label_txt' ) != '' ? $this->get_option( 'crypto_address_label_txt' ) : $this->cryptoAddressLabelTxt;
+				$this->cryptoAmountLabelTxt = $this->get_option( 'crypto_amount_label_txt' ) && $this->get_option( 'crypto_amount_label_txt' ) != '' ? $this->get_option( 'crypto_amount_label_txt' ) : $this->cryptoAmountLabelTxt;
+				$this->paymentDataErrorTxt = $this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
+				$this->redirectBackgroundColor =  $this->get_option( 'redirect_page_background_color' ) && $this->get_option( 'redirect_page_background_color' ) != '' ? $this->get_option( 'redirect_page_background_color' ) : $this->redirectBackgroundUrl;
 				return true;
 			}
 
@@ -531,13 +534,13 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					),
 
 					'api_token' 	=> array(
-						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
+						'title'       	=> __( 'PayByCrypto API Key', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
 					),
 					'public_key' 	=> array(
-						'title'       	=> __( 'Migpayments Public Key', MIGPAYMENTSWC ),
+						'title'       	=> __( 'PayByCrypto Public Key', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
@@ -547,7 +550,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'       	=> __( 'Available Crypto Currencies', MIGPAYMENTSWC ),
 						'type' => 'multiselect',
 						'label'      => __( 'Available Currencies', MIGPAYMENTSWC),
-						'description'      => __( 'Check currency to make it visibile on checkout page. All currencies are visible by deafult.', MIGPAYMENTSWC ),
+						'desc_tip'      => __( 'Check currency to make it visibile on checkout page. All currencies are visible by deafult.', MIGPAYMENTSWC ),
 						'required'  => false,
 						'default' => $this->cryptoCurrencies,
 						'class'             => 'wc-enhanced-select',
@@ -561,44 +564,52 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> __( 'PayByCrypto', MIGPAYMENTSWC ),
-						'description' 	=> __( 'Payment method title that the customer will see on your checkout', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Payment method title that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'description' 	=> array(
 						'title'       	=> __( 'Description', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> __( 'Secure, anonymous payment with virtual currency.', MIGPAYMENTSWC),
-						'description' 	=> __( 'Payment method description that the customer will see on your checkout', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Payment method description that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'crypto_address_label_txt'			=> array(
 						'title'       	=> __( 'Crypto Address Label', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> __( 'Send transaction to this address:', MIGPAYMENTSWC ),
-						'description' 	=> __( 'Crypto address label text placed on payment instructions page.', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Crypto address label text placed on payment instructions page.', MIGPAYMENTSWC )
 					),
 					'crypto_amount_label_txt'			=> array(
 						'title'       	=> __( 'Crypto Amount Label', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> __( 'Send this exact amount: ', MIGPAYMENTSWC ),
-						'description' 	=> __( 'Crypto amount label text placed on payment instructions page.', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Crypto amount label text placed on payment instructions page.', MIGPAYMENTSWC )
 					),
 					'payment_data_error_txt' 	=> array(
 						'title'       	=> __( 'Payment Error Message', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> __( 'Failed to get crypto payment data.', MIGPAYMENTSWC),
-						'description' 	=> __( 'Error text show on payment instructions pages', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Error text show on payment instructions pages', MIGPAYMENTSWC )
 					),
 					
 					'redirect_page_logo' 	=> array(
 						'title'       	=> __( 'Logo URL', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
-						'description' 	=> __( 'Minimum Image Width: 120px', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Minimum Image Width: 120px', MIGPAYMENTSWC )
 					),
 					'redirect_page_background' 	=> array(
 						'title'       	=> __( 'Background URL', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
-						'description' 	=> __( 'Minimum Image Width: 1400px', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Minimum Image Width: 1400px', MIGPAYMENTSWC )
+						
+					),
+					'redirect_page_background_color' 	=> array(
+						'title'       	=> __( 'Background Color', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'desc_tip' 	=> __( 'If Background URL is set it will override this setting.', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Color in hex/rgb/rgba format.', MIGPAYMENTSWC )
 						
 					),
 				 
