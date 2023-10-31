@@ -154,7 +154,7 @@
                                 </div>
                                 <div id="wc-migpayments-error"></div>
                                 
-                                <button class="wc-migpayments-primary-btn" onclick="getPaymentData()">
+                                <button class="wc-migpayments-primary-btn" id="wc-migpayments-get-payment-data">
                                     Get Payment Data
                                 </button>
                             </div>

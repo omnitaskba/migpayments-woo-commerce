@@ -132,6 +132,15 @@ function getCryptoEstimate(){
        
 }
 
+const submitBtn = document.getElementById('wc-migpayments-get-payment-data');
+
+// Add a click event listener to the button
+submitBtn.addEventListener('click', function() {
+ console.log('op')
+ submitBtn.disabled = true;
+ 
+ getPaymentData();
+});
 
 function getPaymentData(){
      

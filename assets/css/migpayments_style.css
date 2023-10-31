@@ -176,6 +176,10 @@ body{
     border-radius: 10px;
     font-weight: bold;
 }	
+.wc-migpayments-primary-btn:disabled{
+    background-color: #f1c893;
+    border-color: #f1c893;
+}
 button.wc-migpayments-copy-btn {
     font-size: 12px !important;
     padding: unset;
