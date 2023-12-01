@@ -136,7 +136,7 @@ const submitBtn = document.getElementById('wc-migpayments-get-payment-data');
 
 // Add a click event listener to the button
 submitBtn.addEventListener('click', function() {
- console.log('op')
+ 
  submitBtn.disabled = true;
  
  getPaymentData();
@@ -157,9 +157,12 @@ function getPaymentData(){
     if(!currencyCode || currencyCode == '' || currencyCode == ' '){
         
         errorElement.innerHTML = '<div class="wc-migpayments-error">Please choose crypto currency.</div>';
+        submitBtn.disabled = false;
         return false;
 
     }
+
+    submitBtn.disabled = true;
    
     paymentOptionsEl.style.display = 'none';
     paymentDataEl.innerHTML = ' <div class="wc-migpayments-loading"></div>';

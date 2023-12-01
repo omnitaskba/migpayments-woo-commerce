@@ -53,31 +53,33 @@ class MigpaymentsService
     public static function getPaymentDataHtml($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
         $error = null;
         $data = null;
-        
-        try{
-        $response = self::getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData);
-        
-        if(function_exists('wc_get_logger')){
-            $log = wc_get_logger();
-            $log->info('Get payment data response:'. json_encode($response), ['source' => 'migpayments']);
-        }
+        $network = $currencyCode == 'BTC' ? 'BTC Network' : 'ERC-20 Network';
 
-        $migpayments = new WcMigpaymentsGateway();
-        
-        if(!$response->error && isset($response->data['cryptoAddress'])){
+        try{
+            $response = self::getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData);
             
-        
-        
-            $addressLbl = $migpayments->cryptoAddressLabelTxt;
-            $amountLbl = $migpayments->cryptoAmountLabelTxt;
-            $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
-            $qrCode =  (new QRCode())->render($response->data['cryptoAddress']);
+            if(function_exists('wc_get_logger')){
+                $log = wc_get_logger();
+                $log->info('Get payment data response:'. json_encode($response), ['source' => 'migpayments']);
+            }
+
+            $migpayments = new WcMigpaymentsGateway();
             
-            $html .= '<img id="wc-migpayments-address-qr-code"  src="'. $qrCode .'" alt="QR Code" /> ';
-            $html .= '<div class="wc-migpayments-payment-items"> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="addresss">'.  $addressLbl  . '</label> <p> ' . $response->data['cryptoAddress'] . ' </p> </div> <button class="wc-migpayments-copy-btn" onclick="copyToClipboard(\''.  $response->data['cryptoAddress'] .'\')">Copy</button> </div> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item" > <label for="total_crypto_amount">' . $amountLbl.'</label> <p id="total_crypto_amount" data-amount="'. $response->data['calculatedAmount'] .'">  ' . $response->data['calculatedAmount'] . ' ' . $response->data['currency'] .' </p> </div> <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('. $response->data['calculatedAmount']. ')">Copy</button> </div> </div>';
-            $html .= '</div></div>';
-        } else
-        {
+            if(!$response->error && isset($response->data['cryptoAddress'])){
+                
+            
+            
+                $addressLbl = $migpayments->cryptoAddressLabelTxt;
+                $amountLbl = $migpayments->cryptoAmountLabelTxt;
+                $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
+                $qrCode =  (new QRCode())->render($response->data['cryptoAddress']);
+                
+                $html .= '<img id="wc-migpayments-address-qr-code"  src="'. $qrCode .'" alt="QR Code" /> ';
+                $html .= '<div class="wc-migpayments-payment-items">';
+                $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="addresss">'.  $addressLbl  . '</label> <p> ' . $response->data['cryptoAddress'] . ' </p> </div> <button class="wc-migpayments-copy-btn" onclick="copyToClipboard(\''.  $response->data['cryptoAddress'] .'\')">Copy</button> </div> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item" > <label for="total_crypto_amount">' . $amountLbl.'</label> <p id="total_crypto_amount" data-amount="'. $response->data['calculatedAmount'] .'">  ' . $response->data['calculatedAmount'] . ' ' . $response->data['currency'] .' </p> </div> <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('. $response->data['calculatedAmount']. ')">Copy</button> </div>';
+                $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="network">Use this exact network:</label> <p> ' . $network . ' </p> </div> </div>';
+                $html .= '</div></div>';
+        } else {
             $html= '<div class="woocommerce-error">' . $migpayments->paymentDataErrorTxt . ' </div>';
         }
 
@@ -92,14 +94,14 @@ class MigpaymentsService
         return new MigpaymentsResponse($error, $data);
     }
 
-    public static function getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
+    public static function getCryptoPrices($total, $cryptoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
         $migpaymentsLibrary = MigpaymentsLibrary::create($isSandbox);
     
         //now the logic
         try{
-            $response  = $migpaymentsLibrary->getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token);
+            $response  = $migpaymentsLibrary->getCryptoPrices($total, $cryptoCurrencies, $fiatCurrencyCode, $token);
                 
             if(!$response['success']){
                 $error = 'Failed to get crypto estimate.';
@@ -117,7 +119,7 @@ class MigpaymentsService
         return new MigpaymentsResponse($error, $data);
     }
 
-    public static function getCryptoPricesHtml($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
+    public static function getCryptoPricesHtml($total, $cryptoCurrencies, $fiatCurrencyCode, $token, $isSandbox = false){
         $error = null;
         $data = null;
 
@@ -127,7 +129,7 @@ class MigpaymentsService
 
         try{
             $html = '<div id="wc-migpayments-crypto-estimate-wrapper">';
-            $response = self::getCryptoPrices($total, $cryotoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
+            $response = self::getCryptoPrices($total, $cryptoCurrencies, $fiatCurrencyCode, $token, $isSandbox);
 
             if($log){
                 $log->info('Get crypto estimate for '. $total . ' '. $fiatCurrencyCode .' response: '. json_encode($response), ['source' => 'migpayments']);
@@ -138,22 +140,26 @@ class MigpaymentsService
                 foreach($response->data['prices'] as $currencyCode => $price){
                     switch($currencyCode){
                         case 'ETH':
-                        $currencyName = 'Ethereum';
+                            $currencyName = 'Ethereum';
+                            $network = 'ERC-20 Network';
                         break;
                         case 'BTC':
-                        $currencyName = 'Bitcoin';
+                            $currencyName = 'Bitcoin';
+                            $network = 'BTC Network';
                         break;
                         case 'USDT':
-                        $currencyName = 'USD Tether';
+                            $currencyName = 'USD Tether';
+                            $network = 'ERC-20 Network';
                         break;
                         default:
                         $currencyName = '';
                         break;
                     }
-                $html .=  '<div class="wc-migpayments-crypto-estimate-item"> <div class="wc-migpayments-estimate-currency"> '. $currencyName . '<span class="wc-migpayments-estimate-symbol"> (' . $currencyCode. ')</span></div> <div class="wc-migpayments-estimate-currency"> ' . $price .'</div>  </div>';
+                $html .=  '<div class="wc-migpayments-crypto-estimate-item"> <div class="wc-migpayments-estimate-currency"> '. $currencyName . '<span class="wc-migpayments-estimate-symbol"> (' . $currencyCode. ') <b><small>(' . $network. ')</small></b></span></div> <div class="wc-migpayments-estimate-currency"> ' . $price .'</div>  </div>';
                 }
             } else {
                 $html .= '<p><small>Failed to fetch crypto estimate.</small></p>';
+ 
             }
 
             $html .= '</div>';

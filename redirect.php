@@ -146,7 +146,7 @@
                                             <option value="">Please select currency</option>
                                         
                                             <?php foreach($cryptoCurrencies as $key => $val): ?>
-                                            <option value=" <?php echo $val;?>"> <?php echo $val;?></option>
+                                            <option value="<?php echo $val;?>"> <?php echo $val;?></option>
                                             <?php endforeach;?>
                                         </select>
                                     </div>

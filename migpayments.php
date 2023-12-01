@@ -3,7 +3,7 @@
 Plugin Name: 		PayByCrypto WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway.
-Version: 			1.7.2
+Version: 			1.7.3
 Author: 			CryptoOrange
 Author URI: 		https://cryptoorange.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.2');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.3');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
