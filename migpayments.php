@@ -3,7 +3,7 @@
 Plugin Name: 		PayByCrypto WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway.
-Version: 			1.7.3
+Version: 			1.7.4
 Author: 			CryptoOrange
 Author URI: 		https://cryptoorange.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.3');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.4');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -529,7 +529,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'   	  	=> __( 'Sandbox Mode', MIGPAYMENTSWC ),
 						'type'    	  	=> 'checkbox',
 						'default'	  	=> (MIGPAYMENTSWC_AFFILIATE_KEY=='migpayments'?'yes':'no'),
-						'label'   	  	=> sprintf(__( "Choose to use sandbox or production enviroment", MIGPAYMENTSWC ), $this->url3),
+						'label'   	  	=> sprintf(__( "Check this option to enable Sandbox environment", MIGPAYMENTSWC ), $this->url3),
 					),
 
 					'api_token' 	=> array(
