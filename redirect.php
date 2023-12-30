@@ -98,11 +98,11 @@
                                     </a>
                                 </div>
                                 <div class="wc-migpayments-product-price"><?php echo $currencyCode; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
+                                
                             </div>
-                            <?php endforeach;?>
                             
-                            <div class="">
-                                <?php if( $item->get_meta( 'pa_broker', true )) : ?>
+
+                            <?php if( $item->get_meta( 'pa_broker', true )) : ?>
                                     <div class="wc-migpayments-meta">Broker: <?php echo $item->get_meta( 'pa_broker', true ); ?></div>
                                 <?php endif;?>
                                 <?php if( $item->get_meta( 'pa_platform', true )) : ?>
@@ -111,10 +111,10 @@
 
                                 <?php if($item->get_meta('pa_account')) :?>
 
-                                    <div class="meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
+                                    <div class="wc-migpayments-meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
                                 <?php endif; ?>
-                                
-                            </div>
+                            <?php endforeach;?>
+                           
                           
                             
                             <div class="wc-migpayments-hr"></div>
