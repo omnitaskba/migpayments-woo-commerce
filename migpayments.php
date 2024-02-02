@@ -231,7 +231,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		}
 
 		if ($file == $migpaymentsPlugin) {
-			$settingsLink = '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=wc_gateway_migpayments').'">'
+			$settingsLink = '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=migpaymentspayments').'">'
 								.__( 'Settings', MIGPAYMENTSWC ).'</a>';
 			array_unshift($links, $settingsLink);
 
@@ -266,14 +266,17 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$cryptoAmount      = $order->get_meta('_migpayments_worder_crypto_amount', true );
 		$cryptoAddress      = $order->get_meta('_migpayments_worder_crypto_address', true );
 		
-		   
-		$htmlResponse = '<h3>Crypto Payment Info</h3>';
-		$htmlResponse .= 'Payment Status: '. $status . '<br>';
-		$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
-		$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
-		$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
-		
-		echo $htmlResponse;
+		if($status){
+	   
+			$htmlResponse = '<h3>Crypto Payment Info</h3>';
+			$htmlResponse .= 'Payment Status: '. $status . '<br>';
+			$htmlResponse .= 'Crypto Currency: '. $cryptoCurrencyCode . '<br>';
+			$htmlResponse .= 'Crypto Amount: '. $cryptoAmount. '<br>';
+			$htmlResponse .= 'Crypto Address: '. $cryptoAddress. '<br>';
+			
+			echo $htmlResponse;
+		}
+	
 	   
 		return;
 	}
