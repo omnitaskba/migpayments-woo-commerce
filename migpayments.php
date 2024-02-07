@@ -3,7 +3,7 @@
 Plugin Name: 		PayByCrypto WooCommerce
 Plugin URI: 		https://migpayments.tech
 Description: 		A crypto payment gateway.
-Version: 			1.7.6
+Version: 			1.8.0
 Author: 			CryptoOrange
 Author URI: 		https://cryptoorange.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.7.6');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.0');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -55,10 +55,33 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_action( 'before_woocommerce_init', function() {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-		 
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
 			}
 		} );
+
+		// Hook the custom function to the 'woocommerce_blocks_loaded' action
+		add_action( 'woocommerce_blocks_loaded', 'migpaymentsWcRegisterBlock' );
+
 		register_activation_hook(__FILE__, 'activatePlugin');
+	}
+
+	function migpaymentsWcRegisterBlock() {
+		// Check if the required class exists
+		if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+			return;
+		}
+	
+		// Include the custom Blocks Checkout class
+		require_once plugin_dir_path(__FILE__) . 'class-block.php';
+	
+		// Hook the registration function to the 'woocommerce_blocks_payment_method_type_registration' action
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				// Register an instance of My_Custom_Gateway_Blocks
+				$payment_method_registry->register( new WcMigpaymentsGateway_Blocks );
+			}
+		);
 	}
 	
 	function activatePlugin () {
@@ -291,6 +314,14 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		}
 		return $availableGateways;
 	}
+	// Add support for WooCommerce checkout blocks
+function custom_payment_gateway_supports_blocks($supports, $block) {
+    if ($block === 'woocommerce/checkout-payment-methods') {
+        $supports['supports'] = true;
+    }
+    return $supports;
+}
+add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_payment_gateway_supports_blocks', 10, 2);
 
 	function migpaymentsWcLoadGateway()
 	{
@@ -319,7 +350,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $cryptoAmountLabelTxt = 'Send this exact amount:';
 			public $paymentDataErrorTxt = 'Failed to get crypto payment data.';
 			public $log;
-			public $icon;
+			public $icon = 'test';
 			public $description;
 			public $context = ['source' => 'migpayments'];
 			public $redirectLogoUrl;
@@ -332,7 +363,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				if(function_exists('wc_get_logger')){
 					$this->log = wc_get_logger();
 				}
- 
+
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainPluginUrl 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
 				$this->method_title       	= __( 'PayByCrypto', MIGPAYMENTSWC );
@@ -355,7 +386,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$this->init_form_fields();
 				$this->init_settings();
 				$this->migpaymentsSettings();
-			 
+			  
 				$availableCurrenciesSetting = $this->get_option('available_currencies');
 			
 				if ($availableCurrenciesSetting && is_array($availableCurrenciesSetting)) {
