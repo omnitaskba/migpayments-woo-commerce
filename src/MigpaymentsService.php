@@ -33,6 +33,9 @@ class MigpaymentsService
             }
             if(isset($response['data']) && !empty($response['data'])){
                 $data = $response['data'];
+                if(array_key_exists('instructions', $data)){
+                    unset($data['instructions']);
+                }
             } else {
                 $error = 'Failed to get payment data.';
             }
