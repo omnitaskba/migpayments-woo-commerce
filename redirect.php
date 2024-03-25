@@ -54,7 +54,6 @@
     
     ?>
     <body>
-        <?php phpinfo();?>
         <!-- Main -->
         <div id="wc-payment-wrapper" class="full-width-bg"  >
                 <?php if($migpayments && $migpayments->redirectLogoUrl) : ?>
