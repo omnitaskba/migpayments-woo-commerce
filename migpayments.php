@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: 		PayByCrypto WooCommerce
-Plugin URI: 		https://migpayments.tech
+Plugin Name: 		Migpayments WooCommerce
+Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.1
-Author: 			CryptoOrange
-Author URI: 		https://cryptoorange.com
+Version: 			1.8.2
+Author: 			Columis
+Author URI: 		https://columis.com
 */
  
 require_once 'src/MigpaymentsService.php';
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.1');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.2');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -310,7 +310,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		
 		if (array_key_exists('migpaymentspayments',$availableGateways)) {
 			
-			$availableGateways['migpaymentspayments']->order_button_text = __( 'Proceed with PayByCrypto', 'woocommerce' );
+			$availableGateways['migpaymentspayments']->order_button_text = __( 'Proceed with Migpayments', 'woocommerce' );
 		}
 		return $availableGateways;
 	}
@@ -366,7 +366,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainPluginUrl 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
-				$this->method_title       	= __( 'PayByCrypto', MIGPAYMENTSWC );
+				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
 				$this->method_description  	= __( "Cryptocurrency Payment Gateway: Accept BTC, ETH, and USDT with ease.", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
 				$this->has_fields = true;
@@ -567,13 +567,13 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 					),
 
 					'api_token' 	=> array(
-						'title'       	=> __( 'PayByCrypto API Key', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Migpayments API Key', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
 					),
 					'public_key' 	=> array(
-						'title'       	=> __( 'PayByCrypto Public Key', MIGPAYMENTSWC ),
+						'title'       	=> __( 'Migpayments Public Key', MIGPAYMENTSWC ),
 						'type'        	=> 'textarea',
 						'default'     	=> null,
 						'description' 	=> __( '', MIGPAYMENTSWC )
@@ -596,7 +596,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 					'title'			=> array(
 						'title'       	=> __( 'Title', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
-						'default'     	=> __( 'PayByCrypto', MIGPAYMENTSWC ),
+						'default'     	=> __( 'Migpayments', MIGPAYMENTSWC ),
 						'desc_tip' 	=> __( 'Payment method title that the customer will see on your checkout', MIGPAYMENTSWC )
 					),
 					'description' 	=> array(

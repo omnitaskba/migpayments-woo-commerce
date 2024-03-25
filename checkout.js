@@ -1,5 +1,5 @@
 const settings = window.wc.wcSettings.getSetting( 'migpaymentspayments_data', {} );
-const title = window.wp.htmlEntities.decodeEntities( settings.title ) || window.wp.i18n.__( 'PayByCrypto', 'migpaymentspayments' );
+const title = window.wp.htmlEntities.decodeEntities( settings.title ) || window.wp.i18n.__( 'Migpayments', 'migpaymentspayments' );
 const Content = () => {
     return window.wp.htmlEntities.decodeEntities( settings.description || '' );
 };
@@ -11,7 +11,7 @@ const Label = () => {
         title, // Add your text here
         wp.element.createElement('img', {
             src: window.wp.htmlEntities.decodeEntities( settings.icon || '' ),
-            alt: 'PayByCrypto',
+            alt: 'Migpayments',
             style: {
                 'margin-left':'10px'
             }

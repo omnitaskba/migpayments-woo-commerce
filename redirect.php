@@ -54,6 +54,7 @@
     
     ?>
     <body>
+        <?php phpinfo();?>
         <!-- Main -->
         <div id="wc-payment-wrapper" class="full-width-bg"  >
                 <?php if($migpayments && $migpayments->redirectLogoUrl) : ?>
@@ -138,8 +139,14 @@
                                     <div class="wc-migpayments-loading"></div>
                                 </div>
                             </div>
+                            <p>
+                            <b>Please note: </b>in order to avoid delays on your order, please make sure to include the
+withdrawal and gas fees when submitting your payment via your Crypto Platform.
+                            </p>
+                           
                             <div class="wc-migpayments-currency-select">
                                 <div class="wc-migpayments-payment-currency">
+                                  
                                     <h6>Payment Currency</h6>
                                     <div>
                                         <select name="currency_code" id="wc-migpayments-currency-code">
@@ -179,7 +186,7 @@
                 
             </div>
             <div class="wc-migpayments-footer">
-                            <small>Powered By</small> <br> <a target="_blank" href="https://cryptoorange.com"><img src="https://cryptoorange.com/img/logo.svg" alt=""></a>
+                            <small>Powered By</small> <br> <a target="_blank" href="https://columis.com"><img src="https://columis.com/img/logo.svg" alt=""></a>
                         </div>
         </div>
 

@@ -448,7 +448,7 @@ span.wc-migpayments-copy-to-clipboard {
 
     #wc-payment-data-container .wc-main{
         min-width: 500px;
-        
+        width: 500px;
     }
    
 }
