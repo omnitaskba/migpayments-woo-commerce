@@ -42,6 +42,7 @@ class MigpaymentsLibrary {
         ];
 
         $response = $this->http->post($url, ['body' => $data]);
+        
         return $this->processResults($response);
     }
 
@@ -58,10 +59,7 @@ class MigpaymentsLibrary {
             'amount' => $total
         ];
 
-        $response = $this->http->post($url, ['body' => $data,  'sslverify' => false, // Override SSL verification for this request
-        'sslversion' => CURL_SSLVERSION_TLSv1_3, ]);
-        $log = wc_get_logger();
-        $log->info(json_encode($response), ['source' => 'migpayments']);
+        $response = $this->http->post($url, ['body' => $data]);
         return $this->processResults($response);
     }
 
@@ -72,8 +70,7 @@ class MigpaymentsLibrary {
     }
 
     private function processResults($response){
-        $log = wc_get_logger();
-        $log->info(json_encode($response), ['source' => 'migpayments']);
+
         if(!is_array($response)){
             return [
                 'success' => 'false',
@@ -82,7 +79,7 @@ class MigpaymentsLibrary {
            
         }
 
-     
+      
         $data  = is_array($response) &&  isset($response['body']) ? json_decode($response['body'], true) : [];
 
         if(isset($data['data'] ) && !empty($data['data'])){
