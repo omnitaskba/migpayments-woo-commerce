@@ -185,7 +185,7 @@ withdrawal and gas fees when submitting your payment via your Crypto Platform.
                 
             </div>
             <div class="wc-migpayments-footer">
-                            <small>Powered By</small> <br> <a target="_blank" href="https://columis.com"><img src="https://columis.com/img/logo.svg" alt=""></a>
+                            <small>Powered By</small> <br> <a target="_blank" href="https://columis.com"><img style="width:100px;" src="https://columis.com/img/logo.svg" alt=""></a>
                         </div>
         </div>
 
