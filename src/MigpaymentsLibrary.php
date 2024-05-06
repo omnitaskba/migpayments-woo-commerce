@@ -7,10 +7,14 @@ class MigpaymentsLibrary {
 
     private $http;
     private $isSandbox;
+    private $log;
 
     public function __construct($http, $isSandbox = false)
     {
         $this->http = $http;
+        if(function_exists('wc_get_logger')){
+            $this->log = wc_get_logger();
+        }
         $this->isSandbox = $isSandbox;
      
     }
@@ -21,7 +25,7 @@ class MigpaymentsLibrary {
     }
  
 
-    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [])
+    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [], $blockChainCode = null)
     {
         $method = 'rest/get-payment-data';
         $url = $this->getFullUrl($method);
@@ -41,8 +45,12 @@ class MigpaymentsLibrary {
             'order_data' => $orderData
         ];
 
+        if($blockChainCode){
+            $data['block_chain_code'] = $blockChainCode;
+        }
+
         $response = $this->http->post($url, ['body' => $data]);
-        
+      
         return $this->processResults($response);
     }
 
@@ -60,6 +68,18 @@ class MigpaymentsLibrary {
         ];
 
         $response = $this->http->post($url, ['body' => $data]);
+        $this->log->info(json_encode($response), ['source' => 'migpayments']);
+        return $this->processResults($response);
+    }
+
+    public function getCurrencyBlockchains($currencyCode)
+    {
+    
+        $method = 'currency-blockchains/'. $currencyCode;
+        $url = $this->getFullUrl($method);
+        
+        $response = $this->http->get($url);
+        $this->log->info(json_encode($response), ['source' => 'migpayments']);
         return $this->processResults($response);
     }
 

@@ -8,7 +8,7 @@ require_once 'MigpaymentsResponse.php';
 class MigpaymentsService
 {
     public static function getPaymentData($total, $currencyCode, $fiatCurrencyCode,
-                                        $orderNumber, $token, $isSandbox = false, $orderData = []){
+                                        $orderNumber, $token, $isSandbox = false, $orderData = [], $blockchainCode = null){
         $error = null;
         $data = null;
         $log = null;
@@ -19,7 +19,7 @@ class MigpaymentsService
         }
         //now the logic
         try{
-            $response  = $migpaymentsLibrary->getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData);
+            $response  = $migpaymentsLibrary->getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData, $blockchainCode);
             
             if(!$response['success']){
         
@@ -53,13 +53,13 @@ class MigpaymentsService
         return new MigpaymentsResponse($error, $data);
     }
 
-    public static function getPaymentDataHtml($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = []){
+    public static function getPaymentDataHtml($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = [], $blockchainCode = null){
         $error = null;
         $data = null;
-        $network = $currencyCode == 'BTC' ? 'BTC Network' : 'ERC-20 Network';
+       
 
         try{
-            $response = self::getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData);
+            $response = self::getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData, $blockchainCode);
             
             if(function_exists('wc_get_logger')){
                 $log = wc_get_logger();
@@ -70,8 +70,8 @@ class MigpaymentsService
             
             if(!$response->error && isset($response->data['cryptoAddress'])){
                 
-            
-            
+                $network = ucfirst(strtolower($response->data['block_chain_code']));
+                
                 $addressLbl = $migpayments->cryptoAddressLabelTxt;
                 $amountLbl = $migpayments->cryptoAmountLabelTxt;
                 $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
@@ -178,5 +178,33 @@ class MigpaymentsService
         
         return new MigpaymentsResponse($error, $data);
     }
+
+    public static function getCurrencyBlockchains($currencyCode, $isSandbox)
+    {
+    
+        $error = null;
+        $data = null;
+        $migpaymentsLibrary = MigpaymentsLibrary::create($isSandbox);
+        $errorMsg = 'Failed to get currency blockchains';
+        
+        try{
+            $response  = $migpaymentsLibrary->getCurrencyBlockchains($currencyCode);
+                
+            if(!$response['success']){
+                $error = $errorMsg;
+                return new MigpaymentsResponse($error);
+            }
+        
+            if(isset($response['data']) && !empty($response['data']))
+            {
+                $data = $response['data']['block_chains'];
+            }
+        
+        } catch (Exception $e){
+            $error = $errorMsg;
+        }
+        return new MigpaymentsResponse($error, $data);
+    }
+
  
 }

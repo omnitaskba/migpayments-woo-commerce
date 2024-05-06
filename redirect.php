@@ -149,12 +149,25 @@ withdrawal and gas fees when submitting your payment via your Crypto Platform.
                                     <h6>Payment Currency</h6>
                                     <div>
                                         <select name="currency_code" id="wc-migpayments-currency-code">
-                                            <option value="">Please select currency</option>
+                                            <option value="">Please choose currency</option>
                                         
                                             <?php foreach($cryptoCurrencies as $key => $val): ?>
                                             <option value="<?php echo $val;?>"> <?php echo $val;?></option>
                                             <?php endforeach;?>
                                         </select>
+                                    </div>
+                                    
+                                </div>
+                                <div class="wc-migpayments-payment-blockchain">
+                                  
+                                    <h6>Network</h6>
+                                    <div>
+                                        <select name="blockchain_code" id="wc-migpayments-blockchain">
+                                            <option value="">Please choose blockchain</option>
+                                        
+                                             
+                                        </select>
+                                        <div style="display: none;" class="wc-migpayments-loading-sm"></div>
                                     </div>
                                     
                                 </div>

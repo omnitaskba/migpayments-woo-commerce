@@ -132,6 +132,73 @@ function getCryptoEstimate(){
        
 }
 
+function getCurrencyBlockchains(){
+     
+    const data = new FormData();
+    
+    var overpaidModal =  document.getElementById('wc-overpaid-modal');
+    var blockchainSelect =  document.getElementById('wc-migpayments-blockchain');
+    var blockChainWrapper = document.querySelector('.wc-migpayments-payment-blockchain');
+    var loadingEl = blockChainWrapper.querySelector('.wc-migpayments-loading-sm');
+ 
+    loadingEl.style.display = 'block';
+    blockChainWrapper.style.display = 'flex';
+    blockchainSelect.style.display = 'none';
+
+    console.log(blockchainSelect);
+    var currencyCode = document.getElementById('wc-migpayments-currency-code').value;
+    console.log(currencyCode);
+    var ajaxUrl  = overpaidModal.dataset.url;
+
+    data.append( 'action', 'migpayments_wc_get_currency_blockchains' );
+    data.append( 'currency_code' , currencyCode);
+    const params = new URLSearchParams(data);
+    const settings = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Cache-Control': 'no-cache',
+           },
+        body: params,
+        credentials: 'same-origin',
+    };
+    blockchainSelect.innerHTML = '';
+    const fetchResponse = fetch(ajaxUrl, settings).then(function (response) {
+        // The API call was successful!
+        return response.json();
+    }).then(function (blockchains) {
+        console.log(blockchains);
+        loadingEl.style.display = 'none';
+        blockchainSelect.style.display = 'block';
+        if(blockchains ){
+            
+            Object.entries(blockchains).forEach(([key, value]) => {
+               
+                const optionElement = document.createElement('option');
+                optionElement.textContent = value;
+                optionElement.value = key;
+                blockchainSelect.appendChild(optionElement);
+              });
+              blockChainWrapper.style.display = 'flex';
+        }
+        
+           
+    }).catch(e => {
+        loadingEl.style.display = 'none';
+        console.log(e)
+    });
+       
+}
+
+
+const currencySelect = document.getElementById('wc-migpayments-currency-code');
+
+currencySelect.addEventListener('change', getCurrencyBlockchains);
+
+function yourMethodName() {
+  // Your method logic here
+}
+
 const submitBtn = document.getElementById('wc-migpayments-get-payment-data');
 
 // Add a click event listener to the button
@@ -151,7 +218,10 @@ function getPaymentData(){
     var paymentDataEl =  document.getElementById('wc-migpayments-payment-data');
     var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
     var errorElement =  document.getElementById('wc-migpayments-error');
+    var blockchainEl =  document.getElementById('wc-migpayments-blockchain');
+
     var currencyCode =  currencyCodeEl.value;
+    var blockchainCode =  blockchainEl.value;
     errorElement.innerHTML = '';
     
     if(!currencyCode || currencyCode == '' || currencyCode == ' '){
@@ -161,6 +231,16 @@ function getPaymentData(){
         return false;
 
     }
+
+    if(!blockchainCode || blockchainCode == '' || blockchainCode == ' '){
+        
+        errorElement.innerHTML = '<div class="wc-migpayments-error">Please choose blockchain.</div>';
+        submitBtn.disabled = false;
+        return false;
+
+    }
+
+
 
     submitBtn.disabled = true;
    
@@ -172,6 +252,7 @@ function getPaymentData(){
     data.append('action', 'migpayments_wc_get_payment_data' );
     data.append('order_id' , overpaidModal.dataset.order_id);
     data.append('currency_code' , currencyCode);
+    data.append('block_chain_code', blockchainCode);
     const params = new URLSearchParams(data);
     const settings = {
         method: 'POST',

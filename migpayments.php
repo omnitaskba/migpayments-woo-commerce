@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.4
+Version: 			1.8.5
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.4');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.5');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -45,6 +45,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_filter( 'page_template', 'migpaymentsWcPageTemplate');
 		add_action( 'wp_ajax_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
+
+		add_action( 'wp_ajax_migpayments_wc_get_currency_blockchains', 'migpaymentsWcAsyncGetCurrencyBlockchains' );
+		add_action( 'wp_ajax_nopriv_migpayments_wc_get_currency_blockchains', 'migpaymentsWcAsyncGetCurrencyBlockchains' );
 
 		add_action( 'wp_ajax_migpayments_wc_get_payment_data', 'migpaymentsWcAsyncGetPaymentData' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_get_payment_data', 'migpaymentsWcAsyncGetPaymentData' );
@@ -150,6 +153,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
 		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
 		$cryptoCurrencyCode =  $_POST['currency_code'];
+		$blockchainCode =  $_POST['block_chain_code'];
 			 
 		$user = $order->get_user();
 
@@ -161,7 +165,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		];
 
 		$response  = MigpaymentsService::getPaymentDataHtml($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode,
-															 $orderId, $migpayments->apiToken, $migpayments->isSandbox , $orderData );
+															 $orderId, $migpayments->apiToken, $migpayments->isSandbox , $orderData, $blockchainCode);
 		if(!$response->error)
 			echo $response->data;
 		wp_die();
@@ -192,7 +196,30 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		wp_die();
 	}
 
+	function migpaymentsWcAsyncGetCurrencyBlockchains()
+	{
+	 
+		$currencyCode = $_POST['currency_code'];
+ 
+		$migpayments = new WcMigpaymentsGateway();
+		$response  = MigpaymentsService::getCurrencyBlockchains($currencyCode, $migpayments->isSandbox);
+		
+		if(!$response->error)
+		{
+			if(function_exists('wc_get_logger')){
+				$log = wc_get_logger();
+			}
 
+			$log->info(json_encode($response->data), ['source' => 'migpayments']);
+			return 	wp_send_json($response->data);
+		} else {
+			return false;
+		}
+		
+		wp_die();
+	}
+
+	
 	function migpaymentsWcCheckAsyncStatus() {
 		 
 		$order = wc_get_order( $_POST['order_id'] );
