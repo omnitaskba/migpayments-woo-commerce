@@ -707,7 +707,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 					
 				$redirectUrl = $this->get_return_url($order);
 
-				if($this->paymentRedirectUrl){
+				if($this->paymentRedirectUrl && $this->paymentRedirectUrl != ' '){
 					$redirectUrl = $this->paymentRedirectUrl . '?order_id='. $orderId . '&key='. $order->get_order_key();
 				}
 
