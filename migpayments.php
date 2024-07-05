@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.5
+Version: 			1.8.6
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.5');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.6');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -383,6 +383,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 			public $redirectLogoUrl;
 			public $redirectBackgroundUrl;
 			public $redirectBackgroundColor;
+			public $paymentRedirectUrl;
 
 			public function __construct()
 			{
@@ -578,6 +579,8 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 				$this->cryptoAmountLabelTxt = $this->get_option( 'crypto_amount_label_txt' ) && $this->get_option( 'crypto_amount_label_txt' ) != '' ? $this->get_option( 'crypto_amount_label_txt' ) : $this->cryptoAmountLabelTxt;
 				$this->paymentDataErrorTxt = $this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
 				$this->redirectBackgroundColor =  $this->get_option( 'redirect_page_background_color' ) && $this->get_option( 'redirect_page_background_color' ) != '' ? $this->get_option( 'redirect_page_background_color' ) : $this->redirectBackgroundUrl;
+				$this->paymentRedirectUrl =  $this->get_option( 'payment_success_redirect_url' ) && $this->get_option( 'payment_success_redirect_url' ) != '' ? $this->get_option( 'payment_success_redirect_url' ) : $this->paymentRedirectUrl;
+				
 				return true;
 			}
 
@@ -650,7 +653,12 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 						'default'     	=> __( 'Failed to get crypto payment data.', MIGPAYMENTSWC),
 						'desc_tip' 	=> __( 'Payment instructions error text.', MIGPAYMENTSWC )
 					),
-					
+					'payment_success_redirect_url' 	=> array(
+						'title'       	=> __( 'Payment Confirmation Redirect URL', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'desc_tip' 	=> __( 'Redirect URL aftersuccessfull payment ( leave empty to use default )', MIGPAYMENTSWC )
+					),
 					'redirect_page_logo' 	=> array(
 						'title'       	=> __( 'Logo URL', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
@@ -697,9 +705,12 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 				$orderId    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
 				$userID      = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->user_id     : $order->get_user_id();
 					
-			 
-				$paymentLink = $this->get_return_url($order);
-		
+				$redirectUrl = $this->get_return_url($order);
+
+				if($this->paymentRedirectUrl){
+					$redirectUrl = $this->paymentRedirectUrl . '?order_id='. $orderId . '&key='. $order->get_order_key();
+				}
+
 				$orderpage = $order->get_checkout_order_received_url()."&prvw=1";
 
 				if (!$order->get_meta('_migpayments_worder_orderid', true ))
@@ -718,7 +729,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 				// Empty cart
 				WC()->cart->empty_cart();
 				
-				$order->update_meta_data('_return_url', $paymentLink );
+				$order->update_meta_data('_return_url', $redirectUrl );
 				$order->save();
 			
 				return array(
