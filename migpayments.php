@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.6
+Version: 			1.8.7
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.6');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.7');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -55,6 +55,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_action( 'wp_ajax_migpayments_wc_check_payment_status', 'migpaymentsWcCheckAsyncStatus' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_check_payment_status', 'migpaymentsWcCheckAsyncStatus' );
 		
+		
+		add_action( 'wp_ajax_migpayments_wc_get_existing_payment_data_html', 'migpaymentsWcAsyncGetExistingPaymentData' );
+		add_action( 'wp_ajax_nopriv_migpayments_wc_get_existing_payment_data_html', 'migpaymentsWcAsyncGetExistingPaymentData' );
 		add_action( 'before_woocommerce_init', function() {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
@@ -166,8 +169,46 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 		$response  = MigpaymentsService::getPaymentDataHtml($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode,
 															 $orderId, $migpayments->apiToken, $migpayments->isSandbox , $orderData, $blockchainCode);
-		if(!$response->error)
-			echo $response->data;
+	
+		if(!$response->error){
+			$order->update_meta_data('_migpayments_worder_crypto_amount',  $response->data['calculatedAmount']);
+			$order->update_meta_data('_migpayments_worder_crypto_currency_code',  $response->data['currency']);
+			$order->update_meta_data('_migpayments_worder_crypto_address',  $response->data['cryptoAddress']);
+			$order->update_meta_data('_migpayments_worder_blockchain',  ucfirst($response->data['block_chain_code']));
+			$order->save();
+		}
+		echo $response->data['html'];
+
+		wp_die();
+	}
+
+	function migpaymentsWcAsyncGetExistingPaymentData()
+	{
+		$migpayments = new WcMigpaymentsGateway();
+		
+		$order = wc_get_order( $_POST['order_id'] );
+		$currencyCode = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
+		$amount = $order->get_meta('_migpayments_worder_crypto_amount',true );
+		$address = $order->get_meta('_migpayments_worder_crypto_address',true );
+		$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
+		
+		$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
+		$remainingAmount = $amount;
+		if($partialPayments && is_array($partialPayments)){
+			foreach($partialPayments as $obj){
+				$remainingAmount = bcsub($remainingAmount, $obj['amount'], 8 );
+			}
+		}
+		$response  = MigpaymentsService::generatePaymentDatHtml(
+			$migpayments,
+			$remainingAmount,
+			$currencyCode,
+			$address, 
+			$blockChain
+		);
+
+		echo $response;
+
 		wp_die();
 	}
 
@@ -226,11 +267,16 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 		$status      = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
 		$currencyCode = $order->get_meta('_migpayments_worder_crypto_currency_code', true );
-	 
+		$amount = $order->get_meta('_migpayments_worder_crypto_amount',true );
+		$address = $order->get_meta('_migpayments_worder_crypto_address',true );
+		$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
 		$data  = [
 			'status' => $status,
 			'currency_code' => $currencyCode,
 			'order_number' => $_POST['order_id'],
+			'amount' => $amount,
+			'crypto_address' => $address,
+			'blockchain' => $blockChain
 		];
 
 		switch($status){

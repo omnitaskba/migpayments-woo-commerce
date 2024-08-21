@@ -80,55 +80,58 @@
             <div id="wc-payment-data-container">
                 <div class="wc-main">
                     <div class="wc-card">
-                        <div class="wc-migpayments-order-title">
-                            <h5>Order Summary</h5>
+                        <div id="wc-migpayments-order-summary">
+                            <div class="wc-migpayments-order-title">
+                                <h5>Order Summary</h5>
+                                
+                                <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
+                                <p>Order <span class="text-muted">#</span><b><?php echo $order_id;?></b></p>
+                            </div>
+                        
+                                
+                            <div class="wc-migpayments-order-card ">
+                                <?php foreach($items as $item): ?>
+                                <div class="wc-migpayments-order-item">
+                                    <div class="wc-migpayments-order-item-title">
+                                        <span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?></span>
+                                        <a href="<?php echo get_permalink( $item->get_product_id());?>">
+                                            <?php echo $item->get_name(); ?>
+                                        </a>
+                                    </div>
+                                    <div class="wc-migpayments-product-price"><?php echo $currencyCode; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
+                                    
+                                </div>
+                                
+
+                                <?php if( $item->get_meta( 'pa_broker', true )) : ?>
+                                        <div class="wc-migpayments-meta">Broker: <?php echo $item->get_meta( 'pa_broker', true ); ?></div>
+                                    <?php endif;?>
+                                    <?php if( $item->get_meta( 'pa_platform', true )) : ?>
+                                        <div class="wc-migpayments-meta">Platform: <?php echo $item->get_meta( 'pa_platform', true ); ?></div>
+                                    <?php endif;?>
+
+                                    <?php if($item->get_meta('pa_account')) :?>
+
+                                        <div class="wc-migpayments-meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
+                                    <?php endif; ?>
+                                <?php endforeach;?>
                             
-                            <p class="price"><?php echo $currencyCode;?><?php echo wc_format_decimal($order->get_total(), 2); ?></p>
-                            <p>Order <span class="text-muted">#</span><b><?php echo $order_id;?></b></p>
+                            
+                                
+                                <div class="wc-migpayments-hr"></div>
+                                <div id="wc-migpayments-subtotal" class="wc-migpayments-order-item subtotal">
+                                    <div class="wc-migpayments- product-title">Subtotal</div>
+                                    <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
+                                </div>
+                                
+                                <div class="wc-migpayments-order-item subtotal">
+                                    <div class="wc-migpayments- product-title"><b>Total</b></div>
+                                    <div class="wc-migpayments-product-price"><b><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></b></div>
+                                </div>
+                                    
+                            </div>
                         </div>
                        
-                            
-                        <div class="wc-migpayments-order-card ">
-                            <?php foreach($items as $item): ?>
-                            <div class="wc-migpayments-order-item">
-                                <div class="wc-migpayments-order-item-title">
-                                    <span class="text-muted font-weight-light">x <?php echo $item->get_quantity(); ?></span>
-                                    <a href="<?php echo get_permalink( $item->get_product_id());?>">
-                                        <?php echo $item->get_name(); ?>
-                                    </a>
-                                </div>
-                                <div class="wc-migpayments-product-price"><?php echo $currencyCode; ?><?php echo wc_format_decimal($item->get_total(), 2);  ?></div>
-                                
-                            </div>
-                            
-
-                            <?php if( $item->get_meta( 'pa_broker', true )) : ?>
-                                    <div class="wc-migpayments-meta">Broker: <?php echo $item->get_meta( 'pa_broker', true ); ?></div>
-                                <?php endif;?>
-                                <?php if( $item->get_meta( 'pa_platform', true )) : ?>
-                                    <div class="wc-migpayments-meta">Platform: <?php echo $item->get_meta( 'pa_platform', true ); ?></div>
-                                <?php endif;?>
-
-                                <?php if($item->get_meta('pa_account')) :?>
-
-                                    <div class="wc-migpayments-meta">Account Size: <?php echo $item->get_meta( 'pa_account', true ); ?></div>
-                                <?php endif; ?>
-                            <?php endforeach;?>
-                           
-                          
-                            
-                            <div class="wc-migpayments-hr"></div>
-                            <div id="wc-migpayments-subtotal" class="wc-migpayments-order-item subtotal">
-                                <div class="wc-migpayments- product-title">Subtotal</div>
-                                <div class="wc-migpayments-product-price"><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_subtotal(), 2) ?></div>
-                            </div>
-                            
-                            <div class="wc-migpayments-order-item subtotal">
-                                <div class="wc-migpayments- product-title"><b>Total</b></div>
-                                <div class="wc-migpayments-product-price"><b><span class="text-muted"><?php echo $currencyCode;?></span><?php echo wc_format_decimal($order->get_total(), 2) ?></b></div>
-                            </div>
-                                
-                        </div>
                         
                         <div  id="wc-migpayments-payment-options">
                             <h5>Payment Options</h5>
@@ -140,7 +143,7 @@
                             </div>
                             <p>
                             <b>Please note: </b>in order to avoid delays on your order, please make sure to include the
-withdrawal and gas fees when submitting your payment via your Crypto Platform.
+                                withdrawal and gas fees when submitting your payment via your Crypto Platform.
                             </p>
                            
                             <div class="wc-migpayments-currency-select">
@@ -179,17 +182,18 @@ withdrawal and gas fees when submitting your payment via your Crypto Platform.
                             </div>
                         </div>
                         
-                        
+                        <div id="wc-mipgpayments-partial-payments">
+                           
+                            
+                        </div>
                         <div id="wc-migpayments-payment-data"> <!-- JS --> </div>
                         
-                        <div id="wc-mipgpayments-partial-payments">
-                            <div id="wc-actions">
-                                <a class="wc-migpayments-cancel-btn" id="wc-migpayments-cancel-btn"
-                                    href="<?php echo $order->get_cancel_order_url();?>">
-                                        Cancel Payment
-                                    </a>
-                            </div>
-                            
+                        
+                        <div id="wc-actions">
+                            <a class="wc-migpayments-cancel-btn" id="wc-migpayments-cancel-btn"
+                                href="<?php echo $order->get_cancel_order_url();?>">
+                                Cancel Payment
+                            </a>
                         </div>
                     </div>
                   

@@ -1,14 +1,27 @@
-setInterval(function(){ 
-   
-    const data = new FormData();
-    var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
-    var infoBoxEl =  document.getElementById('wc-migpayments-info-box')
-  
-    var amountEl = document.getElementById('wc-migpayments-crypto-amount-wrapper');
-    var overpaidModal =  document.getElementById('wc-overpaid-modal');
-    var cancelBtn = document.getElementById('wc-migpayments-cancel-btn');
-    var ajaxUrl  = overpaidModal.dataset.url;
 
+var paymentOptionsEl =  document.getElementById('wc-migpayments-payment-options');
+var overpaidModal =  document.getElementById('wc-overpaid-modal');
+var paymentDataEl =  document.getElementById('wc-migpayments-payment-data');
+var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
+var errorElement =  document.getElementById('wc-migpayments-error');
+var blockchainEl =  document.getElementById('wc-migpayments-blockchain');
+var orderSummary =  document.getElementById('wc-migpayments-order-summary');
+
+var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
+var infoBoxEl =  document.getElementById('wc-migpayments-info-box')
+
+var amountEl = document.getElementById('wc-migpayments-crypto-amount-wrapper');
+var overpaidModal =  document.getElementById('wc-overpaid-modal');
+var cancelBtn = document.getElementById('wc-migpayments-cancel-btn');
+var overpaidModal =  document.getElementById('wc-overpaid-modal');
+var estimateEl =  document.getElementById('wc-migpayments-estimate');
+
+var ajaxUrl  = overpaidModal.dataset.url;
+
+function checkOrderStatus(){
+    
+    const data = new FormData();
+   
     data.append( 'action', 'migpayments_wc_check_payment_status' );
     data.append( 'order_id' , overpaidModal.dataset.order_id);
     const params = new URLSearchParams(data);
@@ -21,82 +34,114 @@ setInterval(function(){
         body: params,
         credentials: 'same-origin',
     };
-
-    const fetchResponse = fetch(ajaxUrl, settings).then(response => response.json()).then(data => {
+    fetch(ajaxUrl, settings).then(response => response.json()).then(data => {
         // console.log(data);
         //Payment confirmed
         if(data.redirect == true){
-            
+           
+              
             if(data.redirectUrl)
                  window.location.href = data.redirectUrl;
-        } else{ 
+        } 
+        
+        if(data.status == 'Overpaid'){
+            if(overpaidModal)
+                overpaidModal.classList.add('active');
+            
              
-            if(data.status == 'Overpaid'){
-                if(overpaidModal)
-                    overpaidModal.classList.add('active');
-                
-                 
-                var paymentDataContainer = document.getElementById('wc-payment-data-container');
-                paymentDataContainer.classList.add('hide');
-                
+            var paymentDataContainer = document.getElementById('wc-payment-data-container');
+            paymentDataContainer.classList.add('hide');
+            
+            if(cancelBtn)
+                cancelBtn.remove();
+        } else{
+
+            if(data.amount && data.crypto_address){
+               
+                paymentOptionsEl.remove();
+
                 if(cancelBtn)
                     cancelBtn.remove();
-            } else{
+
+                if(amountEl)
+                    amountEl.remove();
+                
+                if(infoBoxEl)
+                    infoBoxEl.remove();
 
                 if(data.status != 'Pending'){
 
-                    if(cancelBtn)
-                    cancelBtn.remove();
+                    //Confirmed
 
-                    if(amountEl)
-                    amountEl.remove();
-                    if(infoBoxEl)
-                    infoBoxEl.remove();
-                    //PartialPayment
-                    var totalAmount =  document.getElementById('total_crypto_amount').dataset.amount;
+                  
+                    //Partial Payments
+                    var totalAmount = data.amount;
                     var totalPartialsAmount = 0;
-                    var currencyCode = null;
+                    var currencyCode = data.currency_code;
+                    var iconWarning = '<svg style="width:30px;height:30px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#FF0000" class="size-6"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /> </svg> ';
+                    
                     if(data.partial_payments && data.partial_payments.length > 0){
-                        var html = '<hr><h5 class="text-left">Partial Payments</h5> <table id="wc-migpayments-partial-payments-list" class="table" style="font-size:14px;">';
-                        html += '<thead><th style="text-align:left;padding-left:0px;">Amount</th><th style="text-align:right;padding-right:0px;">Received At</th></thead><tbody>'
 
+                        if(orderSummary)
+                            orderSummary.remove();
+                        
                         let payments = data.partial_payments;
                         for (let i = 0; i < payments.length; i++) {
-                            currencyCode = payments[i].currency_code;
-                            html += '<tr style="border-bottom:none;"><td style="border:none;text-align:left;padding-left:0px;"> <h6 class="text-success">'+ payments[i].amount  + ' <span style="color:#000000" >' +  payments[i].currency_code + '</span></h6> </td><td style="border:none;text-align:right;padding-right:0px;"> ' + payments[i].received_at + '</b></tr>'
+                        
                             totalPartialsAmount = parseFloat(payments[i].amount) + parseFloat(totalPartialsAmount);
                             
                         }
- 
-                        html += '</tbody></table>';
+                        
+                        var html = '<div class="wc-migpayments-alert-box"><h3>' + iconWarning + ' Insufficient Payment</h3><p>The payment amount is too low. Please send a remaining amount of cryptocurrency to proceed.</p></div>';
+                        console.log(totalAmount)
+                        console.log(totalPartialsAmount)
                         amountDifference = parseFloat(totalAmount) - parseFloat(totalPartialsAmount);
                         var decimals = currencyCode == 'USDT' ? 6 : 8;
                         var remainingAmount = parseFloat(amountDifference).toFixed(decimals);
                         html += '<div class="wc-migpayments-remaining-amount">';
                         
-                        html += '<div class="text-left">';
-                        html += 'Remaining payment amount: <b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div><span class="wc-migpayments-copy-to-clipboard"><button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('+ remainingAmount + ')">Copy</button></span>';
+                        html += '<div class="text-left wc-migpayments-alert-box">';
+                        html += '<label>Remaining payment amount:&nbsp;</label><b>' + remainingAmount  + ' '+ currencyCode  +'</b> </div>';
                         html += '</div>';
-                        // each payments
-                        partialPaymentsEl.innerHTML = html;
-                    
-                    }
  
-                
-                }
-                
-             
+                        html += '<hr><h5 class="text-left">Received Payment(s)</h5> <table id="wc-migpayments-partial-payments-list" class="table" style="font-size:14px;">';
+                        html += '<thead><th style="text-align:left;padding-left:0px;">Amount</th><th style="text-align:right;padding-right:0px;">Received At</th></thead><tbody>'
+                        // html += '</div>';
+                        for (let i = 0; i < payments.length; i++) {
+                        
+                            html += '<tr style="border-bottom:none;"><td style="border:none;text-align:left;padding-left:0px;"> <h6 class="text-success">'+ payments[i].amount  + ' <span style="color:#000000" >' +  payments[i].currency_code + '</span></h6> </td><td style="border:none;text-align:right;padding-right:0px;"> ' + payments[i].received_at + '</b></tr>'
+                            
+                        }
+
+                        html += '</tbody></table>';
+
+                        partialPaymentsEl.innerHTML = html;
+                        getExistingPaymentDataHtml();
+                    } 
             }
-           
+            else {
+                getExistingPaymentDataHtml();
+            }
+                
+
+            
+            }  
+         
         }
+       
            
     }).catch(e => {
         console.log(e)
     });
        
   
+}
+setInterval(function(){ 
+    checkOrderStatus();
+
  }, 5000);
 
+checkOrderStatus();
 function getCryptoEstimate(){
      
     const data = new FormData();
@@ -104,7 +149,7 @@ function getCryptoEstimate(){
     var overpaidModal =  document.getElementById('wc-overpaid-modal');
     var estimateEl =  document.getElementById('wc-migpayments-estimate');
 
-    var ajaxUrl  = overpaidModal.dataset.url;
+    ;
 
     data.append( 'action', 'migpayments_wc_get_crypto_estimate' );
     data.append( 'order_id' , overpaidModal.dataset.order_id);
@@ -132,6 +177,36 @@ function getCryptoEstimate(){
        
 }
 
+function getExistingPaymentDataHtml(){
+     console.log('migpaymentsWcAsyncGetExistingPaymentData')
+    const data = new FormData();
+    
+    data.append( 'action', 'migpayments_wc_get_existing_payment_data_html' );
+    data.append( 'order_id' , overpaidModal.dataset.order_id);
+    const params = new URLSearchParams(data);
+    const settings = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Cache-Control': 'no-cache',
+           },
+        body: params,
+        credentials: 'same-origin',
+    };
+
+    const fetchResponse = fetch(ajaxUrl, settings).then(function (response) {
+        // The API call was successful!
+        return response.text();
+    }).then(function (html) {
+        if(html)
+            paymentDataEl.innerHTML = html;
+           
+    }).catch(e => {
+        console.log(e)
+    });
+       
+}
+
 function getCurrencyBlockchains(){
      
     const data = new FormData();
@@ -148,7 +223,7 @@ function getCurrencyBlockchains(){
     console.log(blockchainSelect);
     var currencyCode = document.getElementById('wc-migpayments-currency-code').value;
     console.log(currencyCode);
-    var ajaxUrl  = overpaidModal.dataset.url;
+    ;
 
     data.append( 'action', 'migpayments_wc_get_currency_blockchains' );
     data.append( 'currency_code' , currencyCode);
@@ -213,13 +288,6 @@ function getPaymentData(){
      
     const data = new FormData();
     
-    var paymentOptionsEl =  document.getElementById('wc-migpayments-payment-options');
-    var overpaidModal =  document.getElementById('wc-overpaid-modal');
-    var paymentDataEl =  document.getElementById('wc-migpayments-payment-data');
-    var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
-    var errorElement =  document.getElementById('wc-migpayments-error');
-    var blockchainEl =  document.getElementById('wc-migpayments-blockchain');
-
     var currencyCode =  currencyCodeEl.value;
     var blockchainCode =  blockchainEl.value;
     errorElement.innerHTML = '';
@@ -247,7 +315,7 @@ function getPaymentData(){
     paymentOptionsEl.style.display = 'none';
     paymentDataEl.innerHTML = ' <div class="wc-migpayments-loading"></div>';
     
-    var ajaxUrl  = overpaidModal.dataset.url;
+    
 
     data.append('action', 'migpayments_wc_get_payment_data' );
     data.append('order_id' , overpaidModal.dataset.order_id);
