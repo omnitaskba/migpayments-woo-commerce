@@ -1,6 +1,4 @@
-
 <?php
-
 class MigpaymentsLibrary {
 
     private $sandboxUrl = 'https://pay.columis.tech/api/v1/';
