@@ -140,23 +140,7 @@ body{
     font-weight: bold;
     margin-bottom: 2px;
 }
-.wc-migpayments-description-timer-wrapper{
-    display: flex;
-    justify-content: space-between;
-}
-.wc-migpayments-timer{
-    white-space: nowrap;
-    border-radius: 50%;
-    border: 1px solid #ff9800;
-    width: 30px;;
-    height: 30px;;
-    display: flex;
-     align-items: center;
-    justify-content: space-between;
-    justify-content: center;
-    font-size: 10px;
-}
-
+ 
 #wc-migpayments-review-order-button{
     background-color: black !important;
     color: white;
@@ -336,17 +320,17 @@ span.wc-migpayments-copy-to-clipboard {
 
 .wc-migpayments-alert-box{
     padding:1rem;
-   
-    
     display: flex;
-    justify-content: space-between;
+    text-align: left;
     flex-wrap: wrap;
     align-items: center;
     margin-bottom: 15px;;
-    text-align: justify;
     border:1px solid #FF0000;
     border-radius: 10px;
     width: 100%;
+}
+.wc-migpayments-alert-box svg{
+    margin-right: 10px;
 }
 .wc-migpayments-alert-box h3, .wc-migpayments-alert-box label{
     color:#FF0000;
@@ -611,4 +595,7 @@ span.wc-migpayments-copy-to-clipboard {
     text-align: center;
     width: 100%;
     padding-bottom:2rem;
+  }
+  #wc-migpayments-expiry-countdown{
+    font-weight: bold;
   }

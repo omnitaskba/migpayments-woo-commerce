@@ -6,6 +6,7 @@ var currencyCodeEl =  document.getElementById('wc-migpayments-currency-code');
 var errorElement =  document.getElementById('wc-migpayments-error');
 var blockchainEl =  document.getElementById('wc-migpayments-blockchain');
 var orderSummary =  document.getElementById('wc-migpayments-order-summary');
+var iconWarning = '<svg style="width:30px;height:30px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#FF0000" class="size-6"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /> </svg> ';
 
 var partialPaymentsEl =  document.getElementById('wc-mipgpayments-partial-payments')
 var infoBoxEl =  document.getElementById('wc-migpayments-info-box')
@@ -15,6 +16,7 @@ var overpaidModal =  document.getElementById('wc-overpaid-modal');
 var cancelBtn = document.getElementById('wc-migpayments-cancel-btn');
 var overpaidModal =  document.getElementById('wc-overpaid-modal');
 var estimateEl =  document.getElementById('wc-migpayments-estimate');
+var expiryEl = document.getElementById('wc-payment-expiry-item');
 
 var ajaxUrl  = overpaidModal.dataset.url;
 
@@ -78,7 +80,6 @@ function checkOrderStatus(){
                     var totalAmount = data.amount;
                     var totalPartialsAmount = 0;
                     var currencyCode = data.currency_code;
-                    var iconWarning = '<svg style="width:30px;height:30px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#FF0000" class="size-6"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /> </svg> ';
                     
                     if(data.partial_payments && data.partial_payments.length > 0){
 
@@ -139,9 +140,10 @@ function checkOrderStatus(){
 setInterval(function(){ 
     checkOrderStatus();
 
- }, 5000);
+}, 5000);
 
 checkOrderStatus();
+
 function getCryptoEstimate(){
      
     const data = new FormData();
@@ -178,7 +180,7 @@ function getCryptoEstimate(){
 }
 
 function getExistingPaymentDataHtml(){
-     console.log('migpaymentsWcAsyncGetExistingPaymentData')
+     
     const data = new FormData();
     
     data.append( 'action', 'migpayments_wc_get_existing_payment_data_html' );
@@ -199,8 +201,10 @@ function getExistingPaymentDataHtml(){
         return response.text();
     }).then(function (html) {
         if(html)
+        {
             paymentDataEl.innerHTML = html;
-           
+            expiryCountdown();
+        }
     }).catch(e => {
         console.log(e)
     });
@@ -219,8 +223,7 @@ function getCurrencyBlockchains(){
     loadingEl.style.display = 'block';
     blockChainWrapper.style.display = 'flex';
     blockchainSelect.style.display = 'none';
-
-    console.log(blockchainSelect);
+ 
     var currencyCode = document.getElementById('wc-migpayments-currency-code').value;
     console.log(currencyCode);
     ;
@@ -270,18 +273,54 @@ const currencySelect = document.getElementById('wc-migpayments-currency-code');
 
 currencySelect.addEventListener('change', getCurrencyBlockchains);
 
-function yourMethodName() {
-  // Your method logic here
+function expiryCountdown() {
+    const countdownElement = document.getElementById('wc-migpayments-expiry-countdown');
+    const targetDateStr = countdownElement.getAttribute('data-target-date');
+    const targetDate = new Date(targetDateStr * 1000).getTime();
+    const expiryEl = document.getElementById('wc-payment-expiry-item');
+
+    if(targetDate &&  !isNaN(targetDate)){
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+    
+            if (timeLeft <= 0) {
+               
+                var expiredHtml = '<div class="wc-migpayments-alert-box">' + iconWarning + ' Order status is expired.</div>';
+
+                expiryEl.innerHTML = expiredHtml;
+
+                clearInterval(timer);
+                return;
+            }
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            var html = '';
+    
+            if(hours > 0){
+                html += hours + 'h ';
+            }
+            if(minutes > 0){
+                html += minutes + 'm ';
+            }
+            html  += seconds + 's';
+            countdownElement.innerHTML = html;
+        }
+    
+        const timer = setInterval(updateCountdown, 1000);
+        updateCountdown(); // initial call to display immediately
+    } else {
+        expiryEl.remove();
+    }
+   
 }
 
 const submitBtn = document.getElementById('wc-migpayments-get-payment-data');
-
-// Add a click event listener to the button
+ 
 submitBtn.addEventListener('click', function() {
- 
- submitBtn.disabled = true;
- 
- getPaymentData();
+    submitBtn.disabled = true;
+    getPaymentData();
 });
 
 function getPaymentData(){
@@ -338,6 +377,7 @@ function getPaymentData(){
        
         paymentDataEl.innerHTML = html;
            
+        expiryCountdown();
     }).catch(e => {
         console.log(e)
     });

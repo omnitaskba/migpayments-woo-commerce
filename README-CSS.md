@@ -31,7 +31,6 @@ Written in format #id/.class (html element) - description
     .wc-migpayments-payment-data-title h4(h4) - "Send payment" text
     .wc-migpayments-description-timer-wrapper (div) - Wrapper for "Send payment" description & timer
     .wc-migpayments-description-timer-wrapper p (p) - "Send payment" description
-    .wc-migpayments-timer (div) - Countdown timer
     #wc-migpayments-address-qr-code-wrapper  (div) - Wrapper for QR code image
     #wc-migpayments-address-qr-code  (div) -  Crypto address QR code image
     #wc-migpayments-payment-data  (div) - Wrapper for address & amount data

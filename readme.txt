@@ -1,8 +1,8 @@
 === Plugin Name ===
 
-Tags: v1.6.2, v1.6.3
+Tags: v1.8.5, v1.8.6, v1.8.7, v1.8.8
 Requires at least: 6.2
-Tested up to: 6.4
+Tested up to: 6.5.5
 Requires PHP: 7.3
 Stable tag: 8.0.1
 License: GPLv3
@@ -17,8 +17,17 @@ With this plugin, customers can conveniently make purchases using a variety of c
 
  
 == Changelog ==
-= 1.6.3 =
-* Code cleanup.
+= 1.8.8 =
+* Implemented automatic cancellation of expired pending orders.
 
-= 1.6.2 =
-* Implement update checker.
+= 1.8.7 =
+* Updated insufficient payment amount alert.
+
+= 1.8.6 =
+* Added payment confirmation redirect URL setting.
+
+= v1.8.5 =
+* Blockchain selector in payment data form.
+
+ 
+

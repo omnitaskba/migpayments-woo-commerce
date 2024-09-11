@@ -69,25 +69,15 @@ class MigpaymentsService
             $migpayments = new WcMigpaymentsGateway();
             
             if(!$response->error && isset($response->data['cryptoAddress'])){
-                $html = self::generatePaymentDatHtml(
+                $html = self::generatePaymentDataHtml(
                     $migpayments,
-                    $response->data['convertedAmount'],
+                    $response->data['calculatedAmount'],
                     $response->data['currency'],
                     $response->data['cryptoAddress'],
-                    ucfirst(strtolower($response->data['block_chain_code']))
+                    ucfirst(strtolower($response->data['block_chain_code'])),
+                    strtotime('+' . $response->data['expiry_in_hours'] . ' hours')
                 );
-                // $network = ucfirst(strtolower($response->data['block_chain_code']));
                 
-                // $addressLbl = $migpayments->cryptoAddressLabelTxt;
-                // $amountLbl = $migpayments->cryptoAmountLabelTxt;
-                // $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
-                // $qrCode =  (new QRCode())->render($response->data['cryptoAddress']);
-                
-                // $html .= '<img id="wc-migpayments-address-qr-code"  src="'. $qrCode .'" alt="QR Code" /> ';
-                // $html .= '<div class="wc-migpayments-payment-items">';
-                // $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="addresss">'.  $addressLbl  . '</label> <p> ' . $response->data['cryptoAddress'] . ' </p> </div> <button class="wc-migpayments-copy-btn" onclick="copyToClipboard(\''.  $response->data['cryptoAddress'] .'\')">Copy</button> </div> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item" > <label for="total_crypto_amount">' . $amountLbl.'</label> <p id="total_crypto_amount" data-amount="'. $response->data['calculatedAmount'] .'">  ' . $response->data['calculatedAmount'] . ' ' . $response->data['currency'] .' </p> </div> <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('. $response->data['calculatedAmount']. ')">Copy</button> </div>';
-                // $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="network">Use this exact network:</label> <p> ' . $network . ' </p> </div> </div>';
-                // $html .= '</div></div>';
         } else {
             $html= '<div class="woocommerce-error">' . $migpayments->paymentDataErrorTxt . ' </div>';
         }
@@ -104,18 +94,29 @@ class MigpaymentsService
         return new MigpaymentsResponse($error, $data);
     }
 
-    public static function generatePaymentDatHtml($paymentGateway, $amount, $currencyCode, $cryptoAddress, $blockchain){
+    public static function generatePaymentDataHtml
+    (
+        $paymentGateway,
+        $amount,
+        $currencyCode,
+        $cryptoAddress,
+        $blockchain,
+        $expiresAt
+        )
+    {
         try{
             $addressLbl = $paymentGateway->cryptoAddressLabelTxt;
             $amountLbl = $paymentGateway->cryptoAmountLabelTxt;
-            $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
             $qrCode =  (new QRCode())->render($cryptoAddress);
-            
+
+            $html = '<h5 style="text-align: left;">Send Payment</h5> <div id="wc-migpayments-payment-form"> <div class="wc-migpayments-payment-data">  ';
             $html .= '<img id="wc-migpayments-address-qr-code"  src="'. $qrCode .'" alt="QR Code" /> ';
             $html .= '<div class="wc-migpayments-payment-items">';
             $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="addresss">'.  $addressLbl  . '</label> <p> ' . $cryptoAddress . ' </p> </div> <button class="wc-migpayments-copy-btn" onclick="copyToClipboard(\''.  $cryptoAddress .'\')">Copy</button> </div> <div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item" > <label for="total_crypto_amount">' . $amountLbl.'</label> <p id="total_crypto_amount" data-amount="'. $amount .'">  ' . $amount . ' ' . $currencyCode .' </p> </div> <button class="wc-migpayments-copy-btn"  onclick="copyToClipboard('. $amount. ')">Copy</button> </div>';
             $html .= '<div class="wc-migpayments-payment-item"> <div class="wc-payment-data-item"> <label for="network">Use this exact network:</label> <p> ' . $blockchain . ' </p> </div> </div>';
-            $html .= '</div></div>';
+            $html .= '<div class="wc-migpayments-payment-item" id="wc-payment-expiry-item"> <div class="wc-payment-data-item" > <label for="expires_at">Expires In:</label> <div id="wc-migpayments-expiry-countdown" data-target-date="'. $expiresAt .'"></div> </div>';
+            $html .= '</div></div></div>';
+ 
         } catch(Exception $e){
             $html =  '<div class="woocommerce-error">' . $paymentGateway->paymentDataErrorTxt . ' </div>';
 

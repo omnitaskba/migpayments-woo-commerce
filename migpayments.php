@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.7
+Version: 			1.8.8
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.7');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.8');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -69,6 +69,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_action( 'woocommerce_blocks_loaded', 'migpaymentsWcRegisterBlock' );
 
 		register_activation_hook(__FILE__, 'activatePlugin');
+		register_deactivation_hook( __FILE__, 'deactivatePlugin' );
 	}
 
 	function migpaymentsWcRegisterBlock() {
@@ -92,8 +93,27 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	
 	function activatePlugin () {
 		createRedirectPage('migpayments-payment-instructions');
+		if( !wp_next_scheduled( 'wc_migpayments_every_minute_event' ) ){
+			wp_schedule_event( time(), 'every_minute', 'wc_migpayments_every_minute_event' );
+		}
 	}
+
+	function deactivatePlugin(){
+		if( wp_next_scheduled( 'wc_migpayments_every_minute_event' ) ){
+			wp_clear_scheduled_hook( 'wc_migpayments_every_minute_event' );
+		}
 	
+	}
+
+
+	function wc_migpayments_every_minute_event( $schedules ) {
+		$schedules['every_minute'] = array(
+				'interval'  => 60,
+				'display'   => __( 'Every Minute', 'migpayments' )
+		);
+		return $schedules;
+	}
+
 	function createRedirectPage($pageName) {
 		$pageExists = false;
 		$pages = get_pages();
@@ -123,7 +143,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						plugin_dir_url(__FILE__) . '/assets/css/migpayments_style.css?v='. MIGPAYMENTSWC_VERSION);
 	}
 	
- 
 	function migpaymentsWcScripts(){
 		if ( is_page( 'migpayments-payment-instructions' ) ) {
 
@@ -175,6 +194,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			$order->update_meta_data('_migpayments_worder_crypto_currency_code',  $response->data['currency']);
 			$order->update_meta_data('_migpayments_worder_crypto_address',  $response->data['cryptoAddress']);
 			$order->update_meta_data('_migpayments_worder_blockchain',  ucfirst($response->data['block_chain_code']));
+			$order->update_meta_data('_migpayments_worder_expires_at',  strtotime('+' . $response->data['expiry_in_hours'] . ' hours'));
 			$order->save();
 		}
 		echo $response->data['html'];
@@ -191,6 +211,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$amount = $order->get_meta('_migpayments_worder_crypto_amount',true );
 		$address = $order->get_meta('_migpayments_worder_crypto_address',true );
 		$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
+		$expiresAt = $order->get_meta('_migpayments_worder_expires_at', true);
 		
 		$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
 		$remainingAmount = $amount;
@@ -199,19 +220,19 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$remainingAmount = bcsub($remainingAmount, $obj['amount'], 8 );
 			}
 		}
-		$response  = MigpaymentsService::generatePaymentDatHtml(
+		$response  = MigpaymentsService::generatePaymentDataHtml(
 			$migpayments,
 			$remainingAmount,
 			$currencyCode,
 			$address, 
-			$blockChain
+			$blockChain,
+			$expiresAt
 		);
 
 		echo $response;
 
 		wp_die();
 	}
-
 
 	function migpaymentsWcAsyncGetEstimate()
 	{
@@ -260,7 +281,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		wp_die();
 	}
 
-	
 	function migpaymentsWcCheckAsyncStatus() {
 		 
 		$order = wc_get_order( $_POST['order_id'] );
@@ -352,7 +372,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		}
 		return $methods;
 	}
-
 	// Admin Order details crypto payment info
 	function migpayments_wc_admin_order_stats( $order )
 	{
@@ -377,7 +396,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		return;
 	}
 
-
 	function wooCommerceAvailableGateways( $availableGateways ) {
     	if (! is_checkout() ) {return $availableGateways;}
 		
@@ -388,13 +406,41 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		return $availableGateways;
 	}
 	// Add support for WooCommerce checkout blocks
-function custom_payment_gateway_supports_blocks($supports, $block) {
-    if ($block === 'woocommerce/checkout-payment-methods') {
-        $supports['supports'] = true;
-    }
-    return $supports;
-}
-add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_payment_gateway_supports_blocks', 10, 2);
+	function custom_payment_gateway_supports_blocks($supports, $block) {
+		if ($block === 'woocommerce/checkout-payment-methods') {
+			$supports['supports'] = true;
+		}
+		return $supports;
+	}
+	add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_payment_gateway_supports_blocks', 10, 2);
+ 
+	function wc_migpayments_check_expired_orders() {
+ 
+		// Get all pending orders
+		$args = array(
+			'status' => 'pending',
+			'limit'  => -1,
+			'meta_query' => array(
+				array(
+					'key'     => '_migpayments_worder_expires_at', 
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+	
+		$orders = wc_get_orders( $args );
+	
+		foreach ( $orders as $order ) {
+			 
+			$expirationTime = $order->get_meta( '_migpayments_worder_expires_at');
+			$paymentStatus = $order->get_meta('_migpayments_worder_crypto_payment_status');
+			 
+			if ( $expirationTime && time() > $expirationTime  && $paymentStatus == 'Pending') {
+				// Cancel the order
+				$order->update_status( 'cancelled', __( 'Order cancelled due to expiration.', 'migpayments' ) );
+			}
+		}
+	}
 
 	function migpaymentsWcLoadGateway()
 	{
@@ -404,8 +450,9 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 		add_filter( 'woocommerce_payment_gateways', 		'migpaymentsWcAddGateway' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
  		add_filter( 'woocommerce_available_payment_gateways', 'wooCommerceAvailableGateways' );
- 
-		
+		add_filter( 'cron_schedules', 'wc_migpayments_every_minute_event' );
+		add_action( 'wc_migpayments_every_minute_event', 'wc_migpayments_check_expired_orders' );
+	
  		/*
 		*	Payment Gateway WC Class
 		*/
@@ -415,7 +462,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 			public $apiToken = null;
 			private $publicKey = null;
 			public $fiatCurrencies         = ['EUR', 'USD'];
-			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
+			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT',];
 			public $fiatCurrency = null;
 			public $url3  = '';
 			public $mainPluginUrl;
@@ -475,7 +522,7 @@ add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_pa
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
 				add_action( 'woocommerce_api_crypto-partial-payment', array( $this, 'partialPaymentWebhook' ) );
 				add_action( 'woocommerce_api_crypto-overpaid-payment', array( $this, 'overpaidPaymentWebhook' ) );
-				
+				 
 				return true;
 			}
 			 
