@@ -462,7 +462,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $apiToken = null;
 			private $publicKey = null;
 			public $fiatCurrencies         = ['EUR', 'USD'];
-			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT',];
+			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
 			public $fiatCurrency = null;
 			public $url3  = '';
 			public $mainPluginUrl;
