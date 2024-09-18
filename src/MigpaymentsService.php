@@ -181,6 +181,10 @@ class MigpaymentsService
                             $currencyName = 'USD Tether';
                             $network = 'ERC-20 Network';
                         break;
+                        case 'USDC':
+                            $currencyName = 'USD Coin';
+                            $network = 'ERC-20 Network';
+                        break;
                         default:
                         $currencyName = '';
                         break;

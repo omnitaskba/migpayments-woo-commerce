@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.8
+Version: 			1.8.9
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.8');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.9');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -462,7 +462,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $apiToken = null;
 			private $publicKey = null;
 			public $fiatCurrencies         = ['EUR', 'USD'];
-			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT'];
+			public $cryptoCurrencies         = ['BTC' => 'BTC', 'ETH' => 'ETH', 'USDT' => 'USDT', 'USDC' => 'USDC'];
 			public $fiatCurrency = null;
 			public $url3  = '';
 			public $mainPluginUrl;
@@ -488,7 +488,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$this->id                 	= 'migpaymentspayments';
 				$this->mainPluginUrl 		= admin_url("plugin-install.php?tab=search&type=term&s=MigPayments");
 				$this->method_title       	= __( 'Migpayments', MIGPAYMENTSWC );
-				$this->method_description  	= __( "Cryptocurrency Payment Gateway: Accept BTC, ETH, and USDT with ease.", MIGPAYMENTSWC ) . '</b><br>';
+				$this->method_description  	= __( "Cryptocurrency Payment Gateway: Accept BTC, ETH, USDT and USDC with ease.", MIGPAYMENTSWC ) . '</b><br>';
 				$this->supports 			= ['products'];
 				$this->has_fields = true;
 				$this->icon = apply_filters('woocommerce'. $this->id.'icon', plugins_url("/assets/img/currencies.png", __FILE__));
@@ -586,9 +586,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$data = $this->decryptData('Partial Payment Webhook');
 				$this->log->info( 'Partial Payment Data Received:'. json_encode($data) ,  $this->context);
 				 
-
 				try{
-					$order = wc_get_order( $_GET['id'] );
+					$orderId = $_GET['id'];
+					$order = wc_get_order($orderId );
 					if(!$order){
 						if($this->log)
 						{
@@ -621,6 +621,48 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						$this->log->error('Failed to store partial payment: ' .  esc_html($e->getMessage()), $this->context);
 					wp_send_json('Failed to store partial payment notification.', 406);
 				}
+								
+				// Get customer email from the order
+				$toEmail = $order->get_billing_email();
+				if($toEmail){
+					try{
+
+						$amount = $order->get_meta('_migpayments_worder_crypto_amount',true );
+						$cryptoAddress = $order->get_meta('_migpayments_worder_crypto_address',true );
+						$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
+
+						$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
+						$remainingAmount = $amount;
+						if($partialPayments && is_array($partialPayments)){
+							foreach($partialPayments as $obj){
+								if(isset($obj['amount']) && $obj['amount']){
+									$remainingAmount = bcsub($remainingAmount, $obj['amount'], 8 );
+								}
+								
+							}
+						}
+						if($remainingAmount > 0){
+							$mailer = WC()->mailer();
+
+							$emailHeading = 'Partial Payment Received';
+							$messageBody  = 'A partial crypto payment of <b>'. $data->amount .' '. $data->crypto_currency .'</b> was received for your order #'. $orderId .'.';
+							$messageBody .= '<h3><b> Please send remaining payment amount to complete your order.</b></h3>';
+							$messageBody .= '<div>Network: <b>'  .  $blockChain . '</b></div>';
+							$messageBody .= '<div>Crypto Address: <b>'  .  $cryptoAddress . '</b></div>';
+							$messageBody .= '<div>Remaining Payment Amount: <b>'  .  $remainingAmount . ' '. $data->crypto_currency . '</b></div>';
+							$emailContent = $mailer->wrap_message( $emailHeading, $messageBody );
+						
+							$mailer->send( $toEmail, 'Insufficient Payment', $emailContent );
+						}
+						
+					} catch(\Exception $e){
+						if($this->log)
+						$this->log->error('Failed to send email notification for partial payment to email: ' . $toEmail . ' - Order ID: '. $order->id . ' - Error: '. esc_html($e->getMessage()), $this->context);
+
+					}
+					
+				}
+				
  				wp_send_json('success');
 			}
 
@@ -824,7 +866,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				
 				$order->update_meta_data('_return_url', $redirectUrl );
 				$order->save();
-			
+				
+
 				return array(
 					'result' => 'success',
 					'redirect' => site_url('migpayments-payment-instructions?orderId='.$orderId.'&success_url='. $this->get_return_url($order))
