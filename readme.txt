@@ -17,6 +17,9 @@ With this plugin, customers can conveniently make purchases using a variety of c
 
  
 == Changelog ==
+= 1.8.9 =
+* Added partial payment(underpayments) email notifications for customers.
+
 = 1.8.8 =
 * Implemented automatic cancellation of expired pending orders.
 
