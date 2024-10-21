@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.8.9
+Version: 			1.9.0
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.8.9');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.0');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -93,9 +93,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	
 	function activatePlugin () {
 		createRedirectPage('migpayments-payment-instructions');
-		if( !wp_next_scheduled( 'wc_migpayments_every_minute_event' ) ){
-			wp_schedule_event( time(), 'every_minute', 'wc_migpayments_every_minute_event' );
-		}
 	}
 
 	function deactivatePlugin(){
@@ -104,15 +101,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		}
 	
 	}
-
-
-	function wc_migpayments_every_minute_event( $schedules ) {
-		$schedules['every_minute'] = array(
-				'interval'  => 60,
-				'display'   => __( 'Every Minute', 'migpayments' )
-		);
-		return $schedules;
-	}
+ 
 
 	function createRedirectPage($pageName) {
 		$pageExists = false;
@@ -290,13 +279,15 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$amount = $order->get_meta('_migpayments_worder_crypto_amount',true );
 		$address = $order->get_meta('_migpayments_worder_crypto_address',true );
 		$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
+		$orderStatus = $order->get_status();
 		$data  = [
 			'status' => $status,
 			'currency_code' => $currencyCode,
 			'order_number' => $_POST['order_id'],
 			'amount' => $amount,
 			'crypto_address' => $address,
-			'blockchain' => $blockChain
+			'blockchain' => $blockChain,
+			'order_status' => $orderStatus
 		];
 
 		switch($status){
@@ -414,34 +405,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	}
 	add_filter('woocommerce_blocks_checkout_payment_methods_integration', 'custom_payment_gateway_supports_blocks', 10, 2);
  
-	function wc_migpayments_check_expired_orders() {
- 
-		// Get all pending orders
-		$args = array(
-			'status' => 'pending',
-			'limit'  => -1,
-			'meta_query' => array(
-				array(
-					'key'     => '_migpayments_worder_expires_at', 
-					'compare' => 'EXISTS',
-				),
-			),
-		);
-	
-		$orders = wc_get_orders( $args );
-	
-		foreach ( $orders as $order ) {
-			 
-			$expirationTime = $order->get_meta( '_migpayments_worder_expires_at');
-			$paymentStatus = $order->get_meta('_migpayments_worder_crypto_payment_status');
-			 
-			if ( $expirationTime && time() > $expirationTime  && $paymentStatus == 'Pending') {
-				// Cancel the order
-				$order->update_status( 'cancelled', __( 'Order cancelled due to expiration.', 'migpayments' ) );
-			}
-		}
-	}
-
 	function migpaymentsWcLoadGateway()
 	{
 		// WooCommerce required
@@ -450,9 +413,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_filter( 'woocommerce_payment_gateways', 		'migpaymentsWcAddGateway' );
 		add_action('woocommerce_admin_order_data_after_billing_address', 	'migpayments_wc_admin_order_stats');
  		add_filter( 'woocommerce_available_payment_gateways', 'wooCommerceAvailableGateways' );
-		add_filter( 'cron_schedules', 'wc_migpayments_every_minute_event' );
-		add_action( 'wc_migpayments_every_minute_event', 'wc_migpayments_check_expired_orders' );
-	
+ 	
  		/*
 		*	Payment Gateway WC Class
 		*/
@@ -522,6 +483,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				add_action( 'woocommerce_api_crypto-payment-confirmed', array( $this, 'paymentConfirmedWebhook' ) );
 				add_action( 'woocommerce_api_crypto-partial-payment', array( $this, 'partialPaymentWebhook' ) );
 				add_action( 'woocommerce_api_crypto-overpaid-payment', array( $this, 'overpaidPaymentWebhook' ) );
+				add_action( 'woocommerce_api_crypto-payment-failed', array( $this, 'failedPaymentWebhook' ) );
 				 
 				return true;
 			}
@@ -546,7 +508,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					return wp_send_json_error($decryptResponse->error, 403);
 				}
 				
-
 				return $decryptResponse->data;
 				 
 			}
@@ -556,9 +517,15 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			 
 				$data = $this->decryptData('Payment Confirmed Webhook');
 				$this->log->info( 'Confirmed Payment Data Received:'. json_encode($data) ,  $this->context);
-
+				 
 				try{
 					$order = wc_get_order( $_GET['id'] );
+					$status = $order->get_status();
+					
+					if($status !== 'pending'){
+						wp_send_json('Order is already in '. $status .' status.', 406);
+					}
+
 					if(!$order){
 						if($this->log)
 							$this->log->error('Confirmed Payment Webhook: Failed to get order #'. ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
@@ -698,6 +665,53 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
  				wp_send_json('success');
 			}
 
+			public function failedPaymentWebhook(){
+			  	
+				$data = $this->decryptData('Order Expired Webhook');
+				$this->log->info( 'Expired Order Data Received:'. json_encode($data) ,  $this->context);
+			 
+				try{
+
+					$order = wc_get_order( $_GET['id']);
+					$status = $order->get_status();
+					$paymentMethod = $order->get_payment_method(); // Get the payment method
+				
+				 
+					if($paymentMethod != $this->id){
+						wp_send_json('Payment method changed. '. $status .' status.', 406);
+
+					}
+					if($status !== 'pending'){
+						wp_send_json('Order is already in '. $status .' status.', 406);
+					}
+
+				 
+					if(!$order){
+						if($this->log)
+						{
+							$this->log->error('Failed Payment Webhook: Failed to get order #'.  ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
+						}
+						throw new \Exception("Failed to get order.");
+					}
+
+					
+
+					$order->update_status('cancelled', __('Payment Not Received - Order expired', MIGPAYMENTSWC));
+
+ 					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Expired');
+					$order->save();
+
+				} catch(\Exception $e){
+					if($this->log)
+					{
+						$this->log->error('Failed to receive failed notification: '.  esc_html($e->getMessage()), $this->context);
+					}
+					wp_send_json('Failed to store failed payment notification.', 406);
+				}
+				 
+ 				wp_send_json('success');
+			}
+			
 			
 			private function migpaymentsSettings()
 			{

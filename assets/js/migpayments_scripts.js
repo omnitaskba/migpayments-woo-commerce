@@ -73,8 +73,11 @@ function checkOrderStatus(){
 
                 if(data.status != 'Pending'){
 
-                    //Confirmed
-
+                    //Expired order
+                    if(data.order_status == 'cancelled' && data.status == 'Expired'){
+                        paymentDataEl.innerHTML = '<div class="card" style="padding:10px; text-align:center;color:red;">No payment received.  This order has expired.</div>';
+                        return;
+                    }
                   
                     //Partial Payments
                     var totalAmount = data.amount;

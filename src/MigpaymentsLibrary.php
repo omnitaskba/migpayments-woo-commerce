@@ -39,6 +39,7 @@ class MigpaymentsLibrary {
             'notification_url' => $siteUrl . '/wc-api/crypto-payment-confirmed?id='. $orderNumber,
             'partial_payment_url' => $siteUrl . '/wc-api/crypto-partial-payment?id='. $orderNumber,
             'overpaid_payment_url' => $siteUrl . '/wc-api/crypto-overpaid-payment?id='. $orderNumber,
+            'failed_notification_url' => $siteUrl . '/wc-api/crypto-payment-failed?id='. $orderNumber,
             'order_number' => $orderNumber,
             'plugin' => 'wordpress',
             'order_data' => $orderData
