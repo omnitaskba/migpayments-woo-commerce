@@ -677,14 +677,15 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 					$order = wc_get_order( $_GET['id']);
 					$status = $order->get_status();
-					$paymentMethod = $order->get_payment_method(); // Get the payment method
-				
+					$paymentMethod = $order->get_payment_method(); 
+					$paymentStatus = $order->get_meta('_migpayments_worder_crypto_payment_status', true );
+
 				 
 					if($paymentMethod != $this->id){
 						wp_send_json('Payment method changed. '. $status .' status.', 406);
 
 					}
-					if($status !== 'pending'){
+					if($status !== 'pending' || $paymentStatus == 'Overpaid'){
 						wp_send_json('Order is already in '. $status .' status.', 406);
 					}
 
