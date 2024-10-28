@@ -42,7 +42,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		add_filter( 'plugin_action_links', 	'migpaymentsWcActionLinks', 10, 2 );
 		add_action( 'wp_head', 'migpaymentsWcStyle' );
 		add_action('wp_enqueue_scripts','migpaymentsWcScripts');
-		add_filter( 'page_template', 'migpaymentsWcPageTemplate');
+		add_filter( 'page_template', 'migpaymentsWcPageTemplate', 100);
 		add_action( 'wp_ajax_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
 		add_action( 'wp_ajax_nopriv_migpayments_wc_get_crypto_estimate', 'migpaymentsWcAsyncGetEstimate' );
 
@@ -101,7 +101,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		}
 	
 	}
- 
 
 	function createRedirectPage($pageName) {
 		$pageExists = false;
@@ -146,7 +145,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					'redirectUrl' => $_GET['success_url']
 				)
 			);
-			
 		 
 			wp_enqueue_script( 'redirect-js' );
   
@@ -160,12 +158,11 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		
 		$order = wc_get_order( $_POST['order_id'] );
 
-		$orderId       = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id             : $order->get_id();
-		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->order_currency : $order->get_currency();
-		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->orderTotal    : $order->get_total();
+		$orderId =  $order->get_id();
+		$fiatCurrencyCode = $order->get_currency();
+		$orderTotal = $order->get_total();
 		$cryptoCurrencyCode =  $_POST['currency_code'];
 		$blockchainCode =  $_POST['block_chain_code'];
-			 
 		$user = $order->get_user();
 
 		$orderData = [
@@ -175,15 +172,23 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			
 		];
 
-		$response  = MigpaymentsService::getPaymentDataHtml($orderTotal, $cryptoCurrencyCode, $fiatCurrencyCode,
-															 $orderId, $migpayments->apiToken, $migpayments->isSandbox , $orderData, $blockchainCode);
-	
+		$response  = MigpaymentsService::getPaymentDataHtml($orderTotal,
+															$cryptoCurrencyCode,
+															$fiatCurrencyCode,
+															$orderId,
+															$migpayments->apiToken,
+															$migpayments->isSandbox,
+															$orderData,
+															$blockchainCode
+														);
+		
+
 		if(!$response->error){
 			$order->update_meta_data('_migpayments_worder_crypto_amount',  $response->data['calculatedAmount']);
 			$order->update_meta_data('_migpayments_worder_crypto_currency_code',  $response->data['currency']);
 			$order->update_meta_data('_migpayments_worder_crypto_address',  $response->data['cryptoAddress']);
 			$order->update_meta_data('_migpayments_worder_blockchain',  ucfirst($response->data['block_chain_code']));
-			$order->update_meta_data('_migpayments_worder_expires_at',  strtotime('+' . $response->data['expiry_in_hours'] . ' hours'));
+			$order->update_meta_data('_migpayments_worder_expires_at', strtotime('+' . $response->data['expiry_in_hours'] . ' hours'));
 			$order->save();
 		}
 		echo $response->data['html'];
@@ -201,7 +206,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$address = $order->get_meta('_migpayments_worder_crypto_address',true );
 		$blockChain = $order->get_meta('_migpayments_worder_blockchain', true);
 		$expiresAt = $order->get_meta('_migpayments_worder_expires_at', true);
-		
+ 
 		$partialPayments = 	$order->get_meta('_migpayments_worder_partial_payments', true);
 		$remainingAmount = $amount;
 		if($partialPayments && is_array($partialPayments)){
@@ -209,6 +214,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$remainingAmount = bcsub($remainingAmount, $obj['amount'], 8 );
 			}
 		}
+		
 		$response  = MigpaymentsService::generatePaymentDataHtml(
 			$migpayments,
 			$remainingAmount,
@@ -228,12 +234,9 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$migpayments = new WcMigpaymentsGateway();
 		$order = wc_get_order( $_POST['order_id'] );
  
-		$fiatCurrencyCode = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<'))
-								? $order->order_currency : $order->get_currency();
-		$orderTotal    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<'))
-								? $order->orderTotal    : $order->get_total();
+		$fiatCurrencyCode = $order->get_currency();
+		$orderTotal = $order->get_total();
 
-		 
 		$response  = MigpaymentsService::getCryptoPricesHtml($orderTotal, $migpayments->cryptoCurrencies,
 																$fiatCurrencyCode, $migpayments->apiToken, $migpayments->isSandbox);
 		
@@ -851,8 +854,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
    
 				$order = wc_get_order($orderId);
 
-				$orderId    = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->id          : $order->get_id();
-				$userID      = (true === version_compare(WOOCOMMERCE_VERSION, '3.0', '<')) ? $order->user_id     : $order->get_user_id();
+				$orderId = $order->get_id();
+				$userID =  $order->get_user_id();
 					
 				$redirectUrl = $this->get_return_url($order);
 
@@ -872,7 +875,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					$order->update_meta_data('_migpayments_worder_createtime',   gmdate("c") );
 					$order->update_meta_data('_migpayments_worder_orderpage',     $orderpage );
 					$order->update_meta_data('_migpayments_worder_created',      gmdate("d M Y, H:i") );
-					 
 				}
 			 
 				// Empty cart
@@ -880,7 +882,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				
 				$order->update_meta_data('_return_url', $redirectUrl );
 				$order->save();
-				
 
 				return array(
 					'result' => 'success',

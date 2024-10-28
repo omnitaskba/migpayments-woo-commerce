@@ -12,9 +12,10 @@ body{
     align-items: center;
 }
 #wc-migpayments-address-qr-code{
-    margin-left: -15px;
-    max-width: 180px;
-    max-height: 180px;
+    margin-left: -16px;
+    margin-top: -4px;
+    max-width: 176px;
+    max-height: 176px;
 }
  
 #wc-migpayments-crypto-estimate-wrapper{
@@ -175,11 +176,10 @@ button.wc-migpayments-copy-btn {
     padding: unset;
     color: white !important; 
     background-color: #f7981d;
-    text-transform: capitalize !important;
-    
-    padding: 0.5rem 1.25rem;
+    padding: 0.3rem 0.6rem;
     float:right !important;
     border:none;
+    align-self: flex-end;
     border-radius: 10px;
 }	
 
@@ -252,16 +252,23 @@ div#wc-migpayments-right-column {
   display: none;
 }
 .wc-migpayments-payment-items{
-    margin-left:30px;;
+    margin-left:10px;
     text-align: left;
     padding-top:10px;
 }
 .wc-migpayments-payment-item{
-
+    margin-bottom: 5px;
     display:flex;
     justify-content:space-between;
     flex-wrap: wrap;
     align-items: center;
+}
+.wc-migpayments-payment-item p{
+    margin:0px;
+}
+.wc-migpayments-payment-item.wc-migpayments-address p{
+    font-style: italic;
+    font-size: 90%;
 }
 div.wc-migpayments-payment-data {
     margin: unset !important;
@@ -282,6 +289,7 @@ i.afg_copyicon.fa.fa-clone {
 }
 span.wc-migpayments-copy-to-clipboard {
     float: right;
+    align-self: flex-end;
 } 
  
 #wc-migpayments-info-box{
@@ -319,7 +327,7 @@ span.wc-migpayments-copy-to-clipboard {
 }
 
 .wc-migpayments-alert-box{
-    padding:1rem;
+    padding:0.3rem 0.6rem;
     display: flex;
     text-align: left;
     flex-wrap: wrap;
@@ -349,7 +357,7 @@ span.wc-migpayments-copy-to-clipboard {
    
 }
 #wc-get-payment-data-form .wc-main, #wc-payment-data-container .wc-main{
-    max-width: 50%;
+    max-width: 60%;
     margin-top: 30px;;
     margin-bottom: 30px;;
     background-color: #FFFFFF;

@@ -62,8 +62,7 @@ function checkOrderStatus(){
                
                 paymentOptionsEl.remove();
 
-                if(cancelBtn)
-                    cancelBtn.remove();
+              
 
                 if(amountEl)
                     amountEl.remove();
@@ -72,7 +71,8 @@ function checkOrderStatus(){
                     infoBoxEl.remove();
 
                 if(data.status != 'Pending'){
-
+                    if(cancelBtn)
+                        cancelBtn.remove();
                     //Expired order
                     if(data.order_status == 'cancelled' && data.status == 'Expired'){
                         paymentDataEl.innerHTML = '<div class="card" style="padding:10px; text-align:center;color:red;">No payment received.  This order has expired.</div>';
@@ -281,7 +281,7 @@ function expiryCountdown() {
     const targetDateStr = countdownElement.getAttribute('data-target-date');
     const targetDate = new Date(targetDateStr * 1000).getTime();
     const expiryEl = document.getElementById('wc-payment-expiry-item');
-
+    
     if(targetDate &&  !isNaN(targetDate)){
         function updateCountdown() {
             const now = new Date().getTime();
@@ -289,10 +289,10 @@ function expiryCountdown() {
     
             if (timeLeft <= 0) {
                
-                var expiredHtml = '<div class="wc-migpayments-alert-box">' + iconWarning + ' Order status is expired.</div>';
+                var expiredHtml = '<div class="wc-migpayments-alert-box">' + iconWarning + ' Order has expired.</div>';
 
                 expiryEl.innerHTML = expiredHtml;
-
+                cancelBtn.remove();
                 clearInterval(timer);
                 return;
             }
@@ -314,7 +314,7 @@ function expiryCountdown() {
         const timer = setInterval(updateCountdown, 1000);
         updateCountdown(); // initial call to display immediately
     } else {
-        expiryEl.remove();
+      expiryEl.remove();
     }
    
 }
