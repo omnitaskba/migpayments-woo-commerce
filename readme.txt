@@ -1,6 +1,6 @@
 === Plugin Name ===
 
-Tags: v1.8.5, v1.8.6, v1.8.7, v1.8.8, v1.8.9, v1.9.0, v1.9.1
+Tags: v1.8.5, v1.8.6, v1.8.7, v1.8.8, v1.8.9, v1.9.0, v1.9.1, v1.9.2
 Requires at least: 6.2
 Tested up to: 6.5.5
 Requires PHP: 7.3
@@ -17,6 +17,8 @@ With this plugin, customers can conveniently make purchases using a variety of c
 
  
 == Changelog ==
+= 1.9.2 = 
+* Minor style changes
 
 = 1.9.1 = 
 * Increased redirect page template override priority
