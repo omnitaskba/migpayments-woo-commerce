@@ -53,7 +53,7 @@
         $items = $order->get_items();
     
     ?>
-    <body>
+    <body id="wc-migpayments-body">
         <!-- Main -->
         <div id="wc-payment-wrapper" class="full-width-bg"  >
                 <?php if($migpayments && $migpayments->redirectLogoUrl) : ?>
