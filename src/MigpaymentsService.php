@@ -96,6 +96,7 @@ class MigpaymentsService
         try{
             
             $customerData = array_filter([
+                'email' => $email,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'address' => $address,
