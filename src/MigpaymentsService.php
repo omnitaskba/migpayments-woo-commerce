@@ -7,8 +7,17 @@ require_once 'MigpaymentsResponse.php';
  
 class MigpaymentsService
 {
-    public static function getPaymentData($total, $currencyCode, $fiatCurrencyCode,
-                                        $orderNumber, $token, $isSandbox = false, $orderData = [], $blockchainCode = null){
+    public static function getPaymentData(
+        $total,
+        $currencyCode,
+        $fiatCurrencyCode,
+        $orderNumber,
+        $token,
+        $isSandbox = false,
+        $orderData = [],
+        $blockchainCode = null,
+        $customerData = []
+        ){
         $error = null;
         $data = null;
         $log = null;
@@ -19,7 +28,16 @@ class MigpaymentsService
         }
         //now the logic
         try{
-            $response  = $migpaymentsLibrary->getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData, $blockchainCode);
+            $response  = $migpaymentsLibrary->getPaymentData(
+                $total,
+                $currencyCode,
+                $fiatCurrencyCode,
+                $orderNumber,
+                $token,
+                $orderData,
+                $blockchainCode,
+                $customerData
+            );
             
             if(!$response['success']){
         
@@ -53,13 +71,54 @@ class MigpaymentsService
         return new MigpaymentsResponse($error, $data);
     }
 
-    public static function getPaymentDataHtml($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox = false, $orderData = [], $blockchainCode = null){
+    public static function getPaymentDataHtml(
+        $total, 
+        $currencyCode, 
+        $fiatCurrencyCode, 
+        $orderNumber, 
+        $token, 
+        $isSandbox = false, 
+        $orderData = [], 
+        $blockchainCode = null,
+        $firstName = null,
+        $lastName = null,
+        $email = null,
+        $address = null,
+        $city = null,
+        $zip = null,
+        $country = null,
+        $state  = null
+        ){
         $error = null;
         $data = null;
        
-
+        
         try{
-            $response = self::getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $isSandbox, $orderData, $blockchainCode);
+            
+            $customerData = array_filter([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'address' => $address,
+                'city' => $city,
+                'zip' => $zip,
+                'country_code' => $country,
+                'state_code' =>   $state,
+
+            ], function ($value) {
+                return $value !== null;
+            });
+    
+            $response = self::getPaymentData(
+                $total,
+                $currencyCode,
+                $fiatCurrencyCode,
+                $orderNumber,
+                $token,
+                $isSandbox,
+                $orderData,
+                $blockchainCode,
+                $customerData
+            );
             
             if(function_exists('wc_get_logger')){
                 $log = wc_get_logger();

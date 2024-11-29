@@ -24,7 +24,7 @@ class MigpaymentsLibrary {
     }
  
 
-    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [], $blockChainCode = null)
+    public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [], $blockChainCode = null, $customerData = [])
     {
         $method = 'rest/get-payment-data';
         $url = $this->getFullUrl($method);
@@ -42,7 +42,8 @@ class MigpaymentsLibrary {
             'failed_notification_url' => $siteUrl . '/wc-api/crypto-payment-failed?id='. $orderNumber,
             'order_number' => $orderNumber,
             'plugin' => 'wordpress',
-            'order_data' => $orderData
+            'order_data' => $orderData,
+            ...$customerData
         ];
 
         if($blockChainCode){

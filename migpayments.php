@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.9.2
+Version: 			1.9.3
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -33,7 +33,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	$updateChecker->setAuthentication('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');
 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.2');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.3');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -165,6 +165,16 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 		$blockchainCode =  $_POST['block_chain_code'];
 		$user = $order->get_user();
 
+		$firstName = $order->get_billing_first_name();
+		$lastName = $order->get_billing_last_name();
+		$email = $order->get_billing_email();
+		$country = $order->get_billing_country();
+		$state = $order->get_billing_state();
+		$address2 = $order->get_billing_address_2() ?  ' / ' . $order->get_billing_address_2() : '';
+		$address = $order->get_billing_address_1() . $address2;
+		$city = $order->get_billing_city();
+		$zip = $order->get_billing_postcode();
+		
 		$orderData = [
 			'customer_email_address' =>  $user ? $user->user_email : null,
 			'customer_username' =>  $user ? $user->user_login . '('. $user->display_name . ')' : null,
@@ -172,15 +182,24 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			
 		];
 
-		$response  = MigpaymentsService::getPaymentDataHtml($orderTotal,
-															$cryptoCurrencyCode,
-															$fiatCurrencyCode,
-															$orderId,
-															$migpayments->apiToken,
-															$migpayments->isSandbox,
-															$orderData,
-															$blockchainCode
-														);
+		$response  = MigpaymentsService::getPaymentDataHtml(
+			$orderTotal,
+			$cryptoCurrencyCode,
+			$fiatCurrencyCode,
+			$orderId,
+			$migpayments->apiToken,
+			$migpayments->isSandbox,
+			$orderData,
+			$blockchainCode,
+			$firstName,
+			$lastName,
+			$email,
+			$address,
+			$city,
+			$zip,
+			$country,
+			$state
+		);
 		
 
 		if(!$response->error){
@@ -880,7 +899,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			 
 				// Empty cart
 				WC()->cart->empty_cart();
-				
+				// $order->set_payment_method($this->id);
 				$order->update_meta_data('_return_url', $redirectUrl );
 				$order->save();
 
