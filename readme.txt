@@ -17,6 +17,8 @@ With this plugin, customers can conveniently make purchases using a variety of c
 
  
 == Changelog ==
+= 1.9.5 = 
+* Changed to public repo
 
 = 1.9.4 = 
 * Enable confirmation of expired orders with late payments
