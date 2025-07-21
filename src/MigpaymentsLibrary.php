@@ -1,7 +1,7 @@
 <?php
 class MigpaymentsLibrary {
 
-    private $sandboxUrl = 'http://pay.local:8888/api/v1/';
+    private $sandboxUrl = 'https://pay.local:8890/api/v1/';
     private $baseUrl = 'https://pay.columis.com/api/v1/';
 
     private $http;
