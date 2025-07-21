@@ -17,6 +17,10 @@ With this plugin, customers can conveniently make purchases using a variety of c
 
  
 == Changelog ==
+
+= 1.9.6 = 
+* Expired orders afterpayment logic: change status to pending and send email notification to configured email(s)
+
 = 1.9.5 = 
 * Changed to public repo
 
