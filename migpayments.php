@@ -582,23 +582,29 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			}
 			
 			private function sendExpiredOrderResetNotification($order) {
-				// Check if email notifications are enabled
-				if (empty($this->expiredOrderNotificationEmails)) {
-					return;
-				}
-				
 				try {
-					// Parse comma-separated email addresses
-					$emailAddresses = array_map('trim', explode(',', $this->expiredOrderNotificationEmails));
-					$emailAddresses = array_filter($emailAddresses, function($email) {
-						return filter_var($email, FILTER_VALIDATE_EMAIL);
-					});
+					$emailAddresses = [];
 					
+					// If specific notification emails are configured, use them
+					if (!empty($this->expiredOrderNotificationEmails)) {
+						// Parse comma-separated email addresses
+						$emailAddresses = array_map('trim', explode(',', $this->expiredOrderNotificationEmails));
+						$emailAddresses = array_filter($emailAddresses, function($email) {
+							return filter_var($email, FILTER_VALIDATE_EMAIL);
+						});
+					}
+					
+					// If no valid emails found, use default admin email
 					if (empty($emailAddresses)) {
-						if ($this->log) {
-							$this->log->error('No valid email addresses found for expired order notification', $this->context);
+						$adminEmail = get_option('admin_email');
+						if ($adminEmail && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+							$emailAddresses = [$adminEmail];
+						} else {
+							if ($this->log) {
+								$this->log->error('No valid email addresses found for expired order notification', $this->context);
+							}
+							return;
 						}
-						return;
 					}
 					
 					$orderId = $order->get_id();
@@ -607,8 +613,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 					$customerEmail = $order->get_billing_email();
 					$customerName = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 					
-					// Configure SMTP for localhost testing
-					$this->configureSMTPForLocalhost();
 					
 					$mailer = WC()->mailer();
 					$emailHeading = 'Expired Order Reset to Pending - Action Required';
@@ -928,8 +932,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'title'       	=> __( 'Expired Order Notification Emails', MIGPAYMENTSWC ),
 						'type'        	=> 'text',
 						'default'     	=> null,
-						'desc_tip' 	=> __( 'Comma separated email addresses to notify when expired orders are reset to pending. Leave empty to disable notifications.', MIGPAYMENTSWC ),
-						'description' 	=> __( 'Example: admin@example.com, manager@example.com', MIGPAYMENTSWC )
+						'desc_tip' 	=> __( 'Comma separated email addresses to notify when expired orders are reset to pending. Leave empty to use default admin email.', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Example: admin@example.com, manager@example.com. If left empty, the default WordPress admin email will be used.', MIGPAYMENTSWC )
 						
 					),
 				 
