@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.9.5
+Version: 			1.9.6
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -32,7 +32,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	 
 	 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.5');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.6');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -459,6 +459,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			public $redirectBackgroundUrl;
 			public $redirectBackgroundColor;
 			public $paymentRedirectUrl;
+			public $expiredOrderNotificationEmails;
 
 			public function __construct()
 			{
@@ -542,6 +543,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				try{
 					$order = wc_get_order( $_GET['id'] );
 					$status = $order->get_status();
+					$paymentStatus = $order->get_meta('_migpayments_worder_crypto_payment_status', true);
 
 					if($status == 'completed'){
 						wp_send_json('Order is already in completed status.', 406);
@@ -551,6 +553,17 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						if($this->log)
 							$this->log->error('Confirmed Payment Webhook: Failed to get order #'. ( isset($_GET['id']) ? $_GET['id'] : ''), $this->context);
 						throw new \Exception("Failed to get order.");
+					}
+
+					// Check if payment status is expired, if so make order pending again
+					if($paymentStatus == 'Expired'){
+						$order->update_status('pending', __('Order payment status reset from expired to pending.', MIGPAYMENTSWC));
+						$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Pending');
+						$order->save();
+						
+						// Send email notification for expired order reset
+						$this->sendExpiredOrderResetNotification($order);
+						return wp_send_json('success');
 					}
 
 					$order->update_status('completed', __('Order payment completed.', MIGPAYMENTSWC));
@@ -567,8 +580,67 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				}
 				wp_send_json('success');
 			}
-
 			
+			private function sendExpiredOrderResetNotification($order) {
+				// Check if email notifications are enabled
+				if (empty($this->expiredOrderNotificationEmails)) {
+					return;
+				}
+				
+				try {
+					// Parse comma-separated email addresses
+					$emailAddresses = array_map('trim', explode(',', $this->expiredOrderNotificationEmails));
+					$emailAddresses = array_filter($emailAddresses, function($email) {
+						return filter_var($email, FILTER_VALIDATE_EMAIL);
+					});
+					
+					if (empty($emailAddresses)) {
+						if ($this->log) {
+							$this->log->error('No valid email addresses found for expired order notification', $this->context);
+						}
+						return;
+					}
+					
+					$orderId = $order->get_id();
+					$orderTotal = $order->get_total();
+					$orderCurrency = $order->get_currency();
+					$customerEmail = $order->get_billing_email();
+					$customerName = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+					
+					// Configure SMTP for localhost testing
+					$this->configureSMTPForLocalhost();
+					
+					$mailer = WC()->mailer();
+					$emailHeading = 'Expired Order Reset to Pending - Action Required';
+					$messageBody = '<h3>Order #' . $orderId . ' has been reset from expired to pending status.</h3>';
+					$messageBody .= '<p><strong>Order Details:</strong></p>';
+					$messageBody .= '<ul>';
+					$messageBody .= '<li><strong>Order ID:</strong> ' . $orderId . '</li>';
+					$messageBody .= '<li><strong>Customer:</strong> ' . $customerName . ' (' . $customerEmail . ')</li>';
+					$messageBody .= '<li><strong>Order Total:</strong> ' . $orderTotal . ' ' . $orderCurrency . '</li>';
+					$messageBody .= '<li><strong>Order Date:</strong> ' . $order->get_date_created()->format('Y-m-d H:i:s') . '</li>';
+					$messageBody .= '</ul>';
+					$messageBody .= '<p><strong>Action Required:</strong> This order was previously marked as expired but has now received a payment confirmation. The order has been reset to pending status and requires manual review.</p>';
+					$messageBody .= '<p><strong>Admin URL:</strong> <a href="' . admin_url('post.php?post=' . $orderId . '&action=edit') . '">View Order in Admin</a></p>';
+					
+					$emailContent = $mailer->wrap_message($emailHeading, $messageBody);
+					
+					// Send email to all configured addresses
+					foreach ($emailAddresses as $email) {
+						$mailer->send($email, $emailHeading, $emailContent);
+					}
+					
+					if ($this->log) {
+						$this->log->info('Expired order reset notification sent to: ' . implode(', ', $emailAddresses) . ' for order #' . $orderId, $this->context);
+					}
+					
+				} catch (\Exception $e) {
+					if ($this->log) {
+						$this->log->error('Failed to send expired order reset notification: ' . esc_html($e->getMessage()), $this->context);
+					}
+				}
+			}
+
 			public function partialPaymentWebhook(){
 			  	
 				$data = $this->decryptData('Partial Payment Webhook');
@@ -751,6 +823,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				$this->paymentDataErrorTxt = $this->get_option( 'payment_data_error_txt' ) && $this->get_option( 'payment_data_error_txt' ) != '' ? $this->get_option( 'payment_data_error_txt' ) : $this->paymentDataErrorTxt;
 				$this->redirectBackgroundColor =  $this->get_option( 'redirect_page_background_color' ) && $this->get_option( 'redirect_page_background_color' ) != '' ? $this->get_option( 'redirect_page_background_color' ) : $this->redirectBackgroundUrl;
 				$this->paymentRedirectUrl =  $this->get_option( 'payment_success_redirect_url' ) && $this->get_option( 'payment_success_redirect_url' ) != '' ? $this->get_option( 'payment_success_redirect_url' ) : $this->paymentRedirectUrl;
+				$this->expiredOrderNotificationEmails = $this->get_option( 'expired_order_notification_emails' );
 				
 				return true;
 			}
@@ -849,6 +922,14 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 						'default'     	=> null,
 						'desc_tip' 	=> __( 'If Background URL is set it will override this setting.', MIGPAYMENTSWC ),
 						'description' 	=> __( 'Color in hex/rgb/rgba format.', MIGPAYMENTSWC )
+						
+					),
+					'expired_order_notification_emails' 	=> array(
+						'title'       	=> __( 'Expired Order Notification Emails', MIGPAYMENTSWC ),
+						'type'        	=> 'text',
+						'default'     	=> null,
+						'desc_tip' 	=> __( 'Comma separated email addresses to notify when expired orders are reset to pending. Leave empty to disable notifications.', MIGPAYMENTSWC ),
+						'description' 	=> __( 'Example: admin@example.com, manager@example.com', MIGPAYMENTSWC )
 						
 					),
 				 
