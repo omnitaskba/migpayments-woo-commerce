@@ -3,7 +3,7 @@
 Plugin Name: 		Migpayments WooCommerce
 Plugin URI: 		https://pay.columis.com
 Description: 		A crypto payment gateway.
-Version: 			1.9.7
+Version: 			1.9.8
 Author: 			Columis
 Author URI: 		https://columis.com
 */
@@ -32,7 +32,7 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 	 
 	 
 	DEFINE('MIGPAYMENTSWC', 'migpayments-woocommerce');
-	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.7');
+	DEFINE('MIGPAYMENTSWC_VERSION', '1.9.8');
 
 	if (!defined('MIGPAYMENTSWC_AFFILIATE_KEY')){
 		
@@ -998,7 +998,6 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				{
  	
 					$order->update_meta_data('_migpayments_worder_crypto_payment_status', 'Pending');
-					$order->update_meta_data('_migpayments_worder_crypto_currency_code', 	    $_POST['crypto_currency'] );
 					$order->update_meta_data('_migpayments_worder_orderid', 	    $orderId );
 					$order->update_meta_data('_migpayments_worder_userid', 	    $userID );
 					$order->update_meta_data('_migpayments_worder_createtime',   gmdate("c") );
