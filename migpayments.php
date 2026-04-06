@@ -509,10 +509,31 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 				 
 				return true;
 			}
+
+			/**
+			 * Log that a wc-api webhook request reached PHP (before decrypt). Use for tracing CDN/WAF drops.
+			 */
+			private function logWebhookRequestEntry( $endpoint ) {
+				if ( ! $this->log ) {
+					return;
+				}
+				$order_id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+				$uri      = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+				$ip       = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+				$this->log->info(
+					'WC API webhook reached: ' . $endpoint . ' | order_id=' . $order_id . ' | REQUEST_URI=' . $uri . ' | REMOTE_ADDR=' . $ip,
+					$this->context
+				);
+			}
 			 
 			private function decryptData($methodName = ''){
+				if ( $this->log ) {
+					$content_len = isset( $_SERVER['CONTENT_LENGTH'] ) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
+					$this->log->info( $methodName . ' - decryptData start | CONTENT_LENGTH=' . $content_len, $this->context );
+				}
+
 				$body = file_get_contents('php://input');
-				$headers = getallheaders();
+				$headers = function_exists( 'getallheaders' ) ? getallheaders() : array();
 
 				parse_str($body, $parsedData);
 				
@@ -536,7 +557,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 
 		
 			public function paymentConfirmedWebhook(){
-			 
+				$this->logWebhookRequestEntry( 'crypto-payment-confirmed' );
+
 				$data = $this->decryptData('Payment Confirmed Webhook');
 				$this->log->info( 'Confirmed Payment Data Received:'. json_encode($data) ,  $this->context);
 				 
@@ -646,7 +668,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			}
 
 			public function partialPaymentWebhook(){
-			  	
+				$this->logWebhookRequestEntry( 'crypto-partial-payment' );
+
 				$data = $this->decryptData('Partial Payment Webhook');
 				$this->log->info( 'Partial Payment Data Received:'. json_encode($data) ,  $this->context);
 				 
@@ -731,7 +754,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			}
 
 			public function overpaidPaymentWebhook(){
-			  	
+				$this->logWebhookRequestEntry( 'crypto-overpaid-payment' );
+
 				$data = $this->decryptData('Overpaid Payment Webhook');
 				$this->log->info( 'Overpaid Payment Data Received:'. json_encode($data) ,  $this->context);
 
@@ -763,7 +787,8 @@ if (!function_exists('migpaymentsWcLoadGateway') && !function_exists('migpayment
 			}
 
 			public function failedPaymentWebhook(){
-			  	
+				$this->logWebhookRequestEntry( 'crypto-payment-failed' );
+
 				$data = $this->decryptData('Order Expired Webhook');
 				$this->log->info( 'Expired Order Data Received:'. json_encode($data) ,  $this->context);
 			 
