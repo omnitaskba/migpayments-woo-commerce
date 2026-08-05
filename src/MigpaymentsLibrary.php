@@ -52,9 +52,7 @@ class MigpaymentsLibrary {
         }
 
         $args = ['body' => $data];
-        if ($this->isSandbox) {
-            $args['sslverify'] = false;
-        }
+        
 
         $response = $this->http->post($url, $args);
       
@@ -75,10 +73,7 @@ class MigpaymentsLibrary {
         ];
 
         $args = ['body' => $data];
-        if ($this->isSandbox) {
-            $args['sslverify'] = false;
-        }
-
+       
         $response = $this->http->post($url, $args);
         $this->log->info(json_encode($response), ['source' => 'migpayments']);
         return $this->processResults($response);
@@ -91,10 +86,7 @@ class MigpaymentsLibrary {
         $url = $this->getFullUrl($method);
         
         $args = [];
-        if ($this->isSandbox) {
-            $args['sslverify'] = false;
-        }
-
+       
         $response = $this->http->get($url, $args);
         $this->log->info(json_encode($response), ['source' => 'migpayments']);
         return $this->processResults($response);
