@@ -1,8 +1,9 @@
 <?php
 class MigpaymentsLibrary {
 
-    private $sandboxUrl = 'https://pay.columis.tech/api/v1/';
-    private $baseUrl = 'https://pay.columis.com/api/v1/';
+  //  private $sandboxUrl = 'https://gate.pay.columis.tech/api/v1/';
+    private $sandboxUrl = 'https://pay.local:8890/api/';
+    private $baseUrl = 'https://gate.pay.columis.com/api/v1/';
 
     private $http;
     private $isSandbox;
@@ -26,7 +27,7 @@ class MigpaymentsLibrary {
 
     public function getPaymentData($total, $currencyCode, $fiatCurrencyCode, $orderNumber, $token, $orderData = [], $blockChainCode = null, $customerData = [])
     {
-        $method = 'rest/get-payment-data';
+        $method = 'v2/get-payment-data';
         $url = $this->getFullUrl($method);
         $siteUrl = get_site_url();
         
@@ -50,7 +51,12 @@ class MigpaymentsLibrary {
             $data['block_chain_code'] = $blockChainCode;
         }
 
-        $response = $this->http->post($url, ['body' => $data]);
+        $args = ['body' => $data];
+        if ($this->isSandbox) {
+            $args['sslverify'] = false;
+        }
+
+        $response = $this->http->post($url, $args);
       
         return $this->processResults($response);
     }
@@ -58,7 +64,7 @@ class MigpaymentsLibrary {
     public function getCryptoPrices($total, $currencyCodes, $fiatCurrencyCode, $token)
     {
     
-        $method = 'get-crypto-prices';
+        $method = 'v1/get-crypto-prices';
         $url = $this->getFullUrl($method);
         
         $data = [
@@ -68,7 +74,12 @@ class MigpaymentsLibrary {
             'amount' => $total
         ];
 
-        $response = $this->http->post($url, ['body' => $data]);
+        $args = ['body' => $data];
+        if ($this->isSandbox) {
+            $args['sslverify'] = false;
+        }
+
+        $response = $this->http->post($url, $args);
         $this->log->info(json_encode($response), ['source' => 'migpayments']);
         return $this->processResults($response);
     }
@@ -76,10 +87,15 @@ class MigpaymentsLibrary {
     public function getCurrencyBlockchains($currencyCode)
     {
     
-        $method = 'currency-blockchains/'. $currencyCode;
+        $method = 'v1/currency-blockchains/'. $currencyCode;
         $url = $this->getFullUrl($method);
         
-        $response = $this->http->get($url);
+        $args = [];
+        if ($this->isSandbox) {
+            $args['sslverify'] = false;
+        }
+
+        $response = $this->http->get($url, $args);
         $this->log->info(json_encode($response), ['source' => 'migpayments']);
         return $this->processResults($response);
     }

@@ -31,6 +31,7 @@ class MigpaymentsDecrypt
             }
             
             
+            $encryptedData = base64_decode($encryptedData);
             openssl_public_decrypt($encryptedData, $decryptedData, $publicKey, OPENSSL_PKCS1_PADDING);
 
             if (is_null($decryptedData)) {
