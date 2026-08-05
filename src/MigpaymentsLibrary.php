@@ -1,9 +1,8 @@
 <?php
 class MigpaymentsLibrary {
 
-  //  private $sandboxUrl = 'https://gate.pay.columis.tech/api/v1/';
-    private $sandboxUrl = 'https://pay.local:8890/api/';
-    private $baseUrl = 'https://gate.pay.columis.com/api/v1/';
+    private $sandboxUrl = 'https://gate.pay.columis.tech/api/';
+    private $baseUrl = 'https://gate.pay.columis.com/api/';
 
     private $http;
     private $isSandbox;
